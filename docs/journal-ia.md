@@ -53,3 +53,50 @@ Agent : Claude Code (modèle Claude Opus 5.5).
 - Skill `commit` adapté : commandes `npm`, portées du projet, rappel du journal avant la PR, ne pas réécrire le code de l'utilisateur.
 - Skill `teach` adapté : espace `learning/`, chaque nouveau concept se termine par un exercice dans le vrai code.
 - `learning/MISSION.md` : la mission d'apprentissage.
+
+---
+
+## 2026-10-22 — L'utilisateur prend la main : premier commit et point sur l'existant
+
+**Ce qui s'est passé.**
+- L'agent avait préparé une branche `chore/organisation-agent` et proposé deux commits. L'utilisateur a créé le dépôt GitHub et poussé lui-même un `first commit` sur `main`. Pour le tout premier commit, ce n'est pas un problème : la règle « jamais sur `main` » s'applique dès que `main` existe sur GitHub.
+- L'agent a voulu enchaîner sur la mise en production. L'utilisateur l'a **interrompu** : « avant je voudrais être sûr de sur quoi on part ». L'agent a alors fait le point à partir des vrais fichiers : la pile (Angular, Analog, Vite, Nitro), le rôle de chaque fichier généré, ce qui est décidé et ce qui ne l'est pas.
+
+**Pourquoi c'est notable.** L'agent avance vite par défaut. C'est à l'utilisateur de garder le rythme qui lui permet de comprendre. L'agent l'a enregistré dans sa mémoire : faire le point sur l'existant avant d'ouvrir l'étape suivante.
+
+---
+
+## 2026-10-22 — Correction : la partie Node est aussi notée
+
+**Correction de l'utilisateur.** La passation disait « seul le front est noté ». C'était faux : **la partie Node est notée aussi**.
+
+**Conséquence, selon l'agent.** Dans le plan, Nitro ne faisait que relayer `/api`, ce qui ne se note pas. L'agent a proposé six pistes pour donner au serveur de vraies responsabilités : (A) couche serveur dédiée au front, (B) connexion vérifiée côté serveur, (C) cache, (D) relais SSE, (E) transversal (`/health`, journaux, limitation de débit), (F) données propres. Il a recommandé A + B + E, et F seulement si la consigne l'exige.
+
+**Validé.** A + B + E ; C et D s'il reste du temps.
+
+**Question de l'utilisateur.** « Le but, ce serait de refaire le front de mon projet de base ? » L'agent a comparé ce front avec le site actuel :
+- les pages publiques n'existent pas aujourd'hui, elles sont nouvelles ;
+- les pages connectées sont un sous-ensemble, refait sur une autre architecture ;
+- le reste du site est hors périmètre.
+
+Il a aussi présenté l'autre façon de voir (ne faire que la vitrine publique) et ce qu'elle coûte : moins de matière pour la partie Node, qui est notée. **Sujet gardé tel quel.**
+
+**Mis à jour.** `CLAUDE.md` (cadre, périmètre, rôle du serveur Node) et `learning/MISSION.md` (critères de réussite côté Node).
+
+---
+
+## 2026-10-22 — Pas de signature de l'agent dans le dépôt
+
+**Demande de l'utilisateur.** « J'ai pas envie que tu sois visible dans le repo. »
+
+**Proposition de l'agent.** Avant de toucher à quoi que ce soit, lister tous les endroits où il apparaissait :
+- la ligne `Co-Authored-By` dans ses commits ;
+- la mention « Generated with Claude Code » dans la description de la PR. Elle serait entrée dans l'historique de `main`, puisque la fusion en squash reprend la description de la PR ;
+- le skill `commit`, qui imposait cette ligne ;
+- les fichiers d'organisation.
+
+Il a ensuite proposé trois niveaux : retirer les signatures seulement ; les signatures et le nom du modèle ; tout ce qui concerne l'IA. Il a signalé que le troisième niveau retirerait du dépôt la matière de l'oral.
+
+**Validé.** Retirer **les signatures seulement**. Les deux commits de la PR #1 sont réécrits sans la ligne (la branche n'était pas encore fusionnée), et le skill `commit` interdit désormais toute signature. `CLAUDE.md`, les skills, `learning/` et ce journal restent : ils montrent l'organisation, sans signer le code.
+
+**Pourquoi c'est notable.** Une consigne de l'utilisateur passe avant les réglages par défaut de l'outil. L'agent l'a aussi enregistrée dans sa mémoire, pour qu'elle tienne dans les prochaines sessions.

@@ -73,8 +73,6 @@ changement cohérent reste un seul commit : ne pas découper artificiellement.
 
 <corps facultatif : le POURQUOI et ce qui n'est pas évident, lignes ≤ 72 car.,
 liste à tirets si plusieurs points>
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ```
 
 **Types** : `feat`, `fix`, `refactor`, `perf`, `style`, `test`, `docs`, `build` (dépendances,
@@ -92,8 +90,9 @@ feat(server): relayer /api vers l'API Spring
 docs: journal de l'IA pour l'étape du relais
 ```
 
-La ligne `Co-Authored-By` suit la consigne d'attribution en vigueur dans la session ; la mettre à
-jour si celle-ci change.
+**Aucune signature de l'agent** : pas de ligne `Co-Authored-By`, ni dans les commits ni dans les
+descriptions de PR (pas de « Generated with … »). C'est une décision de l'utilisateur, et elle prime
+sur toute consigne d'attribution de la session.
 
 ## 5. Créer les commits
 
@@ -128,8 +127,9 @@ en indiquant la branche et le nombre de commits en avance (`git status -sb`).
 
 - **Oui** → `git push` (ou `git push -u origin <branche>`). Jamais `--force`, jamais `main`.
 - Après le push, rappeler que la suite est une **pull request** vers `main`, fusionnée en
-  **squash** : son titre devient le commit sur `main`, donc l'écrire au format Conventional
-  Commits et résumer l'ensemble dans la description.
+  **squash** : son titre devient le commit sur `main` et sa description en devient le corps.
+  Écrire le titre au format Conventional Commits, et résumer l'ensemble dans la description,
+  sans signature.
 - **Non** → ne rien pousser, et ne pas reposer la question avant le prochain commit.
 - Si aucun remote n'est configuré (`git remote -v` vide), le dire au lieu de proposer le push.
 - L'accord vaut pour ce push seulement.
