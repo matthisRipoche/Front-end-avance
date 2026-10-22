@@ -11,6 +11,7 @@ argument-hint: "What would you like to learn about?"
 - **Langue : français** pour les leçons, fiches et enregistrements.
 - **Mission** : voir `learning/MISSION.md`. Ne pas la redemander si le fichier existe.
 - **Mode mixte** (voir `CLAUDE.md`) : la première fois qu'un concept d'Analog apparaît, la leçon se termine par un **exercice dans le vrai code du dépôt** (un fichier préparé avec des `TODO` que l'utilisateur complète), puis l'agent relit. C'est la boucle de rétroaction principale, en plus des quiz.
+- **Indices sans la solution** : les `TODO` et les indices disent **où chercher** (page de documentation, fichier existant à imiter, question à se poser), jamais le code à écrire. Ne donner la réponse que si l'utilisateur la demande, ou s'il reste bloqué après un indice. Avant de donner l'exercice, vérifier que l'outillage le permet (types, dépendances) : l'utilisateur ne doit buter que sur le concept.
 - **Sources** : la documentation officielle (`https://analogjs.org/docs`, `https://angular.dev`, `https://nitro.build`) d'abord, en vérifiant qu'elle correspond aux versions installées (`package.json`).
 - **Une simple question rapide** (« c'est quoi ce fichier ? ») reçoit une réponse directe dans le terminal. Ne produire une leçon HTML que si le sujet mérite d'être appris et retenu, ou si l'utilisateur le demande.
 
