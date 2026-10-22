@@ -1,0 +1,42 @@
+# Production derrière le Traefik DÉJÀ présent sur le serveur (il possède les ports 80/443 et gère
+# les certificats de tous les sites).
+#
+#   Internet ─▶ Traefik ─▶ web (serveur Node d'Analog) ─▶ API Spring (adresse publique)
+#
+# Un seul conteneur, sur le réseau de Traefik. Aucun port n'est publié sur l'hôte.
+#
+# Variables (fichier .env sur le serveur, jamais dans Git) :
+#   DOMAIN, IMAGE, TAG                                                (obligatoires)
+#   TRAEFIK_NETWORK, TRAEFIK_ENTRYPOINT, TRAEFIK_CERTRESOLVER         (défauts = ce Traefik)
+
+services:
+  web:
+    image: ${IMAGE:?définir IMAGE dans .env}:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      # Adresse de l'API Spring, utilisée par le serveur Node (relais et couche serveur)
+      API_URL: ${API_URL:-https://celeste.matthisripoche.com}
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: ${TRAEFIK_NETWORK:-frontend}
+
+      # Noms « celeste-next » : le routeur « celeste » appartient déjà au site actuel
+      traefik.http.routers.celeste-next.rule: Host(`${DOMAIN:?définir DOMAIN dans .env}`)
+      traefik.http.routers.celeste-next.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
+      traefik.http.routers.celeste-next.tls: "true"
+      traefik.http.routers.celeste-next.tls.certresolver: ${TRAEFIK_CERTRESOLVER:-ovhcloud}
+      traefik.http.routers.celeste-next.middlewares: celeste-next-headers
+      traefik.http.services.celeste-next.loadbalancer.server.port: "3000"
+
+      traefik.http.middlewares.celeste-next-headers.headers.stsSeconds: "31536000"
+      traefik.http.middlewares.celeste-next-headers.headers.contentTypeNosniff: "true"
+      traefik.http.middlewares.celeste-next-headers.headers.frameDeny: "true"
+      traefik.http.middlewares.celeste-next-headers.headers.referrerPolicy: strict-origin-when-cross-origin
+
+networks:
+  # Réseau du Traefik existant (créé par lui, pas par ce projet)
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-frontend}
