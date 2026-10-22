@@ -1,7 +1,7 @@
 # Mission : un front Analog.js compris, en production, et l'organisation avec l'agent pour le raconter
 
 ## Why
-Rendre un projet de cours noté sur le front : un nouveau front pour CelesteDeathTracker en Analog.js, déployé en production, puis présenter à l'oral comment l'organisation de travail avec l'agent m'a fait comprendre les concepts au lieu de produire une boîte noire.
+Rendre un projet de cours noté sur le front et sur la partie Node : un nouveau front pour CelesteDeathTracker en Analog.js, déployé en production, puis présenter à l'oral comment l'organisation de travail avec l'agent m'a fait comprendre les concepts au lieu de produire une boîte noire.
 
 ## Success looks like
 - Expliquer, sur mes propres pages, la différence entre rendu serveur (SSR), génération au build (SSG) et rendu côté navigateur, et dire pourquoi j'ai choisi l'un ou l'autre.
