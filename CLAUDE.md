@@ -98,6 +98,7 @@ Détails techniques :
 
 - Domaine : `new-celeste.matthisripoche.com` (enregistrement DNS créé le 2026-10-22), sur le VPS 57.129.139.62.
 - **Traefik v3.7** (conteneur `traefik-traefik-1`, réseau Docker `frontend`) possède les ports 80 et 443 : **ne jamais publier 80/443 ni lancer un second reverse proxy**. Labels : entrypoint `websecure`, certresolver `ovhcloud`.
+- Tout ce qui sert au déploiement est dans `deploy/` (`Dockerfile`, `Dockerfile.dockerignore`, `docker-compose.prod.yml`, `README.md`) ; seul le workflow reste dans `.github/workflows/ci-cd.yml`.
 - Le VPS héberge d'autres applications. Modèle de déploiement : `docker-compose.prod.yml`, `.github/workflows/ci-cd.yml` et `deploy/README.md` du dépôt d'origine (images `ghcr.io/<owner>/…:sha-…`, SSH depuis la CI ; le port SSH n'est pas joignable depuis le poste de dev).
 
 ## Pièges d'environnement

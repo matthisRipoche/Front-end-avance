@@ -1,0 +1,12 @@
+# Exclusions du contexte de build de deploy/Dockerfile.
+# Nommé <Dockerfile>.dockerignore pour vivre à côté du Dockerfile (BuildKit le lit à la place d'un .dockerignore à la racine).
+node_modules/
+dist/
+.angular/
+.git
+.github/
+.claude/
+learning/
+docs/
+deploy/
+.env*

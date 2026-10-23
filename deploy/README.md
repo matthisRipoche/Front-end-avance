@@ -3,15 +3,26 @@
 Site : **https://new-celeste.matthisripoche.com**
 
 ```
- PR ─▶ GitHub Actions ─▶ tests + build
+ PR ─▶ GitHub Actions ─▶ tests + build ─▶ image Docker construite, non publiée
  fusion sur main ─▶ tests ─▶ image Docker (GHCR) ─▶ SSH ─▶ VPS ─▶ Traefik ─▶ conteneur web (Node)
 ```
+
+## Ce dossier
+
+| Fichier | Rôle |
+|---|---|
+| `Dockerfile` | Image de production, construite depuis la racine : `docker build -f deploy/Dockerfile .` |
+| `Dockerfile.dockerignore` | Ce qui n'entre pas dans le contexte de build (lu par BuildKit à côté du Dockerfile) |
+| `docker-compose.prod.yml` | Le service sur le VPS, derrière Traefik ; copié par la CI dans `~/celeste-next` |
+| `README.md` | Ce document |
+
+Le workflow `.github/workflows/ci-cd.yml` reste dans `.github/` : GitHub ne lit les workflows qu'à cet endroit.
 
 Le modèle est celui du dépôt CelesteDeathTracker (`deploy/README.md`), simplifié : un seul conteneur, pas de base de données.
 
 ## 0. Le serveur existant
 
-Le VPS (`57.129.139.62`) héberge d'autres applications derrière **Traefik v3** (conteneur `traefik-traefik-1`, réseau Docker `frontend`), qui possède les ports 80/443. **On ne lance pas de second reverse proxy et on ne publie aucun port** : le conteneur `web` rejoint le réseau `frontend` et se déclare à Traefik par des *labels* (`docker-compose.prod.yml`). Valeurs déjà relevées sur ce Traefik : entrypoint `websecure`, certresolver `ovhcloud`.
+Le VPS (`57.129.139.62`) héberge d'autres applications derrière **Traefik v3** (conteneur `traefik-traefik-1`, réseau Docker `frontend`), qui possède les ports 80/443. **On ne lance pas de second reverse proxy et on ne publie aucun port** : le conteneur `web` rejoint le réseau `frontend` et se déclare à Traefik par des *labels* (`deploy/docker-compose.prod.yml`). Valeurs déjà relevées sur ce Traefik : entrypoint `websecure`, certresolver `ovhcloud`.
 
 Le routeur s'appelle `celeste-next` : `celeste` est déjà pris par le site actuel. Deux routeurs du même nom se marcheraient dessus.
 
@@ -23,7 +34,7 @@ Vérifier : `getent hosts new-celeste.matthisripoche.com` (ou `nslookup`).
 
 ## 2. Rien à faire sur le serveur
 
-**GitHub est la seule source de vérité.** À chaque déploiement, la CI crée le dossier `~/celeste-next` dans le dossier personnel de l'utilisateur SSH (pas besoin de `sudo`), y copie `docker-compose.prod.yml` et **réécrit** le `.env` à partir des secrets (`DOMAIN`) et de la version construite (`IMAGE`, `TAG`). Un `.env` modifié à la main sur le serveur est donc écrasé au déploiement suivant : pour changer une valeur, la changer dans GitHub.
+**GitHub est la seule source de vérité.** À chaque déploiement, la CI crée le dossier `~/celeste-next` dans le dossier personnel de l'utilisateur SSH (pas besoin de `sudo`), y copie `deploy/docker-compose.prod.yml` et **réécrit** le `.env` à partir des secrets (`DOMAIN`) et de la version construite (`IMAGE`, `TAG`). Un `.env` modifié à la main sur le serveur est donc écrasé au déploiement suivant : pour changer une valeur, la changer dans GitHub.
 
 ## 3. Une seule fois : GitHub
 
