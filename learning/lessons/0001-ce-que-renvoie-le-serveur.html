@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leçon 1 · Ce que renvoie le serveur quand on demande /</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main>
+<p class="meta">Leçon 1 · environ 15 minutes · s'appuie sur ta page d'accueil en production</p>
+<h1>Ce que renvoie le serveur quand on demande <code>/</code></h1>
+<p class="lead">À la fin, tu sais dire, sur tes propres pages, <strong>quand</strong> leur HTML est fabriqué, <strong>par qui</strong>, et ce que fait ensuite le navigateur. C'est le premier point de ta mission : expliquer SSR, SSG et rendu navigateur sur tes pages.</p>
+
+<h2>1. Une adresse, un fichier</h2>
+<p>Analog construit les routes à partir des fichiers de <code>src/app/pages/</code> qui finissent par <code>.page.ts</code>. Le nom du fichier devient l'adresse, et le composant doit être l'<strong>export par défaut</strong> du fichier (<a href="https://analogjs.org/docs/features/routing/overview">documentation du routage</a>).</p>
+<table>
+<tr><th>Fichier</th><th>Adresse</th></tr>
+<tr><td><code>src/app/pages/index.page.ts</code></td><td><code>/</code></td></tr>
+<tr><td><code>src/app/pages/design-system.page.ts</code></td><td><code>/design-system</code></td></tr>
+<tr><td><code>src/app/pages/faq.page.ts</code> (pas encore écrit)</td><td><code>/faq</code></td></tr>
+</table>
+<p>Ouvre <code>src/app/pages/index.page.ts</code> : la dernière ligne est <code>export default class Home</code>. Aucun fichier de routes à tenir à jour : c'est <code>provideFileRouter()</code>, dans <code>src/app/app.config.ts</code>, qui lit le dossier.</p>
+
+<h2>2. Le trajet d'une requête</h2>
+<ol class="flow">
+<li>Le navigateur demande <code>https://new-celeste.matthisripoche.com/</code>.</li>
+<li>Traefik transmet la requête au serveur Node d'Analog (Nitro), dans le conteneur.</li>
+<li>Nitro cherche d'abord un <strong>fichier déjà prêt</strong> dans <code>dist/analog/public/</code>. S'il existe, il l'envoie tel quel.</li>
+<li>Sinon, il <strong>exécute Angular sur le serveur</strong> (<code>src/main.server.ts</code>) : le composant de la page produit son HTML, envoyé complet.</li>
+<li>Le navigateur affiche ce HTML tout de suite, puis télécharge le JavaScript.</li>
+<li>Angular démarre dans le navigateur (<code>src/main.ts</code>) et <strong>hydrate</strong> la page : il reprend le HTML déjà là au lieu de le redessiner.</li>
+</ol>
+<p>Les étapes 3 et 4 sont les deux façons de fabriquer le HTML côté serveur :</p>
+<table>
+<tr><th></th><th>Quand le HTML est fabriqué</th><th>Sur ton site</th></tr>
+<tr><td><strong>SSG</strong> (génération au build, ou prérendu)</td><td>Une seule fois, pendant <code>npm run build</code></td><td><code>/</code></td></tr>
+<tr><td><strong>SSR</strong> (rendu côté serveur)</td><td>À chaque requête</td><td><code>/design-system</code></td></tr>
+</table>
+
+<div class="box"><p><strong>La surprise.</strong> Le titre de la PR #40 dit « page d'accueil rendue côté serveur ». C'est imprécis : Analog <strong>prérend <code>/</code> par défaut</strong>, parce qu'il lui faut un HTML pour la racine (<a href="https://analogjs.org/docs/features/server/server-side-rendering">documentation SSR d'Analog</a>). Ton accueil est donc fabriqué une fois, au build. Il est bien produit par Angular côté serveur, mais pas à chaque visite. Tu vas le prouver toi-même.</p></div>
+
+<h2>3. L'hydratation</h2>
+<p>Le HTML reçu s'affiche, mais il est inerte : un bouton ne réagit pas tant qu'Angular n'a pas démarré. Angular <strong>réutilise le DOM</strong> rendu par le serveur au lieu de le recréer. Sans ça, la page serait jetée puis redessinée, avec un clignotement visible (<a href="https://angular.dev/guide/hydration">guide de l'hydratation, angular.dev</a>).</p>
+<p>Dans <code>src/app/app.config.ts</code> : <code>provideClientHydration(withEventReplay())</code>. <code>withEventReplay()</code> enregistre les clics faits <em>avant</em> la fin de l'hydratation et les rejoue ensuite : un clic trop rapide n'est pas perdu.</p>
+
+<h2>4. <code>routeMeta</code> : le <code>&lt;head&gt;</code> de chaque page</h2>
+<p>Une page peut exporter un <code>routeMeta</code> à côté de son composant : titre, balises <code>meta</code>, gardes, redirections (<a href="https://analogjs.org/docs/features/routing/metadata">documentation des métadonnées</a>). Dans <code>index.page.ts</code> :</p>
+<pre><code>export const routeMeta = {
+  title: 'Celeste Death Tracker · ton deathless, tentative par tentative',
+  meta: [
+    { name: 'description', content: DESCRIPTION },
+    { property: 'og:title', content: 'Celeste Death Tracker' },
+  ],
+} satisfies RouteMeta;</code></pre>
+<p>Comme le HTML est fabriqué côté serveur, ces balises sont <strong>dans le HTML envoyé</strong>. C'est ce que lisent les moteurs de recherche et les aperçus de lien (Discord, réseaux sociaux), qui n'exécutent pas toujours le JavaScript.</p>
+
+<h2>5. À toi : prouve-le dans le terminal</h2>
+<p>Fais chaque étape avant d'ouvrir la réponse. Le but est de prédire, puis de vérifier.</p>
+
+<h3>Étape A : le HTML arrive-t-il complet ?</h3>
+<pre><code>curl -s https://new-celeste.matthisripoche.com/ | grep -o "&lt;title&gt;[^&lt;]*&lt;/title&gt;"
+curl -s https://new-celeste.matthisripoche.com/ | grep -c "Trois questions"</code></pre>
+<details><summary>Ce que tu dois voir, et pourquoi</summary>
+<p>Le titre de <code>routeMeta</code>, et le texte de la page (compteur à 1). <code>curl</code> n'exécute aucun JavaScript : si le texte est là, c'est que le serveur l'a envoyé tout fait. Avec un site rendu dans le navigateur, comme le site actuel, tu ne verrais qu'une balise <code>&lt;app-root&gt;</code> vide.</p>
+</details>
+
+<h3>Étape B : prérendu ou rendu à chaque requête ?</h3>
+<p>Prédis d'abord : laquelle des deux pages aura un en-tête <code>last-modified</code> ?</p>
+<pre><code>curl -sI https://new-celeste.matthisripoche.com/ | grep -iE "last-modified|etag"
+curl -sI https://new-celeste.matthisripoche.com/design-system | grep -iE "last-modified|etag"</code></pre>
+<details><summary>Ce que tu dois voir, et pourquoi</summary>
+<p><code>/</code> a un <code>last-modified</code> (l'heure du dernier build) et un <code>etag</code> : Nitro sert un <strong>fichier</strong>, comme un serveur de fichiers statiques. <code>/design-system</code> n'en a pas : son HTML vient d'être fabriqué pour ta requête.</p>
+</details>
+
+<h3>Étape C : le fichier prérendu, en local</h3>
+<pre><code>npm run build
+ls dist/analog/public
+grep -c "Ton deathless" dist/analog/public/index.html</code></pre>
+<details><summary>Ce que tu dois voir, et pourquoi</summary>
+<p><code>index.html</code> existe dans <code>dist/analog/public/</code> et contient déjà ta page : c'est le résultat du prérendu, écrit pendant le build (ligne « Prerendering static pages… » dans la sortie). Il n'y a pas de dossier <code>design-system/</code> : cette page n'est fabriquée qu'au moment de la requête.</p>
+</details>
+
+<h2>6. Vérifie ce que tu retiens</h2>
+
+<div class="quiz" data-explain="Le nom du fichier sous src/app/pages/, sans .page.ts, donne l'adresse.">
+<p class="quiz__q">Quel fichier définit la route <code>/design-system</code> ?</p>
+<button>src/server/routes/design-system.ts</button>
+<button>src/app/design-system/design-system.data.ts</button>
+<button data-correct>src/app/pages/design-system.page.ts</button>
+<p class="quiz__feedback" aria-live="polite"></p>
+</div>
+
+<div class="quiz" data-explain="Analog prérend / par défaut : le fichier est écrit pendant le build, puis servi tel quel.">
+<p class="quiz__q">Quand le HTML de <code>/</code> est-il fabriqué, sur ton site ?</p>
+<button>À chaque requête, par le serveur</button>
+<button data-correct>Une fois, pendant npm run build</button>
+<button>Dans le navigateur, après le JavaScript</button>
+<p class="quiz__feedback" aria-live="polite"></p>
+</div>
+
+<div class="quiz" data-explain="Angular reprend le DOM existant au lieu de le recréer : pas de clignotement.">
+<p class="quiz__q">Que fait l'hydratation ?</p>
+<button>Elle redemande le HTML au serveur</button>
+<button>Elle redessine la page depuis zéro</button>
+<button data-correct>Elle réutilise le HTML déjà affiché</button>
+<p class="quiz__feedback" aria-live="polite"></p>
+</div>
+
+<div class="quiz" data-explain="Le HTML est fabriqué côté serveur, le titre et les meta y sont : lisibles sans JavaScript.">
+<p class="quiz__q">Où se retrouve le <code>title</code> déclaré dans <code>routeMeta</code> ?</p>
+<button data-correct>Dans le head du HTML servi</button>
+<button>Dans un fichier JSON à part</button>
+<button>Seulement dans l'onglet, après hydratation</button>
+<p class="quiz__feedback" aria-live="polite"></p>
+</div>
+
+<div class="box"><p><strong>Une question en tête ?</strong> Pose-la à l'agent dans le terminal, même si elle te semble simple. Par exemple : « et si j'ajoutais <code>/design-system</code> au prérendu ? ». C'est justement la prochaine étape.</p></div>
+
+<h2>Pour aller plus loin</h2>
+<p><strong>Source principale :</strong> <a href="https://analogjs.org/docs/features/server/server-side-rendering">Server Side Rendering, documentation d'Analog</a>, courte, avec la configuration du prérendu (<code>prerender.routes</code>) que tu utiliseras pour la FAQ.</p>
+<p><strong>Prochaine leçon :</strong> la FAQ (#9), une page écrite en Markdown et générée au build. Cette fois, c'est toi qui écris le cœur.</p>
+
+<div class="footer-nav">
+Fiche : <a href="../reference/pages-et-rendu.html">Pages et rendu, l'essentiel</a>
+</div>
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

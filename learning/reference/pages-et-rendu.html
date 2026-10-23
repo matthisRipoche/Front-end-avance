@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fiche · Pages et rendu</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main>
+<p class="meta">Fiche de référence · Analog 2.9, Angular 22</p>
+<h1>Pages et rendu, l'essentiel</h1>
+
+<h2>Routage par fichiers</h2>
+<table>
+<tr><th>Fichier dans <code>src/app/pages/</code></th><th>Adresse</th></tr>
+<tr><td><code>index.page.ts</code></td><td><code>/</code></td></tr>
+<tr><td><code>faq.page.ts</code></td><td><code>/faq</code></td></tr>
+<tr><td><code>maps/index.page.ts</code></td><td><code>/maps</code></td></tr>
+<tr><td><code>maps/[side].page.ts</code></td><td><code>/maps/:side</code> (paramètre)</td></tr>
+<tr><td><code>(auth)/login.page.ts</code></td><td><code>/login</code> (groupe sans segment)</td></tr>
+<tr><td><code>[...not-found].page.ts</code></td><td>toutes les adresses inconnues</td></tr>
+</table>
+<p>Le composant est l'<code>export default</code> du fichier. Source : <a href="https://analogjs.org/docs/features/routing/overview">Routing overview</a>.</p>
+
+<h2>Trois façons de fabriquer le HTML</h2>
+<table>
+<tr><th>Mode</th><th>Quand</th><th>Où</th><th>Exemple ici</th></tr>
+<tr><td>SSG (prérendu)</td><td>une fois, au build</td><td>fichier dans <code>dist/analog/public/</code></td><td><code>/</code></td></tr>
+<tr><td>SSR</td><td>à chaque requête</td><td>Angular sur le serveur Nitro</td><td><code>/design-system</code></td></tr>
+<tr><td>Rendu navigateur</td><td>après le JavaScript</td><td>dans le navigateur</td><td>le site actuel</td></tr>
+</table>
+<p>Configuration : options <code>prerender.routes</code> et <code>ssr</code> du plugin <code>analog()</code> dans <code>vite.config.ts</code>. <code>/</code> est prérendue par défaut. Source : <a href="https://analogjs.org/docs/features/server/server-side-rendering">Server Side Rendering</a>.</p>
+
+<h2>Hydratation</h2>
+<p>Angular reprend le DOM rendu par le serveur au lieu de le recréer. Réglage : <code>provideClientHydration(withEventReplay())</code> dans <code>src/app/app.config.ts</code> ; <code>withEventReplay()</code> rejoue les clics faits avant la fin de l'hydratation. Source : <a href="https://angular.dev/guide/hydration">angular.dev, Hydration</a>.</p>
+
+<h2><code>routeMeta</code></h2>
+<pre><code>export const routeMeta = {
+  title: 'Titre de l’onglet',
+  meta: [{ name: 'description', content: '…' }],
+} satisfies RouteMeta;</code></pre>
+<p>Titre, meta, gardes (<code>canActivate</code>), redirections (<code>redirectTo</code>). Source : <a href="https://analogjs.org/docs/features/routing/metadata">Route Metadata</a>.</p>
+
+<h2>Vérifier dans le terminal</h2>
+<pre><code># le HTML arrive-t-il complet ?
+curl -s URL | grep -o "&lt;title&gt;[^&lt;]*&lt;/title&gt;"
+# fichier prérendu (last-modified, etag) ou rendu à la requête ?
+curl -sI URL | grep -iE "last-modified|etag"
+# fichiers prérendus du build
+ls dist/analog/public</code></pre>
+
+<div class="footer-nav">Leçon : <a href="../lessons/0001-ce-que-renvoie-le-serveur.html">1 · Ce que renvoie le serveur quand on demande /</a></div>
+</main>
+</body>
+</html>
