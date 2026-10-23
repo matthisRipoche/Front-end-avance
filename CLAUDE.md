@@ -84,9 +84,11 @@ Détails techniques :
 
 ## Design
 
-- Design system **« Topo »** du dépôt d'origine : jetons `web/src/styles/tokens.css`, composants `web/src/styles/ds.css` (classes `.ds-*`), doc `docs/design-system.md`.
-- Clair et sombre, police Archivo, un seul surligneur doré par écran, des filets plutôt que des cartes ou des ombres. Pas de Tailwind.
-- **Interdit** : sprites et assets de Celeste (© Extremely OK Games), police du jeu (Renogare). Seuls les motifs pixel dessinés pour le site sont autorisés (`shared/pixel/pixel-icons.ts` du dépôt d'origine).
+- **Nouvelle identité visuelle** (le design system « Topo » du site actuel est abandonné). Produit : `PRODUCT.md`. Design system : `docs/design-system.md`, source dans Claude Design.
+- Code : jetons `src/styles/tokens.css`, composants `src/styles/components.css` (classes `.cdt-*`, styles de texte `.t-*`), vitrine `/design-system`.
+- Sombre d'abord, accent cyan pour l'action, un seul élément doré par écran (deathless). Unbounded, Geist et Geist Mono auto-hébergées (`@fontsource-variable`). Pas de Tailwind.
+- Toute maquette part du design system ; demander les goûts de l'utilisateur avant de proposer une direction visuelle.
+- **Interdit** : sprites et assets de Celeste (© Extremely OK Games), police du jeu (Renogare). Icônes en SVG dessinées pour le site.
 
 ## Production
 

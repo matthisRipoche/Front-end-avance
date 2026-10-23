@@ -160,3 +160,21 @@ Leçon pour l'agent : demander les références et le caractère voulus **avant*
 **Design system validé tel quel ; première maquette de l'accueil construite dessus.** Le design system est installé dans le canvas (copie des jetons et des styles des composants). La page d'accueil n'utilise que ses composants : navigation, panneau d'exemple (pastille de face, Stat, trajectoires des dernières tentatives), alerte « mod pas encore publié », trois panneaux pour les trois questions du joueur, mise en route, pied de page. Les trois directions écartées restent sur le canvas, sous la nouvelle planche, comme trace de l'exploration (matière de l'oral).
 
 **Maquette de l'accueil validée (« c'est bien mieux »).** À la demande de l'utilisateur, les quatre planches d'exploration (A, B, C, B2) sont supprimées du canvas. Il ne reste que l'accueil construit sur le design system. Ce journal garde la trace de l'exploration.
+
+---
+
+## 2026-10-23 — Le design system passe dans le code
+
+**Demande.** Reporter le design system en CSS et faire une page qui le présente.
+
+**Décisions validées par l'utilisateur** (présentées avec leurs compromis, recommandations suivies) :
+- polices **auto-hébergées** (`@fontsource-variable` : Unbounded, Geist, Geist Mono) plutôt que Google Fonts, pour qu'aucun visiteur n'envoie son adresse IP à Google (confidentialité) ;
+- vitrine **publique** sur `/design-system`, utile au jury et à l'oral, contrairement au site actuel où elle n'existait qu'en développement.
+
+**Réalisé par l'agent** (outillage et présentation, pas encore un concept à apprendre) :
+- `src/styles/tokens.css` est généré à partir du `tokens.json` du design system, pour qu'il n'y ait qu'une source ;
+- `src/styles/components.css` reprend les classes `.cdt-*` ;
+- la page `/design-system` lit les valeurs dans les variables CSS au lieu de les recopier, et propose un sélecteur de thème (système, sombre, clair) ;
+- `docs/design-system.md` est écrit, et la section Design de `CLAUDE.md` est mise à jour.
+
+La première vraie page en mode mixte reste l'accueil : c'est l'utilisateur qui écrira la page SSR.
