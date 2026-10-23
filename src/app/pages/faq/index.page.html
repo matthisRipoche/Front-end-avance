@@ -1,0 +1,12 @@
+<app-site-header />
+
+<main class="faq">
+  @if (faq$ | async; as faq) {
+    <h1 class="t-display faq__title">{{ faq.attributes.title }}</h1>
+    <div class="cdt-prose">
+      <analog-markdown [content]="faq.content" />
+    </div>
+  }
+</main>
+
+<app-site-footer />

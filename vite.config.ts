@@ -12,7 +12,16 @@ export default defineConfig(({ mode }) => ({
     mainFields: ['module'],
   },
   plugins: [
-    analog(),
+    analog({
+      // Contenu Markdown de src/content/ (FAQ, confidentialité). Le surligneur de code
+      // n'est pas utilisé, mais c'est cette option qui active le traitement des fichiers .md.
+      content: { highlighter: 'prism' },
+      // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
+      // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
+      prerender: {
+        routes: async () => ['/', '/faq'],
+      },
+    }),
   ],
   test: {
     globals: true,
