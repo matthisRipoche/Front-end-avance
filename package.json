@@ -1,12 +1,11 @@
 {
-  "name": "front-end-avance",
+  "name": "celeste-death-tracker-front",
   "version": "0.0.0",
   "type": "module",
   "engines": {
     "node": ">=22.22.3"
   },
   "scripts": {
-    "ng": "ng",
     "dev": "vite",
     "start": "npm run dev",
     "build": "vite build",
