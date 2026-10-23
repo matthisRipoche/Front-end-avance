@@ -1,0 +1,8 @@
+/* Le pied de page reste en bas même quand la page est courte. */
+:host { display: flex; flex-direction: column; min-height: 100vh; }
+main { flex: 1; }
+main:focus { outline: none; }
+
+/* Lien d'évitement : invisible jusqu'à ce que le clavier l'atteigne. */
+.skip-link { position: absolute; left: var(--space-4); top: var(--space-4); z-index: 10; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: var(--surface-raised); transform: translateY(-200%); }
+.skip-link:focus { transform: none; }

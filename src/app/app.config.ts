@@ -18,7 +18,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([requestContextInterceptor])
     ),
     provideClientHydration(withEventReplay()),
-    // Contenu Markdown (src/content/) rendu en HTML : FAQ, confidentialité
+    // Rendu du Markdown en HTML : pages Markdown de pages/(public)/ (FAQ, confidentialité)
     provideContent(withMarkdownRenderer()),
   ],
 };

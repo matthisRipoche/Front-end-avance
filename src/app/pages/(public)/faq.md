@@ -1,7 +1,17 @@
 ---
 title: Questions fréquentes
-description: Ce que fait Celeste Death Tracker, ce que le mod enregistre, et comment commencer.
+meta:
+  - name: description
+    content: Ce que fait Celeste Death Tracker, ce que le mod enregistre, et comment commencer.
+  - property: og:title
+    content: FAQ
+  - property: og:description
+    content: Ce que fait Celeste Death Tracker, ce que le mod enregistre, et comment commencer.
+  - property: og:type
+    content: website
 ---
+
+# Questions fréquentes
 
 ## À quoi sert le site ?
 

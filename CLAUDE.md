@@ -52,7 +52,9 @@ C'est la matière de l'oral. **À chaque étape** (décision, fonctionnalité, c
 ## Conventions de code
 
 - **Template et styles séparés de la logique** (choix de l'utilisateur, 2026-10-23) : chaque composant a son `.ts`, son `.html` et, s'il a des styles, son `.css`, côte à côte (`templateUrl`, `styleUrl`). Pas de `template:` ni de `styles:` en ligne.
-- Une page avec plusieurs fichiers vit dans son dossier : `src/app/pages/faq/index.page.ts` (+ `.html`, `.css`, données, test) donne `/faq`.
+- Une page avec plusieurs fichiers vit dans son dossier : `src/app/pages/design-system/index.page.ts` (+ `.html`, `.css`, données, test) donne `/design-system`.
+- Pages publiques dans `src/app/pages/(public)/` : la coque `(public).page.ts` (navigation, pied de page) les entoure, sans changer leur adresse.
+- **Pages Markdown** : `src/app/pages/(public)/faq.md` donne `/faq` (titre et balises meta dans le frontmatter). Piège d'Analog 2.9 : **tout `.md` de `src/content/` ou `src/app/pages/` devient une route** ; un texte chargé par `injectContent` crée donc aussi une page.
 - Composants partagés : `src/app/layout/` (coque des pages), `src/app/ui/` (composants du design system).
 
 ## Périmètre
