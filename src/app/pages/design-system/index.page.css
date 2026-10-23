@@ -1,0 +1,29 @@
+.page { max-width: 1200px; margin: 0 auto; padding: var(--space-4) max(16px, 4vw) var(--space-16); }
+.content { display: flex; flex-direction: column; gap: var(--space-16); padding-top: var(--space-12); }
+.intro { display: flex; flex-direction: column; gap: var(--space-4); }
+.intro__title { margin: 0; font-size: clamp(40px, 6vw, 64px); line-height: 1; }
+.intro__lead, .block__lead { margin: 0; max-width: 40em; color: var(--ink-muted); }
+.block { display: flex; flex-direction: column; gap: var(--space-6); }
+.block__title { margin: 0; font-size: clamp(28px, 3.4vw, 40px); }
+h3.t-heading { margin: 0; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); }
+.swatch { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.swatch__chip { height: 72px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: var(--space-2); }
+.swatch__value, .swatch__usage { color: var(--ink-muted); }
+.type-list { display: flex; flex-direction: column; }
+.type-row { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: var(--space-6); align-items: baseline; padding: var(--space-4) 0; border-top: 1px solid var(--border); }
+.type-row__meta { display: flex; flex-direction: column; gap: var(--space-1); }
+.type-row__sample { margin: 0; overflow-wrap: anywhere; }
+.measures, .components { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: var(--space-4); align-items: start; }
+.space-row { display: grid; grid-template-columns: 80px minmax(0, 1fr) 48px; gap: var(--space-3); align-items: center; }
+.space-row__bar { display: block; height: 12px; border-radius: 4px; background: var(--accent); }
+.radii { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.radius { display: flex; flex-direction: column; gap: var(--space-1); }
+.radius__shape { height: 64px; background: var(--surface-raised); border: 1.5px solid var(--border-strong); margin-bottom: var(--space-2); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.cdt-result svg { width: 14px; height: 14px; }
+@media (max-width: 560px) {
+  .type-row { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cdt-nav { flex-wrap: wrap; padding-block: var(--space-3); }
+}

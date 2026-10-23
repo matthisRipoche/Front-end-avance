@@ -1,0 +1,3 @@
+@for (cell of cells(); track $index) {
+  <span class="cdt-reach__cell" [class.cdt-reach__cell--done]="cell === 'done'" [class.cdt-reach__cell--fall]="cell === 'fall'"></span>
+}

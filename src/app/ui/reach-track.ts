@@ -13,11 +13,7 @@ type Cell = 'done' | 'fall' | 'todo' | 'deathless';
     '[style.--rooms]': 'rooms()',
     '[attr.aria-label]': 'label()',
   },
-  template: `
-    @for (cell of cells(); track $index) {
-      <span class="cdt-reach__cell" [class.cdt-reach__cell--done]="cell === 'done'" [class.cdt-reach__cell--fall]="cell === 'fall'"></span>
-    }
-  `,
+  templateUrl: './reach-track.html',
 })
 export class ReachTrack {
   readonly rooms = input.required<number>();

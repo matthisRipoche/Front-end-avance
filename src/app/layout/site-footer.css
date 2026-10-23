@@ -1,0 +1,4 @@
+.footer { border-top: 1px solid var(--border); }
+.footer__inner { max-width: 1200px; margin: 0 auto; padding: var(--space-6) max(16px, 4vw) var(--space-8); display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-4) var(--space-8); }
+.footer__note { margin: 0; max-width: 46em; color: var(--ink-muted); }
+.footer__links { display: flex; flex-wrap: wrap; gap: var(--space-6); }
