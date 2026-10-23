@@ -13,8 +13,9 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     analog({
-      // Contenu Markdown de src/content/ (FAQ, confidentialité). Le surligneur de code
-      // n'est pas utilisé, mais c'est cette option qui active le traitement des fichiers .md.
+      // Pages Markdown (FAQ, confidentialité). Le surligneur de code n'est pas utilisé,
+      // mais c'est cette option qui active le traitement des fichiers .md.
+      // Attention : tout .md de src/content/ ou de src/app/pages/ devient une route.
       content: { highlighter: 'prism' },
       // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
       // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
