@@ -145,7 +145,8 @@ cours, ne rien créer.
    - un paragraphe : ce que la branche apporte et pourquoi ;
    - `## Changements` : liste à tirets, un point par commit ou par intention ;
    - `## Vérifications` : build et tests lancés, et leur résultat ;
-   - s'il y a lieu, `## À savoir` : ce qui reste à faire, les choix à relire.
+   - s'il y a lieu, `## À savoir` : ce qui reste à faire, les choix à relire ;
+   - si la branche traite une issue : `Closes #<n>` en dernière ligne, pour la fermer à la fusion.
    Aucune signature (pas de « Generated with … »).
 3. Créer la PR vers `main`, **assignée à l'utilisateur** :
 
