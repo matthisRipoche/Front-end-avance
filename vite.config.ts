@@ -13,17 +13,17 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     analog({
-      // Pages Markdown (FAQ, confidentialité). Le surligneur de code n'est pas utilisé,
+      // Pages Markdown (FAQ, confidentialité, mod). Le surligneur de code n'est pas utilisé,
       // mais c'est cette option qui active le traitement des fichiers .md.
       // Attention : tout .md de src/content/ ou de src/app/pages/ devient une route.
       content: { highlighter: 'prism' },
-      // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
-      // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
       // Nitro sert comme route tout fichier de src/server/routes/ : sans cette règle,
       // health.spec.ts devenait une route /health.spec qui plantait en production.
       nitro: {
         ignore: ['**/*.spec.ts'],
       },
+      // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
+      // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
       prerender: {
         routes: async () => ['/', '/faq', '/mod', '/confidentialite'],
       },
