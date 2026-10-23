@@ -25,6 +25,10 @@ L'objectif n'est pas un code produit en boîte noire : l'organisation avec l'age
 - **Décisions structurantes** (architecture, découpage, dépendance ajoutée, contrat avec l'API) : l'agent présente les options et leurs compromis, recommande, et **attend la validation avant de coder**.
 - Ne pas sur-outiller : le temps va à l'apprentissage, pas à la configuration.
 
+## Backlog : issues GitHub
+
+Les tâches sont des issues GitHub, toutes assignées à l'utilisateur, rangées par jalon (« Étape 2 · Pages publiques » … « Étape 5 · Finitions et oral », « Bonus »). Labels de type (`front`, `serveur`, `outillage`, `design`, `doc`) et de mode mixte : `mode : à moi` (l'utilisateur écrit le cœur) ou `mode : agent` (l'agent implémente). Une branche traite une issue ; sa PR la ferme (`Closes #n`).
+
 ## Journal de l'IA : `docs/journal-ia.md`
 
 C'est la matière de l'oral. **À chaque étape** (décision, fonctionnalité, correction notable), l'agent ajoute une entrée : la demande, sa proposition, ce que l'utilisateur a validé ou corrigé, et pourquoi. Noter aussi les erreurs de l'agent et la façon dont elles ont été rattrapées.
