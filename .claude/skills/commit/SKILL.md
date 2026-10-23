@@ -133,3 +133,25 @@ en indiquant la branche et le nombre de commits en avance (`git status -sb`).
 - **Non** → ne rien pousser, et ne pas reposer la question avant le prochain commit.
 - Si aucun remote n'est configuré (`git remote -v` vide), le dire au lieu de proposer le push.
 - L'accord vaut pour ce push seulement.
+
+## 8. Ouvrir la pull request en fin de fonctionnalité
+
+Quand le push termine le sujet de la branche (fonctionnalité, correctif ou chantier fini, plus
+rien à y ajouter), créer la PR sans attendre qu'on le demande. Si la branche est encore en
+cours, ne rien créer.
+
+1. Vérifier qu'aucune PR n'existe déjà pour la branche : `gh pr list --head <branche>`.
+2. Écrire la description dans un fichier du scratchpad (outil Write, UTF-8) :
+   - un paragraphe : ce que la branche apporte et pourquoi ;
+   - `## Changements` : liste à tirets, un point par commit ou par intention ;
+   - `## Vérifications` : build et tests lancés, et leur résultat ;
+   - s'il y a lieu, `## À savoir` : ce qui reste à faire, les choix à relire.
+   Aucune signature (pas de « Generated with … »).
+3. Créer la PR vers `main`, **assignée à l'utilisateur** :
+
+   ```bash
+   gh pr create --base main --head <branche> --title "<titre Conventional Commits>" \
+     --body-file "<scratchpad>/pr.md" --assignee @me
+   ```
+
+4. Donner le lien de la PR et rappeler qu'elle se fusionne en **squash**.
