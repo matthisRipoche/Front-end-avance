@@ -3,8 +3,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { injectContent, MarkdownComponent } from '@analogjs/content';
 import { RouteMeta } from '@analogjs/router';
 
-import { SiteFooter } from '../../layout/site-footer';
-import { SiteHeader } from '../../layout/site-header';
 
 // FAQ : le texte vit dans src/content/faq.md ; la page le charge et l'affiche.
 // Générée au build (prérendu, voir vite.config.ts).
@@ -24,7 +22,7 @@ export const routeMeta = {
 @Component({
   selector: 'app-faq',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AsyncPipe, MarkdownComponent, SiteHeader, SiteFooter],
+  imports: [AsyncPipe, MarkdownComponent],
   templateUrl: './index.page.html',
   styleUrl: './index.page.css',
 })

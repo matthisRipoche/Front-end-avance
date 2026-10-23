@@ -2,11 +2,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RouteMeta } from '@analogjs/router';
 
-import { SiteFooter } from '../layout/site-footer';
-import { SiteHeader } from '../layout/site-header';
-import { ReachTrack } from '../ui/reach-track';
-import { ResultTag } from '../ui/result-tag';
-import { RoomBreakdown, RoomStops } from '../ui/room-breakdown';
+import { ReachTrack } from '../../ui/reach-track';
+import { ResultTag } from '../../ui/result-tag';
+import { RoomBreakdown, RoomStops } from '../../ui/room-breakdown';
 
 const DESCRIPTION =
   'Un mod Everest enregistre chaque tentative de deathless sur Celeste. Le site te montre, face par face, jusqu’où tu vas, où tu tombes, et si tu progresses.';
@@ -32,7 +30,7 @@ interface SampleAttempt {
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SiteHeader, SiteFooter, ReachTrack, ResultTag, RoomBreakdown],
+  imports: [RouterLink, ReachTrack, ResultTag, RoomBreakdown],
   templateUrl: './index.page.html',
   styleUrl: './index.page.css',
 })
