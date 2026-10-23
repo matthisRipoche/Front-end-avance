@@ -1,4 +1,38 @@
-html, body {
+/* Polices auto-hébergées : aucune requête vers un service tiers. */
+@import '@fontsource-variable/unbounded';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+@import './styles/tokens.css';
+@import './styles/components.css';
+
+html,
+body {
   display: block;
-  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
 }

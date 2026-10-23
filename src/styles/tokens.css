@@ -1,0 +1,153 @@
+/*
+ * Jetons du design system Celeste Death Tracker.
+ * Source : tokens.json du design system (Claude Design). Sombre d'abord ;
+ * le clair suit prefers-color-scheme, et data-theme sur <html> force l'un ou l'autre.
+ * Les composants ne lisent que ces variables, jamais une valeur en dur.
+ */
+:root {
+  --bg: #0e1216;
+  --surface: #161b21;
+  --surface-raised: #1e252d;
+  --border: #28313a;
+  --border-strong: #5c6977;
+  --ink: #edf1f4;
+  --ink-muted: #9aa6b1;
+  --accent: #39c6f4;
+  --on-accent: #04121a;
+  --accent-soft: #0f2d3a;
+  --success: #4fe08f;
+  --success-soft: #11301f;
+  --danger: #ff6b5e;
+  --danger-soft: #3a1714;
+  --gold: #ffcf3f;
+  --on-gold: #1d1500;
+  --gold-text: #ffcf3f;
+  --focus-ring: var(--accent);
+  --shadow-float: 0 16px 40px -12px rgba(0,0,0,0.6);
+  color-scheme: dark;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --font-display: 'Unbounded Variable', Unbounded, system-ui, sans-serif;
+  --font-sans: 'Geist Variable', Geist, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f5f7f9;
+    --surface: #ffffff;
+    --surface-raised: #eef2f5;
+    --border: #dfe5ea;
+    --border-strong: #7b8792;
+    --ink: #0f171e;
+    --ink-muted: #52606b;
+    --accent: #0477a8;
+    --on-accent: #ffffff;
+    --accent-soft: #e1f2fa;
+    --success: #1a7f45;
+    --success-soft: #e3f5ea;
+    --danger: #c9372c;
+    --danger-soft: #fbe7e5;
+    --gold: #f2b705;
+    --on-gold: #1d1500;
+    --gold-text: #8a6400;
+    --focus-ring: var(--accent);
+    --shadow-float: 0 16px 40px -16px rgba(15,23,30,0.25);
+    color-scheme: light;
+  }
+}
+
+:root[data-theme="light"] {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --surface-raised: #eef2f5;
+  --border: #dfe5ea;
+  --border-strong: #7b8792;
+  --ink: #0f171e;
+  --ink-muted: #52606b;
+  --accent: #0477a8;
+  --on-accent: #ffffff;
+  --accent-soft: #e1f2fa;
+  --success: #1a7f45;
+  --success-soft: #e3f5ea;
+  --danger: #c9372c;
+  --danger-soft: #fbe7e5;
+  --gold: #f2b705;
+  --on-gold: #1d1500;
+  --gold-text: #8a6400;
+  --focus-ring: var(--accent);
+  --shadow-float: 0 16px 40px -16px rgba(15,23,30,0.25);
+  color-scheme: light;
+}
+
+/* Styles de texte : une classe par style du design system. */
+.t-display-xl {
+  font-family: var(--font-display);
+  font-size: 64px;
+  line-height: 64px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.t-display {
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.t-stat {
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.t-title {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.t-heading {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+}
+.t-body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+.t-body-sm {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+.t-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.t-data {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
