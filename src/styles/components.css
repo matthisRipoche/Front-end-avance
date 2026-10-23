@@ -111,3 +111,15 @@
 .cdt-empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); padding: var(--space-8) var(--space-6); border-radius: var(--radius-lg); border: 1.5px dashed var(--border-strong); max-width: 520px; }
 .cdt-empty__title { margin: 0; font: 600 22px/28px var(--font-sans); }
 .cdt-empty__text { margin: 0; color: var(--ink-muted); }
+
+/* Texte long (Markdown rendu : FAQ, confidentialité) */
+.cdt-prose { max-width: 68ch; font: 400 17px/28px var(--font-sans); color: var(--ink); }
+.cdt-prose h2 { margin: var(--space-12) 0 var(--space-3); font: 600 22px/28px var(--font-sans); letter-spacing: -0.01em; text-wrap: balance; }
+.cdt-prose h2:first-child { margin-top: 0; }
+.cdt-prose h3 { margin: var(--space-8) 0 var(--space-2); font: 600 17px/24px var(--font-sans); }
+.cdt-prose p, .cdt-prose ul, .cdt-prose ol { margin: 0 0 var(--space-4); }
+.cdt-prose ul, .cdt-prose ol { padding-left: var(--space-6); }
+.cdt-prose li { margin-bottom: var(--space-2); }
+.cdt-prose strong { font-weight: 600; }
+.cdt-prose a { color: var(--accent); }
+.cdt-prose code { font: 500 0.9em var(--font-mono); background: var(--surface-raised); padding: 1px 6px; border-radius: 6px; }

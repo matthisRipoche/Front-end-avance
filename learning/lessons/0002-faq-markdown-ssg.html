@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leçon 2 · Une page en Markdown, générée au build</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main>
+<p class="meta">Leçon 2 · environ 10 minutes de lecture, puis l'exercice dans le vrai code · issue #9</p>
+<h1>Une page en Markdown, générée au build</h1>
+<p class="lead">À la fin, ta FAQ existe sous forme de fichier HTML dans <code>dist/</code>, fabriqué une seule fois pendant le build à partir d'un texte en Markdown. Et tu sais dire pourquoi c'est le bon choix pour cette page.</p>
+
+<h2>0. Avant de lire : rappelle-toi</h2>
+<p>Réponds de mémoire, sans relire la <a href="0001-ce-que-renvoie-le-serveur.html">leçon 1</a>. Chercher la réponse dans sa tête est ce qui la fixe.</p>
+
+<div class="quiz" data-explain="Au moment du build, il n'y a ni visiteur ni cookie : impossible de savoir à qui appartiennent les données.">
+<p class="quiz__q">Pourquoi le tableau de bord ne peut-il pas être généré au build ?</p>
+<button>Le build ne sait pas compiler Angular</button>
+<button data-correct>Le build ne connaît ni visiteur ni cookie</button>
+<button>Le build interdit les appels à l'API</button>
+<p class="quiz__feedback" aria-live="polite"></p>
+</div>
+
+<div class="quiz" data-explain="Le texte est le même pour tous et ne change qu'à chaque modification : un fichier prêt, servi tel quel, sans calcul par visite.">
+<p class="quiz__q">Quel mode de rendu convient le mieux à la FAQ ?</p>
+<button>SSR, pour avoir toujours la dernière version</button>
+<button>Rendu navigateur, pour alléger le serveur Node</button>
+<button data-correct>SSG, car le texte est identique pour tous</button>
+<p class="quiz__feedback" aria-live="polite"></p>
+</div>
+
+<h2>1. Le chemin du texte</h2>
+<ol class="flow">
+<li>Tu écris <code>src/content/faq.md</code> : un en-tête entre deux lignes <code>---</code> (le <em>frontmatter</em> : <code>title</code>, <code>description</code>), puis le texte en Markdown.</li>
+<li>Pendant le build, le plugin de contenu d'Analog lit le fichier et sépare l'en-tête du corps.</li>
+<li>Ta page charge ce fichier et l'affiche : le corps est converti de Markdown en HTML.</li>
+<li>Le prérendu exécute ta page une fois et écrit le résultat dans <code>dist/analog/public/faq/index.html</code>.</li>
+<li>En production, Nitro sert ce fichier tel quel, comme pour l'accueil.</li>
+</ol>
+<p>Sources : <a href="https://analogjs.org/docs/features/routing/content">Content Routes</a> pour le chargement et l'affichage, <a href="https://analogjs.org/docs/features/server/static-site-generation">Static Site Generation</a> pour le prérendu.</p>
+
+<div class="box"><p><strong>Pourquoi du Markdown ?</strong> Le texte de la FAQ change pour des raisons de contenu, pas de code. En Markdown, on le relit et on le corrige sans toucher à Angular. La page, elle, ne fait que charger et afficher.</p></div>
+
+<h2>2. Ce qui est déjà prêt</h2>
+<table>
+<tr><th>Fichier</th><th>Préparé par l'agent</th></tr>
+<tr><td><code>src/content/faq.md</code></td><td>Les 8 questions, à relire et corriger si besoin</td></tr>
+<tr><td><code>src/app/app.config.ts</code></td><td><code>provideContent(withMarkdownRenderer())</code> : le moteur qui transforme le Markdown en HTML</td></tr>
+<tr><td><code>vite.config.ts</code></td><td>L'option <code>content</code> du plugin, qui active la lecture des fichiers <code>.md</code></td></tr>
+<tr><td><code>src/styles/components.css</code></td><td>La classe <code>cdt-prose</code>, pour le texte long</td></tr>
+<tr><td><code>src/app/pages/faq.page.ts</code></td><td>La coque de la page et les <code>TODO</code></td></tr>
+</table>
+
+<h2>3. À toi : l'exercice</h2>
+<p>Quatre <code>TODO</code>, dans cet ordre :</p>
+<ol>
+<li><code>faq.page.ts</code>, TODO 1 : titre et description de la page.</li>
+<li><code>faq.page.ts</code>, TODO 2 : charger <code>src/content/faq.md</code>.</li>
+<li><code>faq.page.ts</code>, TODO 3 : afficher le titre et le corps rendu.</li>
+<li><code>vite.config.ts</code> : faire générer <code>/faq</code> au build.</li>
+</ol>
+<p>Chaque <code>TODO</code> dit où chercher, pas quoi écrire. Si tu bloques plus de quelques minutes, demande un indice à l'agent plutôt que la réponse.</p>
+
+<h3>Comment savoir que c'est fini</h3>
+<pre><code>npm run dev      # puis http://localhost:5173/faq : la page s'affiche
+npm run build
+ls dist/analog/public                          # un dossier faq/ ?
+grep -c "&lt;h2" dist/analog/public/faq/index.html  # 8 questions</code></pre>
+<details><summary>Et si l'accueil disparaît de <code>dist/</code> ?</summary>
+<p>Relis la section « surprise » de la <a href="0001-ce-que-renvoie-le-serveur.html">leçon 1</a> : pourquoi l'accueil était-il prérendu sans que tu le demandes ?</p>
+</details>
+
+<div class="box"><p><strong>Une question ?</strong> Pose-la à l'agent, avant, pendant ou après l'exercice. Quand tu as fini, dis-le : il relira ton code et t'expliquera ce qui ne va pas, sans le corriger à ta place.</p></div>
+
+<h2>Pour aller plus loin</h2>
+<p><strong>Source principale :</strong> <a href="https://analogjs.org/docs/features/routing/content">Content Routes, documentation d'Analog</a>. C'est la page dont tu as besoin pour les TODO 2 et 3.</p>
+
+<div class="footer-nav">
+Précédente : <a href="0001-ce-que-renvoie-le-serveur.html">1 · Ce que renvoie le serveur quand on demande /</a> · Fiche : <a href="../reference/pages-et-rendu.html">Pages et rendu</a>
+</div>
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
