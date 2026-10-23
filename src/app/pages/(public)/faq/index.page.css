@@ -1,3 +1,0 @@
-:host { display: block; }
-.faq { max-width: 1200px; margin: 0 auto; padding: var(--space-16) max(16px, 4vw); display: flex; flex-direction: column; gap: var(--space-8); }
-.faq__title { margin: 0; font-size: clamp(32px, 4.4vw, 48px); line-height: 1.05; }
