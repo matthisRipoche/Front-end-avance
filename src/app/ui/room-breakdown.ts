@@ -10,15 +10,7 @@ export interface RoomStops {
   selector: 'cdt-room-breakdown',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'cdt-rooms' },
-  template: `
-    @for (room of rooms(); track room.id) {
-      <div class="cdt-rooms__row" [class.cdt-rooms__row--worst]="room.stops === max()">
-        <span class="cdt-rooms__id">{{ room.id }}</span>
-        <span class="cdt-rooms__track"><span class="cdt-rooms__bar" [style.width.%]="(room.stops / max()) * 100"></span></span>
-        <span class="cdt-rooms__count">{{ room.stops }}</span>
-      </div>
-    }
-  `,
+  templateUrl: './room-breakdown.html',
 })
 export class RoomBreakdown {
   readonly rooms = input.required<RoomStops[]>();

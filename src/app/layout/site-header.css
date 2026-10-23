@@ -1,0 +1,5 @@
+.header { max-width: 1200px; margin: 0 auto; padding: var(--space-4) max(16px, 4vw) 0; }
+.header__actions { gap: var(--space-2); }
+@media (max-width: 560px) {
+  .cdt-nav { flex-wrap: wrap; padding-block: var(--space-3); }
+}

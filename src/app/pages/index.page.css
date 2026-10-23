@@ -1,0 +1,36 @@
+:host { display: block; }
+.wrap { max-width: 1200px; margin: 0 auto; padding-inline: max(16px, 4vw); }
+.muted { color: var(--ink-muted); }
+h2, h3, p, dl, dd { margin: 0; }
+
+.hero { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-12); padding-block: var(--space-16); }
+.hero__text { flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: var(--space-6); }
+.hero__title { margin: 0; font-size: clamp(40px, 5.6vw, 64px); line-height: 1.02; text-wrap: balance; }
+.hero__lead { max-width: 32em; font-size: 19px; line-height: 28px; color: var(--ink-muted); }
+
+.sample { flex: 1 1 500px; gap: var(--space-6); }
+.sample__name { display: flex; flex-direction: column; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.attempts { display: flex; flex-direction: column; gap: 14px; }
+.attempt { display: grid; grid-template-columns: 150px minmax(0, 1fr) 52px; gap: 14px; align-items: center; }
+.attempt__time { text-align: right; }
+
+.notice { max-width: none; }
+
+.questions { display: flex; flex-direction: column; gap: var(--space-8); padding-block: var(--space-16); }
+.section-title { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; text-wrap: balance; }
+.questions__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: var(--space-4); }
+.question__demo { margin-top: auto; }
+
+.steps { display: flex; flex-wrap: wrap; gap: var(--space-8) var(--space-12); padding-bottom: var(--space-16); }
+.steps__title { flex: 1 1 260px; }
+.steps__list { flex: 2 1 520px; min-width: 0; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+.step { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); border-radius: var(--radius-md); background: var(--surface); }
+.step__num { background: var(--accent-soft); color: var(--accent); flex: none; }
+
+@media (max-width: 560px) {
+  .hero { padding-block: var(--space-8); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .attempt { grid-template-columns: minmax(0, 1fr) 52px; }
+  .attempt cdt-reach-track { grid-column: 1 / -1; grid-row: 2; }
+}

@@ -1,0 +1,111 @@
+<app-site-header />
+
+<main>
+  <section class="wrap hero">
+    <div class="hero__text">
+      <h1 class="t-display-xl hero__title">Ton deathless, tentative par tentative.</h1>
+      <p class="hero__lead">
+        Un mod Everest enregistre chaque tentative pendant que tu joues. Le site te montre, face par face,
+        jusqu'où tu vas, où tu tombes, et si tu progresses.
+      </p>
+      <div class="cdt-row">
+        <a class="cdt-btn cdt-btn--primary" routerLink="/mod">Installer le mod</a>
+        <a class="cdt-btn cdt-btn--secondary" routerLink="/register">Créer un compte</a>
+      </div>
+    </div>
+
+    <section class="cdt-panel sample" aria-labelledby="exemple-titre">
+      <div class="sample__head">
+        <div class="cdt-row">
+          <span class="cdt-side cdt-side--lg" aria-label="Face B">B</span>
+          <div class="sample__name">
+            <h2 class="t-heading" id="exemple-titre">Forsaken City</h2>
+            <span class="t-body-sm muted">exemple, données fictives</span>
+          </div>
+        </div>
+      </div>
+
+      <dl class="stats">
+        <div class="cdt-stat"><dt class="cdt-stat__label">Tentatives</dt><dd class="cdt-stat__value">120</dd></div>
+        <div class="cdt-stat"><dt class="cdt-stat__label">Plus loin</dt><dd class="cdt-stat__value">b-11</dd></div>
+        <div class="cdt-stat">
+          <dt class="cdt-stat__label">Chute moyenne</dt>
+          <dd class="cdt-stat__value">b-05</dd>
+          <dd class="cdt-stat__note cdt-stat__note--up">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4" /></svg>
+            +2 rooms
+          </dd>
+        </div>
+      </dl>
+
+      <div class="attempts">
+        <h3 class="t-label muted">Dernières tentatives</h3>
+        @for (attempt of attempts; track $index) {
+          <div class="attempt">
+            @if (attempt.fallAt === null) {
+              <cdt-result-tag kind="deathless">Deathless</cdt-result-tag>
+            } @else {
+              <cdt-result-tag kind="fall">Chute en {{ rooms[attempt.fallAt] }}</cdt-result-tag>
+            }
+            <cdt-reach-track [rooms]="rooms.length" [fallAt]="attempt.fallAt" [fallRoom]="attempt.fallAt === null ? '' : rooms[attempt.fallAt]" />
+            <span class="t-data muted attempt__time">{{ attempt.time }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  </section>
+
+  <div class="wrap">
+    <div class="cdt-alert notice" role="status">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="8" /><path d="M10 9v5M10 6.2v.1" /></svg>
+      <div>
+        <p class="cdt-alert__title">Le mod n'est pas encore publié</p>
+        <p class="cdt-alert__text">Il s'installe à la main dans Everest : <a routerLink="/mod">la page du mod</a> explique comment.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="wrap questions" aria-labelledby="questions-titre">
+    <h2 class="t-display section-title" id="questions-titre">Trois questions après chaque session</h2>
+    <div class="questions__grid">
+      <section class="cdt-panel">
+        <h3 class="t-title">Jusqu'où j'arrive ?</h3>
+        <p class="muted">Ta meilleure tentative sur la face, room par room.</p>
+        <div class="question__demo">
+          <cdt-reach-track [rooms]="rooms.length" [fallAt]="10" [fallRoom]="rooms[10]" />
+          <div class="cdt-reach__legend"><span>b-00</span><span>chute en b-10</span></div>
+        </div>
+      </section>
+
+      <section class="cdt-panel">
+        <h3 class="t-title">Où ça casse ?</h3>
+        <p class="muted">Les rooms qui arrêtent le plus tes tentatives.</p>
+        <cdt-room-breakdown class="question__demo" [rooms]="worstRooms" />
+      </section>
+
+      <section class="cdt-panel">
+        <h3 class="t-title">Est-ce que je progresse ?</h3>
+        <p class="muted">Tes dernières tentatives comparées aux premières.</p>
+        <div class="cdt-stat question__demo">
+          <span class="cdt-stat__label">Chute moyenne, 7 derniers jours</span>
+          <span class="cdt-stat__value">b-03 → b-05</span>
+          <span class="cdt-stat__note cdt-stat__note--up">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4" /></svg>
+            +2 rooms en moyenne
+          </span>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="wrap steps" aria-labelledby="etapes-titre">
+    <h2 class="t-display section-title steps__title" id="etapes-titre">Mise en route</h2>
+    <ol class="steps__list">
+      <li class="step"><span class="cdt-side step__num" aria-hidden="true">1</span><span><strong>Installe le mod</strong> dans Everest, à la main pour l'instant.</span></li>
+      <li class="step"><span class="cdt-side step__num" aria-hidden="true">2</span><span><strong>Associe ton jeu</strong> à ton compte, une seule fois.</span></li>
+      <li class="step"><span class="cdt-side step__num" aria-hidden="true">3</span><span><strong>Joue.</strong> Chaque tentative arrive sur le site, rangée par face.</span></li>
+    </ol>
+  </section>
+</main>
+
+<app-site-footer />
