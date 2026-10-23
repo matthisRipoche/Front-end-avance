@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
       // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
       // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
       prerender: {
-        routes: async () => ['/', '/faq'],
+        routes: async () => ['/', '/faq', '/confidentialite'],
       },
     }),
   ],
