@@ -49,6 +49,12 @@ C'est la matière de l'oral. **À chaque étape** (décision, fonctionnalité, c
 | Tests | `npx vitest run` |
 | Lancer le build | `npm run preview` (`node dist/analog/server/index.mjs`) |
 
+## Conventions de code
+
+- **Template et styles séparés de la logique** (choix de l'utilisateur, 2026-10-23) : chaque composant a son `.ts`, son `.html` et, s'il a des styles, son `.css`, côte à côte (`templateUrl`, `styleUrl`). Pas de `template:` ni de `styles:` en ligne.
+- Une page avec plusieurs fichiers vit dans son dossier : `src/app/pages/faq/index.page.ts` (+ `.html`, `.css`, données, test) donne `/faq`.
+- Composants partagés : `src/app/layout/` (coque des pages), `src/app/ui/` (composants du design system).
+
 ## Périmètre
 
 Un nouveau front pour CelesteDeathTracker, en partie neuf. Ce n'est pas une copie du site Angular actuel (`web/` du dépôt d'origine).
