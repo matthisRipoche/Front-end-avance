@@ -123,3 +123,5 @@
 :is(.cdt-prose, .analog-markdown-route) strong { font-weight: 600; }
 :is(.cdt-prose, .analog-markdown-route) a { color: var(--accent); }
 :is(.cdt-prose, .analog-markdown-route) code { font: 500 0.9em var(--font-mono); background: var(--surface-raised); padding: 1px 6px; border-radius: 6px; }
+:is(.cdt-prose, .analog-markdown-route) pre { margin: 0 0 var(--space-4); padding: var(--space-3) var(--space-4); overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+:is(.cdt-prose, .analog-markdown-route) pre code { padding: 0; background: none; font-size: 14px; line-height: 22px; }

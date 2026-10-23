@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => ({
         ignore: ['**/*.spec.ts'],
       },
       prerender: {
-        routes: async () => ['/', '/faq', '/confidentialite'],
+        routes: async () => ['/', '/faq', '/mod', '/confidentialite'],
       },
     }),
   ],
