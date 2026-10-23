@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { DOCUMENT } from '@angular/core';
 
-import DesignSystemPage from './design-system.page';
+import DesignSystemPage from './index.page';
 
 describe('Page /design-system', () => {
   beforeEach(async () => {

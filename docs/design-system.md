@@ -11,7 +11,7 @@ Remplace le design system « Topo » du site actuel. Références : Strava et Li
 | Jetons en CSS | `src/styles/tokens.css` |
 | Composants en CSS (classes `.cdt-*`) | `src/styles/components.css` |
 | Polices, base de page | `src/styles.css` |
-| Vitrine en ligne | `/design-system` (`src/app/pages/design-system.page.ts`) |
+| Vitrine en ligne | `/design-system` (`src/app/pages/design-system/index.page.ts`) |
 
 `tokens.css` est généré à partir du `tokens.json` du design system. On change une valeur dans le design system, puis on la reporte ici, jamais l'inverse.
 

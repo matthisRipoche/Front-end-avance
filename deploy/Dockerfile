@@ -1,3 +1,7 @@
+# Image de production. Construite depuis la racine du dépôt :
+#   docker build -f deploy/Dockerfile .
+# Fichiers exclus du contexte : deploy/Dockerfile.dockerignore (lu par BuildKit à côté du Dockerfile).
+
 # ---- Étape 1 : build Analog (client, SSR, prérendu, serveur Nitro) ----
 FROM node:24-alpine AS build
 WORKDIR /build

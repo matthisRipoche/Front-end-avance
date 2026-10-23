@@ -7,7 +7,7 @@ import {
   SAMPLE_ROOMS,
   SPACING,
   TYPE_STYLES,
-} from '../design-system/design-system.data';
+} from './design-system.data';
 
 export const routeMeta: RouteMeta = {
   title: 'Design system · Celeste Death Tracker',
