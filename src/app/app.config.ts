@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideFileRouter, requestContextInterceptor } from '@analogjs/router';
+import { provideContent, withMarkdownRenderer } from '@analogjs/content';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,5 +18,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([requestContextInterceptor])
     ),
     provideClientHydration(withEventReplay()),
+    // Contenu Markdown (src/content/) rendu en HTML : FAQ, confidentialité
+    provideContent(withMarkdownRenderer()),
   ],
 };
