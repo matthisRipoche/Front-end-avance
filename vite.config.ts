@@ -19,6 +19,11 @@ export default defineConfig(({ mode }) => ({
       content: { highlighter: 'prism' },
       // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
       // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
+      // Nitro sert comme route tout fichier de src/server/routes/ : sans cette règle,
+      // health.spec.ts devenait une route /health.spec qui plantait en production.
+      nitro: {
+        ignore: ['**/*.spec.ts'],
+      },
       prerender: {
         routes: async () => ['/', '/faq'],
       },
