@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(.claude/skills/impeccable/scripts/impeccable:*)",
+      "Bash(./.claude/skills/impeccable/scripts/impeccable:*)",
+      "Bash(/home/matthis/projects/front-end-avance/.claude/skills/impeccable/scripts/impeccable:*)",
+      "Bash(npx impeccable:*)",
+      "Bash(sh .claude/skills/impeccable/scripts/impeccable:*)"
+    ]
+  }
+}
