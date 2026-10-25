@@ -1,0 +1,203 @@
+<div class="wrap page">
+  <!-- En-tête : promesse, actions, image principale -->
+  <section class="hero">
+    <div class="hero__text">
+      <span class="cdt-chip hero__kicker">Mod pour Everest</span>
+      <h1 class="t-display-xl hero__title">Chaque tentative, enregistrée pendant que tu joues.</h1>
+      <p class="hero__lead">
+        Celeste Death Tracker est un mod pour <a href="https://everestapi.github.io/">Everest</a>, le chargeur de mods
+        de Celeste. Il envoie chaque tentative au site, qui te montre jusqu'où tu vas sur chaque face.
+      </p>
+      <div class="cdt-row">
+        <a class="cdt-btn cdt-btn--primary" href="#installer">Installer le mod</a>
+        <a class="cdt-btn cdt-btn--secondary" href="https://github.com/matthisRipoche/CelesteDeathTracker">Voir le code sur GitHub</a>
+      </div>
+      <div class="cdt-alert" role="status">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="8" /><path d="M10 9v5M10 6.2v.1" /></svg>
+        <div>
+          <p class="cdt-alert__title">Pas encore publié</p>
+          <p class="cdt-alert__text">Ni sur GameBanana ni dans l'installeur d'Everest : pour l'instant, il se compile et s'installe à la main.</p>
+        </div>
+      </div>
+    </div>
+
+    <figure class="cdt-slot cdt-slot--hero hero__image">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="M21 16l-5-5-9 9" /></svg>
+      <figcaption class="cdt-slot__title">Capture du jeu : le menu du mod</figcaption>
+      <span class="cdt-slot__hint">Mod Options, sur l'entrée CelesteDeathTracker.</span>
+      <span class="cdt-slot__size">16:10 · 1600 × 1000</span>
+    </figure>
+  </section>
+
+  <!-- Ce que fait le mod -->
+  <section class="section" aria-labelledby="fait-titre">
+    <h2 class="t-display section__title" id="fait-titre">Ce que fait le mod</h2>
+    <div class="facts">
+      <section class="cdt-panel">
+        <svg class="facts__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3h9l3 3v11H4z" /><path d="M7 9h6M7 12h6M7 15h3" /></svg>
+        <h3 class="cdt-panel__title">Il enregistre</h3>
+        <p class="muted">Une tentative va de ton entrée dans une face à ta sortie. Le mod note :</p>
+        <ul class="list">
+          <li><strong>la map, la face</strong> (A, B ou C) et l'emplacement de sauvegarde ;</li>
+          <li><strong>les rooms traversées</strong>, dans l'ordre ;</li>
+          <li><strong>chaque mort</strong> : la room, la position dans la room et le temps de la partie ;</li>
+          <li><strong>la fin de la tentative</strong> : face terminée, chapitre recommencé, abandon, retour au menu, jeu fermé…</li>
+        </ul>
+      </section>
+      <section class="cdt-panel">
+        <svg class="facts__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2l6 3v5c0 4-3 6.5-6 8-3-1.5-6-4-6-8V5z" /><path d="M7.5 10l2 2 3.5-4" /></svg>
+        <h3 class="cdt-panel__title">Il n'enregistre rien d'autre</h3>
+        <ul class="list">
+          <li>ni fichiers, ni autres jeux, ni informations sur ton ordinateur ;</li>
+          <li><strong>rien du tout</strong> tant que le jeu n'est pas associé à ton compte ;</li>
+          <li>rien non plus si tu désactives l'envoi dans le menu du mod.</li>
+        </ul>
+        <a class="facts__link" routerLink="/confidentialite">Le détail des données</a>
+      </section>
+      <section class="cdt-panel">
+        <svg class="facts__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2L4 11h5l-1 7 7-9h-5z" /></svg>
+        <h3 class="cdt-panel__title">Il ne ralentit pas le jeu</h3>
+        <p class="muted">Le mod n'attend jamais le serveur. Si le site ne répond pas, tu continues à jouer normalement.</p>
+      </section>
+    </div>
+  </section>
+
+  <!-- Installer -->
+  <section class="section" id="installer" aria-labelledby="installer-titre">
+    <div class="section__head">
+      <h2 class="t-display section__title" id="installer-titre">Installer le mod</h2>
+      <p class="section__lead">Quatre étapes, une seule fois. Il te faut :</p>
+      <ul class="cdt-chips prereqs">
+        <li class="cdt-chip">Celeste avec <a href="https://everestapi.github.io/">Everest</a></li>
+        <li class="cdt-chip">le <a href="https://dotnet.microsoft.com/download/dotnet/8.0">SDK .NET 8</a>, pour compiler</li>
+        <li class="cdt-chip">Git, ou le dépôt en ZIP</li>
+      </ul>
+    </div>
+
+    <ol class="install">
+      <li class="install__step">
+        <div class="install__text">
+          <span class="num" aria-hidden="true">1</span>
+          <div class="install__body">
+            <h3 class="t-title">Récupère le code</h3>
+            <p class="muted">Clone le dépôt <a href="https://github.com/matthisRipoche/CelesteDeathTracker">CelesteDeathTracker</a>, ou télécharge-le en ZIP.</p>
+            <pre class="code"><code>git clone https://github.com/matthisRipoche/CelesteDeathTracker.git
+cd CelesteDeathTracker</code></pre>
+          </div>
+        </div>
+        <figure class="cdt-slot install__image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="M21 16l-5-5-9 9" /></svg>
+          <figcaption class="cdt-slot__title">Capture : le dépôt sur GitHub</figcaption>
+          <span class="cdt-slot__hint">Le bouton Code ouvert, avec l'adresse à copier.</span>
+          <span class="cdt-slot__size">16:9 · 1280 × 720</span>
+        </figure>
+      </li>
+
+      <li class="install__step">
+        <div class="install__text">
+          <span class="num" aria-hidden="true">2</span>
+          <div class="install__body">
+            <h3 class="t-title">Compile le mod</h3>
+            <p class="muted">Indique le dossier de Celeste, celui qui contient <code>Celeste.dll</code>.</p>
+            <pre class="code"><code>dotnet build CelesteDeathTracker -c Release -p:CELESTE_PATH="C:\chemin\vers\Celeste"</code></pre>
+          </div>
+        </div>
+        <figure class="cdt-slot install__image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M7 9l3 3-3 3M12 15h5" /></svg>
+          <figcaption class="cdt-slot__title">Capture : le terminal après la compilation</figcaption>
+          <span class="cdt-slot__hint">La ligne « Build succeeded » bien visible.</span>
+          <span class="cdt-slot__size">16:9 · 1280 × 720</span>
+        </figure>
+      </li>
+
+      <li class="install__step">
+        <div class="install__text">
+          <span class="num" aria-hidden="true">3</span>
+          <div class="install__body">
+            <h3 class="t-title">Copie les deux fichiers dans Mods</h3>
+            <p class="muted">Ferme Celeste, crée le dossier <code>Mods/CelesteDeathTracker/</code> dans le dossier du jeu, puis copie-y :</p>
+            <ul class="list">
+              <li><code>CelesteDeathTracker.dll</code>, produit par la compilation dans <code>CelesteDeathTracker/bin/Release/net8.0/</code> ;</li>
+              <li><code>everest.yaml</code>, qui se trouve dans <code>CelesteDeathTracker/</code>.</li>
+            </ul>
+          </div>
+        </div>
+        <figure class="cdt-slot install__image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6a2 2 0 012-2h4l2 2h8a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" /></svg>
+          <figcaption class="cdt-slot__title">Capture : le dossier Mods/CelesteDeathTracker</figcaption>
+          <span class="cdt-slot__hint">L'explorateur de fichiers avec les deux fichiers dedans.</span>
+          <span class="cdt-slot__size">16:9 · 1280 × 720</span>
+        </figure>
+      </li>
+
+      <li class="install__step">
+        <div class="install__text">
+          <span class="num" aria-hidden="true">4</span>
+          <div class="install__body">
+            <h3 class="t-title">Lance Celeste</h3>
+            <p class="muted">Le mod apparaît dans <em>Mod Options</em>, sous le nom CelesteDeathTracker.</p>
+          </div>
+        </div>
+        <figure class="cdt-slot install__image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="M21 16l-5-5-9 9" /></svg>
+          <figcaption class="cdt-slot__title">Capture du jeu : Mod Options</figcaption>
+          <span class="cdt-slot__hint">La liste des mods, CelesteDeathTracker sélectionné.</span>
+          <span class="cdt-slot__size">16:9 · 1280 × 720</span>
+        </figure>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Associer -->
+  <section class="section" aria-labelledby="associer-titre">
+    <div class="section__head">
+      <h2 class="t-display section__title" id="associer-titre">Associer le jeu à ton compte</h2>
+      <p class="section__lead">Aucun mot de passe ni aucune clé à copier dans le jeu : un code suffit.</p>
+    </div>
+    <ol class="pairing">
+      <li class="pairing__step">
+        <figure class="cdt-slot cdt-slot--photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="M21 16l-5-5-9 9" /></svg>
+          <figcaption class="cdt-slot__title">Capture du jeu : le bandeau du code</figcaption>
+          <span class="cdt-slot__size">4:3 · 1200 × 900</span>
+        </figure>
+        <div class="pairing__text">
+          <span class="num num--sm" aria-hidden="true">1</span>
+          <p class="muted"><strong>Au premier lancement</strong>, le jeu affiche un code et ouvre la page d'association du site dans ton navigateur.</p>
+        </div>
+      </li>
+      <li class="pairing__step">
+        <figure class="cdt-slot cdt-slot--photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M3 9h18M7 14h6" /></svg>
+          <figcaption class="cdt-slot__title">Capture du site : la page d'association</figcaption>
+          <span class="cdt-slot__size">4:3 · 1200 × 900</span>
+        </figure>
+        <div class="pairing__text">
+          <span class="num num--sm" aria-hidden="true">2</span>
+          <p class="muted"><strong>Connecte-toi</strong>, puis saisis le code.</p>
+        </div>
+      </li>
+      <li class="pairing__step">
+        <figure class="cdt-slot cdt-slot--photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="M21 16l-5-5-9 9" /></svg>
+          <figcaption class="cdt-slot__title">Capture du jeu : le bandeau a disparu</figcaption>
+          <span class="cdt-slot__size">4:3 · 1200 × 900</span>
+        </figure>
+        <div class="pairing__text">
+          <span class="num num--sm" aria-hidden="true">3</span>
+          <p class="muted"><strong>C'est associé.</strong> Tes tentatives arrivent sur le site à partir de ce moment.</p>
+        </div>
+      </li>
+    </ol>
+    <p class="muted">Pour associer le jeu à un autre compte : <em>Associer ce jeu à un autre compte</em>, dans le menu du mod.</p>
+  </section>
+
+  <!-- Désinstaller -->
+  <section class="cdt-panel uninstall" aria-labelledby="desinstaller-titre">
+    <div class="uninstall__text">
+      <h2 class="cdt-panel__title" id="desinstaller-titre">Désinstaller</h2>
+      <p class="muted">Supprime le dossier <code>Mods/CelesteDeathTracker/</code>. Les tentatives déjà envoyées restent sur ton compte.</p>
+    </div>
+    <a class="cdt-btn cdt-btn--secondary" routerLink="/confidentialite">Faire supprimer mes données</a>
+  </section>
+</div>
