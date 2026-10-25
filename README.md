@@ -20,6 +20,8 @@ Node 24 est requis.
 | Build : client, rendu serveur, prérendu, serveur Nitro (`dist/analog/`) | `npm run build` |
 | Lancer le build | `npm run preview` |
 
+Le serveur Node joint l'API Spring à `http://localhost:5000` par défaut. Pour en viser une autre, définir `NITRO_API_URL` (par exemple `NITRO_API_URL=https://celeste.matthisripoche.com npm run dev`).
+
 ## Organisation du dépôt
 
 | Dossier ou fichier | Contenu |

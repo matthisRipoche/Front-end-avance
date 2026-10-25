@@ -120,6 +120,8 @@ jobs:
           DOMAIN: ${{ secrets.DOMAIN }}
           IMAGE: ${{ needs.image.outputs.image }}
           TAG: ${{ needs.image.outputs.tag }}
+          # Adresse publique de l'API Spring : variable GitHub API_URL, sinon celle du site actuel
+          API_URL: ${{ vars.API_URL || 'https://celeste.matthisripoche.com' }}
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -130,7 +132,7 @@ jobs:
              docker login ghcr.io -u '$GHCR_USER' --password-stdin
              # Le .env est réécrit à chaque déploiement à partir de GitHub, seule source de vérité.
              # Il mémorise aussi la version déployée : un 'docker compose up' manuel reprendra la même.
-             printf 'DOMAIN=%s\nIMAGE=%s\nTAG=%s\n' '$DOMAIN' '$IMAGE' '$TAG' > .env
+             printf 'DOMAIN=%s\nIMAGE=%s\nTAG=%s\nAPI_URL=%s\n' '$DOMAIN' '$IMAGE' '$TAG' '$API_URL' > .env
              docker compose -f docker-compose.prod.yml pull
              docker compose -f docker-compose.prod.yml up -d --remove-orphans
              docker logout ghcr.io

@@ -6,7 +6,7 @@
 # Un seul conteneur, sur le réseau de Traefik. Aucun port n'est publié sur l'hôte.
 #
 # Variables (fichier .env sur le serveur, jamais dans Git) :
-#   DOMAIN, IMAGE, TAG                                                (obligatoires)
+#   DOMAIN, IMAGE, TAG, API_URL                                       (obligatoires)
 #   TRAEFIK_NETWORK, TRAEFIK_ENTRYPOINT, TRAEFIK_CERTRESOLVER         (défauts = ce Traefik)
 
 services:
@@ -14,8 +14,9 @@ services:
     image: ${IMAGE:?définir IMAGE dans .env}:${TAG:-latest}
     restart: unless-stopped
     environment:
-      # Adresse de l'API Spring, utilisée par le serveur Node (relais et couche serveur)
-      API_URL: ${API_URL:-https://celeste.matthisripoche.com}
+      # Adresse publique de l'API Spring, lue par le serveur Node au démarrage (relais et
+      # couche serveur). NITRO_API_URL remplace runtimeConfig.apiUrl de vite.config.ts.
+      NITRO_API_URL: ${API_URL:?définir API_URL dans .env}
     networks:
       - traefik
     labels:

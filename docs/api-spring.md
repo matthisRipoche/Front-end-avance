@@ -1,6 +1,8 @@
 # API Spring consommée par le front
 
 Production : `https://celeste.matthisripoche.com`. En local, l'API tourne sur le port 5000.
+
+Le serveur Node ne l'écrit nulle part en dur : il lit `runtimeConfig.apiUrl` (`http://localhost:5000` par défaut, `NITRO_API_URL` en production) et construit les adresses avec `springUrl()` (`src/server/utils/spring.ts`).
 Code source : `~/projects/CelesteDeathTracker/api/`. Ce projet **ne modifie pas** l'API.
 
 ## Authentification du navigateur
@@ -30,7 +32,7 @@ Code source : `~/projects/CelesteDeathTracker/api/`. Ce projet **ne modifie pas*
 
 ### `GET /api/summary`
 
-> **Ajoutée par la PR #18 du dépôt d'origine, pas encore fusionnée** : absente de la production tant qu'elle n'est pas fusionnée.
+> En production depuis le 2026-10-22 (PR #18 du dépôt d'origine, fusionnée et déployée) : le site Angular actuel l'appelle déjà.
 
 - `resume` : dernière face jouée, ou `null` — `sid, side, mapName, lastPlayedAt, attempts, clears, bestRooms, knownRooms`.
 - `today` : `attempts, clears, bestAttemptMs, mostPlayed`.
