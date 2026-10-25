@@ -112,16 +112,49 @@
 .cdt-empty__title { margin: 0; font: 600 22px/28px var(--font-sans); }
 .cdt-empty__text { margin: 0; color: var(--ink-muted); }
 
-/* Texte long : Markdown rendu, y compris les pages Markdown d'Analog (.analog-markdown-route) */
-:is(.cdt-prose, .analog-markdown-route) { max-width: 68ch; font: 400 17px/28px var(--font-sans); color: var(--ink); }
-:is(.cdt-prose, .analog-markdown-route) h2 { margin: var(--space-12) 0 var(--space-3); font: 600 22px/28px var(--font-sans); letter-spacing: -0.01em; text-wrap: balance; }
-:is(.cdt-prose, .analog-markdown-route) h2:first-child { margin-top: 0; }
-:is(.cdt-prose, .analog-markdown-route) h3 { margin: var(--space-8) 0 var(--space-2); font: 600 17px/24px var(--font-sans); }
-:is(.cdt-prose, .analog-markdown-route) :is(p, ul, ol) { margin: 0 0 var(--space-4); }
-:is(.cdt-prose, .analog-markdown-route) :is(ul, ol) { padding-left: var(--space-6); }
-:is(.cdt-prose, .analog-markdown-route) li { margin-bottom: var(--space-2); }
-:is(.cdt-prose, .analog-markdown-route) strong { font-weight: 600; }
-:is(.cdt-prose, .analog-markdown-route) a { color: var(--accent); }
-:is(.cdt-prose, .analog-markdown-route) code { font: 500 0.9em var(--font-mono); background: var(--surface-raised); padding: 1px 6px; border-radius: 6px; }
-:is(.cdt-prose, .analog-markdown-route) pre { margin: 0 0 var(--space-4); padding: var(--space-3) var(--space-4); overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
-:is(.cdt-prose, .analog-markdown-route) pre code { padding: 0; background: none; font-size: 14px; line-height: 22px; }
+/* Pastille d'information (prérequis, raccourcis vers une section) */
+.cdt-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.cdt-chip { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 40px; padding: 0 16px; border-radius: var(--radius-pill); background: var(--surface); color: var(--ink); font: 500 14px/1 var(--font-sans); }
+a.cdt-chip { color: var(--ink-muted); text-decoration: none; }
+a.cdt-chip:hover { color: var(--ink); background: var(--surface-raised); }
+
+/* Emplacement d'image : réserve la place d'une capture à venir, au bon format.
+   Pour le remplir, remplacer son contenu par <img src="…" alt="…"> : la bordure disparaît. */
+.cdt-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); box-sizing: border-box; margin: 0; padding: var(--space-6); aspect-ratio: 16 / 9; overflow: hidden; border: 1.5px dashed var(--border-strong); border-radius: var(--radius-lg); background: var(--surface); text-align: center; }
+.cdt-slot--hero { aspect-ratio: 16 / 10; }
+.cdt-slot--photo { aspect-ratio: 4 / 3; }
+.cdt-slot--wide { aspect-ratio: 21 / 9; }
+.cdt-slot svg { width: 28px; height: 28px; flex: none; color: var(--ink-muted); }
+.cdt-slot__title { font: 600 15px/22px var(--font-sans); color: var(--ink); }
+.cdt-slot__hint { max-width: 44ch; font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+.cdt-slot__size { font: 500 12px/16px var(--font-mono); color: var(--ink-muted); }
+.cdt-slot:has(> img) { padding: 0; border: 0; }
+.cdt-slot > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Question dépliable (<details> + <summary>), utilisable dans le Markdown */
+.cdt-disclosure { border-radius: var(--radius-md); background: var(--surface); }
+.cdt-disclosure + .cdt-disclosure { margin-top: var(--space-2); }
+.cdt-disclosure > summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: 60px; padding: var(--space-3) 20px; box-sizing: border-box; border-radius: var(--radius-md); list-style: none; cursor: pointer; font: 600 17px/24px var(--font-sans); color: var(--ink); }
+.cdt-disclosure > summary::-webkit-details-marker { display: none; }
+.cdt-disclosure > summary::after { content: ''; flex: none; width: 8px; height: 8px; margin-right: 4px; border: solid var(--ink-muted); border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); transition: transform .15s ease-out; }
+.cdt-disclosure > summary:hover { background: var(--surface-raised); }
+.cdt-disclosure[open] > summary::after { border-color: var(--accent); transform: translateY(2px) rotate(-135deg); }
+.cdt-disclosure > :not(summary) { margin: 0; padding: 0 20px var(--space-4); color: var(--ink-muted); }
+.cdt-disclosure > :not(summary):last-child { padding-bottom: 20px; }
+.cdt-disclosure strong { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .cdt-disclosure > summary::after { transition: none; } }
+
+/* Texte long : Markdown rendu, y compris les pages Markdown d'Analog (.analog-markdown-route).
+   :where() ne pèse rien en spécificité : un composant posé dans la prose (bouton, question) garde ses styles. */
+:where(.cdt-prose, .analog-markdown-route) { max-width: 68ch; font: 400 17px/28px var(--font-sans); color: var(--ink); }
+:where(.cdt-prose, .analog-markdown-route) h2 { margin: var(--space-12) 0 var(--space-3); font: 600 22px/28px var(--font-sans); letter-spacing: -0.01em; text-wrap: balance; }
+:where(.cdt-prose, .analog-markdown-route) h2:first-child { margin-top: 0; }
+:where(.cdt-prose, .analog-markdown-route) h3 { margin: var(--space-8) 0 var(--space-2); font: 600 17px/24px var(--font-sans); }
+:where(.cdt-prose, .analog-markdown-route) :is(p, ul, ol) { margin: 0 0 var(--space-4); }
+:where(.cdt-prose, .analog-markdown-route) :is(ul, ol) { padding-left: var(--space-6); }
+:where(.cdt-prose, .analog-markdown-route) li { margin-bottom: var(--space-2); }
+:where(.cdt-prose, .analog-markdown-route) strong { font-weight: 600; }
+:where(.cdt-prose, .analog-markdown-route) a { color: var(--accent); }
+:where(.cdt-prose, .analog-markdown-route) code { font: 500 0.9em var(--font-mono); background: var(--surface-raised); padding: 1px 6px; border-radius: 6px; }
+:where(.cdt-prose, .analog-markdown-route) pre { margin: 0 0 var(--space-4); padding: var(--space-3) var(--space-4); overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+:where(.cdt-prose, .analog-markdown-route) pre code { padding: 0; background: none; font-size: 14px; line-height: 22px; }

@@ -62,8 +62,11 @@ Remplace le design system « Topo » du site actuel. Références : Strava et Li
 | Onglets segmentés | `cdt-tabs` | Période ou vue |
 | Alerte | `cdt-alert` (`--error`) | Information ou erreur dans la page |
 | Navigation | `cdt-nav` | Nom du site en Unbounded, liens en pilule |
+| Pastille | `cdt-chip`, `cdt-chips` | Prérequis, raccourcis vers une section |
+| Emplacement d'image | `cdt-slot` (`--hero` 16:10, défaut 16:9, `--photo` 4:3, `--wide` 21:9) | Réserve la place d'une capture, avec sa légende et son format ; on le remplit en y mettant un `<img>` |
+| Question dépliable | `cdt-disclosure` | `<details>` + `<summary>`, utilisable dans le Markdown (FAQ) |
 | État vide | `cdt-empty` | Ce qui apparaîtra ici et comment y arriver |
 
 ## Interdits
 
-Ni sprites, ni images, ni police (Renogare) de Celeste (© Extremely OK Games). Le site est un projet de fan non officiel, sans logo : le nom s'écrit en Unbounded. Les icônes sont des SVG en ligne, dessinés pour le site.
+Ni sprites, ni images, ni police (Renogare) de Celeste (© Extremely OK Games). **Seule exception** : des captures recadrées sur l'interface du mod (menu Mod Options, bandeau du code), sans sprites ni décor, pour illustrer la page du mod et la FAQ. Le site est un projet de fan non officiel, sans logo : le nom s'écrit en Unbounded. Les icônes sont des SVG en ligne, dessinés pour le site.

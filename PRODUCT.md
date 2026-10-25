@@ -44,7 +44,7 @@ Le site part de la **tentative** et non de la mort. Une tentative va de l'entré
 ## Brand Commitments
 
 - Nom : **Celeste Death Tracker**.
-- **Projet de fan, non officiel.** Interdits : les sprites, les images et la police (Renogare) de Celeste, © Extremely OK Games. Ne jamais laisser croire à un produit officiel. Seuls les motifs dessinés pour le site sont autorisés.
+- **Projet de fan, non officiel.** Interdits : les sprites, les images et la police (Renogare) de Celeste, © Extremely OK Games. Ne jamais laisser croire à un produit officiel. Seuls les motifs dessinés pour le site sont autorisés, plus une exception : des captures recadrées sur l'interface du mod (menus, bandeau du code), sans sprites ni décor.
 - Le design system « Topo » du site actuel est **remplacé** : on peut s'en servir comme repère, pas comme base.
 
 ## Evidence on Hand
