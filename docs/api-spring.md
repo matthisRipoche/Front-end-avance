@@ -1,6 +1,8 @@
 # API Spring consommée par le front
 
 Production : `https://celeste.matthisripoche.com`. En local, l'API tourne sur le port 5000.
+
+Le serveur Node ne l'écrit nulle part en dur : il lit `runtimeConfig.apiUrl` (`http://localhost:5000` par défaut, `NITRO_API_URL` en production) et construit les adresses avec `springUrl()` (`src/server/utils/spring.ts`).
 Code source : `~/projects/CelesteDeathTracker/api/`. Ce projet **ne modifie pas** l'API.
 
 ## Authentification du navigateur

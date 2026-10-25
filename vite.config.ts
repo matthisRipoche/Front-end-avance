@@ -21,6 +21,12 @@ export default defineConfig(({ mode }) => ({
       // health.spec.ts devenait une route /health.spec qui plantait en production.
       nitro: {
         ignore: ['**/*.spec.ts'],
+        // Configuration lue par le serveur Node au démarrage, pas figée au build : chaque clé
+        // se remplace par une variable d'environnement NITRO_<CLÉ> (apiUrl → NITRO_API_URL).
+        // Valeur par défaut : l'API Spring lancée en local. La production donne son adresse publique.
+        runtimeConfig: {
+          apiUrl: 'http://localhost:5000',
+        },
       },
       // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
       // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
