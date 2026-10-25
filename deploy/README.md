@@ -34,7 +34,7 @@ Vérifier : `getent hosts new-celeste.matthisripoche.com` (ou `nslookup`).
 
 ## 2. Rien à faire sur le serveur
 
-**GitHub est la seule source de vérité.** À chaque déploiement, la CI crée le dossier `~/celeste-next` dans le dossier personnel de l'utilisateur SSH (pas besoin de `sudo`), y copie `deploy/docker-compose.prod.yml` et **réécrit** le `.env` à partir des secrets (`DOMAIN`) et de la version construite (`IMAGE`, `TAG`). Un `.env` modifié à la main sur le serveur est donc écrasé au déploiement suivant : pour changer une valeur, la changer dans GitHub.
+**GitHub est la seule source de vérité.** À chaque déploiement, la CI crée le dossier `~/celeste-next` dans le dossier personnel de l'utilisateur SSH (pas besoin de `sudo`), y copie `deploy/docker-compose.prod.yml` et **réécrit** le `.env` à partir des secrets (`DOMAIN`), des variables (`API_URL`) et de la version construite (`IMAGE`, `TAG`). Un `.env` modifié à la main sur le serveur est donc écrasé au déploiement suivant : pour changer une valeur, la changer dans GitHub.
 
 ## 3. Une seule fois : GitHub
 
@@ -58,6 +58,7 @@ Les secrets sont **propres à chaque dépôt** : ceux de CelesteDeathTracker ne 
    |---|---|
    | `DEPLOY_ENABLED` | `true` : **interrupteur du déploiement**. Sans elle, la fusion sur `main` construit l'image sans la déployer. |
    | `DEPLOY_PATH` | (facultatif) dossier sur le serveur ; par défaut `celeste-next`, relatif au dossier personnel de l'utilisateur SSH |
+   | `API_URL` | (facultatif) adresse publique de l'API Spring ; par défaut `https://celeste.matthisripoche.com`. Le conteneur de Spring est sur le réseau privé de l'autre projet : on le joint par son adresse publique. Le serveur Node la lit au démarrage (`NITRO_API_URL`) : la changer ne demande pas de reconstruire l'image, seulement de redéployer. |
 
 4. *Settings → Actions → General → Workflow permissions* : « Read and write permissions » (pour publier l'image dans GHCR).
 
