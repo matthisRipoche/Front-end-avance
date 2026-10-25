@@ -6,7 +6,7 @@ Ce dépôt est le nouveau front du projet [CelesteDeathTracker](https://github.c
 
 **En ligne : https://new-celeste.matthisripoche.com**
 
-Projet de fan, non officiel. Celeste est une marque d'Extremely OK Games ; aucun élément du jeu n'est utilisé ici.
+Projet de fan, non officiel. Celeste est une marque d'Extremely OK Games ; le site n'en reprend ni les sprites, ni la musique, ni la police. Les seules images du jeu sont des captures de l'interface du mod.
 
 ## Lancer le projet
 

@@ -101,6 +101,7 @@ Détails techniques :
 - Sombre d'abord, accent cyan pour l'action, un seul élément doré par écran (deathless). Unbounded, Geist et Geist Mono auto-hébergées (`@fontsource-variable`). Pas de Tailwind.
 - Toute maquette part du design system ; demander les goûts de l'utilisateur avant de proposer une direction visuelle.
 - **Interdit** : sprites et assets de Celeste (© Extremely OK Games), police du jeu (Renogare). Icônes en SVG dessinées pour le site.
+- **Seule exception** (décision du 2026-10-25) : des captures recadrées sur l'interface du mod (menu Mod Options, bandeau du code), sans sprites ni décor du jeu, pour illustrer la page du mod et la FAQ.
 
 ## Production
 
