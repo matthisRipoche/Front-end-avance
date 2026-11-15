@@ -11,23 +11,18 @@ Conventions du framework (routage par fichiers, routes serveur, chargement de do
 - Livrables : ce dépôt Git, un **site en production**, un **oral sur l'organisation de travail avec l'IA agentique**.
 - Échéance : 3 jours de cours + 3 à 4 semaines à la maison, à partir du 2026-10-22.
 
-## Façon de travailler (mode mixte)
+## Façon de travailler
 
-L'objectif n'est pas un code produit en boîte noire : l'organisation avec l'agent doit **faire comprendre les concepts** à l'utilisateur.
+Décision du 2026-11-16 : la partie apprentissage (leçons, quiz, skill `teach`) est abandonnée.
 
-- **Outillage** (Docker, CI/CD, configuration, déploiement) : l'agent l'implémente et explique ses choix.
-- **Concepts d'Analog ou de Node** (page SSR, page SSG, route serveur, relais, garde de route, chargement de données, middleware, cookies côté serveur…) : **l'utilisateur veut comprendre les principes, pas forcément les écrire** (décision du 2026-10-23, après la FAQ). L'agent :
-  1. implémente, y compris la première occurrence d'un concept ;
-  2. explique le principe et le relie au code réel (skill `teach` : réponse courte, ou leçon si le concept compte pour la mission ou l'oral) ;
-  3. vérifie la compréhension par une ou deux questions, ou par un quiz en tête de la leçon suivante.
-  Un squelette à `TODO` que l'utilisateur complète seulement s'il le demande.
-- L'utilisateur relit les PR.
+- L'agent implémente tout (code, outillage, configuration, déploiement) et explique brièvement ses choix.
 - **Décisions structurantes** (architecture, découpage, dépendance ajoutée, contrat avec l'API) : l'agent présente les options et leurs compromis, recommande, et **attend la validation avant de coder**.
-- Ne pas sur-outiller : le temps va à l'apprentissage, pas à la configuration.
+- L'utilisateur relit les PR.
+- Ne pas sur-outiller : le temps va au produit, pas à la configuration.
 
 ## Backlog : issues GitHub
 
-Les tâches sont des issues GitHub, toutes assignées à l'utilisateur, rangées par jalon (« Étape 2 · Pages publiques » … « Étape 5 · Finitions et oral », « Bonus »). Labels de type (`front`, `serveur`, `outillage`, `design`, `doc`) et de mode : `mode : à moi` (concept nouveau : l'agent implémente **et donne une leçon**) ou `mode : agent` (outillage ou cas répétitif : l'agent implémente). Une branche traite une issue ; sa PR la ferme (`Closes #n`).
+Les tâches sont des issues GitHub, toutes assignées à l'utilisateur, rangées par jalon (« Étape 2 · Pages publiques » … « Étape 5 · Finitions et oral », « Bonus »). Labels de type : `front`, `serveur`, `outillage`, `design`, `doc`. Les labels `mode : à moi` et `mode : agent` restent sur GitHub mais ne changent plus la façon de travailler. Une branche traite une issue ; sa PR la ferme (`Closes #n`).
 
 ## Journal de l'IA : `docs/journal-ia.md`
 

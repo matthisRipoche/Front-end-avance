@@ -38,11 +38,10 @@ Le serveur Node joint l'API Spring à `http://localhost:5000` par défaut. Pour 
 
 ## Travail avec l'agent IA
 
-- `CLAUDE.md` : règles de travail de l'agent (mode mixte, Git, architecture, production).
+- `CLAUDE.md` : règles de travail de l'agent (façon de travailler, Git, architecture, production).
 - `AGENTS.md` : renvoie aux conventions d'Analog livrées avec la version installée.
-- `.claude/` : skills du projet (commit, enseignement, Angular, design) et configuration.
+- `.claude/` : skills du projet (commit, Angular, design) et configuration.
 - `skills-lock.json` : versions des skills installés. Il reste à la racine, où l'outil `skills` le cherche ; c'est aussi le cas de `PRODUCT.md` pour le skill `impeccable`.
-- `learning/` : leçons et fiches produites pendant le projet.
 - `docs/journal-ia.md` : chaque étape, avec les propositions de l'agent, les corrections de l'utilisateur et les erreurs rattrapées.
 
 Les tâches sont suivies dans les [issues GitHub](https://github.com/matthisRipoche/Front-end-avance/issues), par étape.
