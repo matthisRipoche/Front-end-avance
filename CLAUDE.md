@@ -20,6 +20,21 @@ Décision du 2026-11-16 : la partie apprentissage (leçons, quiz, skill `teach`)
 - L'utilisateur relit les PR.
 - Ne pas sur-outiller : le temps va au produit, pas à la configuration.
 
+## Workflow agentique
+
+Une fonctionnalité ou une issue non triviale passe par la skill **`/issue <n>`** (`.claude/skills/issue/SKILL.md`). La session principale coordonne et garde Git ; les agents du projet (`.claude/agents/`) produisent et vérifient :
+
+| Étape | Qui | Rôle |
+|---|---|---|
+| 1 | `planner` | Plan découpé en lots aux fichiers disjoints, décisions à trancher. Lecture seule. |
+| 2 | **utilisateur** | Valide le plan et tranche les décisions. |
+| 3 | `dev` (un par lot, en parallèle si indépendants) | Code et tests d'un lot, selon les conventions. Ne commite pas. |
+| 4 | `verifier` + `reviewer` en parallèle | Build, tests, requêtes sur le serveur construit ; relecture du diff. Lecture seule. |
+| 5 | session principale | Corrections, journal, commits (skill `commit`). |
+| 6 | **utilisateur** | Accord pour le push, relecture de la PR. |
+
+Un agent ne parle pas à l'utilisateur : une décision imprévue remonte à la session principale, qui pose la question.
+
 ## Backlog : issues GitHub
 
 Les tâches sont des issues GitHub, toutes assignées à l'utilisateur, rangées par jalon (« Étape 2 · Pages publiques » … « Étape 5 · Finitions et oral », « Bonus »). Labels de type : `front`, `serveur`, `outillage`, `design`, `doc`. Les labels `mode : à moi` et `mode : agent` restent sur GitHub mais ne changent plus la façon de travailler. Une branche traite une issue ; sa PR la ferme (`Closes #n`).
