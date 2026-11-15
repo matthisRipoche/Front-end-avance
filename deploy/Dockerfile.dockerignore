@@ -6,7 +6,6 @@ dist/
 .git
 .github/
 .claude/
-learning/
 docs/
 deploy/
 .env*

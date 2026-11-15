@@ -38,7 +38,7 @@ git log --oneline -10
   à une variable d'environnement est acceptable.
 - **Fichiers interdits** : `.env*`, `dist/`, `node_modules/`, et **tout asset ou police de Celeste**
   (sprites, Renogare : © Extremely OK Games). S'ils apparaissent, s'arrêter et prévenir.
-- **Code écrit par l'utilisateur** (mode mixte) : ne pas le réécrire au moment du commit. Signaler
+- **Code écrit par l'utilisateur** : ne pas le réécrire au moment du commit. Signaler
   un problème au lieu de le corriger en silence.
 - Signaler tout fichier dont l'intention n'est pas claire au lieu de le commiter au hasard.
 
@@ -80,7 +80,7 @@ build), `ci` (`.github/workflows`), `chore` (le reste).
 
 **Portées** : `pages` (`src/app/pages`), `server` (`src/server`, relais Nitro), `ui` (composants
 partagés, design system), `content` (Markdown), `docker`, `deploy`, `ci`, `agent` (`CLAUDE.md`,
-`.claude/`, `learning/`). Omettre la portée si le commit est transversal ou purement doc.
+`.claude/`). Omettre la portée si le commit est transversal ou purement doc.
 
 Exemples :
 
