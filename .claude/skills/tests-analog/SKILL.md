@@ -130,3 +130,10 @@ vi.mock('nitropack/runtime', () => ({ useRuntimeConfig: () => config }));
 ## Ce que Vitest ne couvre pas
 
 Le prérendu, le vrai rendu SSR de bout en bout et les redirections réelles se vérifient sur le **serveur construit** (agent `verifier` : `npm run build`, puis `curl`). Dans le compte rendu, dis lesquels de ces points restent à vérifier.
+
+### Piège : build SSR non compilé (Analog 2.9.1)
+
+Le plugin Angular partage une compilation entre les builds client et SSR, lancés en parallèle. Si le client finit le premier, le SSR embarque des composants non compilés : le prérendu affiche `Component '…' is not resolved`, les pages sortent vides, et `vite build` réussit quand même. Ça arrive sous charge (CI, tests lancés en même temps). Cause prouvée le 2026-11-16 (SSR ralenti exprès : échec à chaque fois) ; le nom des fichiers n'y est pour rien.
+
+- `npm run build` lance ensuite `scripts/verifier-prerendu.mjs` (postbuild), qui **échoue** si une page prérendue n'a pas de `<h1>`. Un build n'est réussi que si ce contrôle affiche `✓ Prérendu`.
+- S'il échoue, relance le build **seul**, sans tests ni autre build en parallèle, avant de soupçonner le code. Si l'échec persiste, c'est le code.
