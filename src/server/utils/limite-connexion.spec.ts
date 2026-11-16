@@ -10,7 +10,7 @@ const spring = vi.fn(() => ({ ok: true }));
 /** Module rechargé à chaque test : le compteur du limiteur repart de zéro. */
 async function application() {
   vi.resetModules();
-  const { default: limite, MAX_ESSAIS } = await import('./limite-connexion');
+  const { default: limite, MAX_ESSAIS } = await import('../middleware/limite-connexion');
   const app = createApp()
     .use(limite)
     .use(createRouter().use('/api/**', defineEventHandler(spring)));

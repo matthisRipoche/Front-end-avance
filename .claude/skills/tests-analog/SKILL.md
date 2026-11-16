@@ -10,6 +10,7 @@ Vitest 5, environnement `jsdom`, `globals: true` (`describe`, `it`, `expect` san
 ## Règles
 
 - Le test est **à côté** du fichier : `foo.ts` → `foo.spec.ts`. Les specs de `src/server/routes/` sont exclues des routes par `nitro.ignore` (`vite.config.ts`).
+- **Exception : `src/server/middleware/`**. En `npm run dev`, Analog charge comme middleware **tout** `.ts` de ce dossier, sans tenir compte de `nitro.ignore` (`register-dev-middleware.js`) : un spec y serait exécuté à chaque requête. Le test d'un middleware va dans `src/server/utils/<nom>.spec.ts` et importe `../middleware/<nom>`.
 - `describe` et `it` **en français**, qui décrivent un comportement visible : `'renvoie 401 sans session'`, pas `'test getFaces'`.
 - Un test vérifie **ce que voit l'utilisateur ou l'appelant** : texte, lien, statut HTTP, corps JSON. Pas les détails internes (champs privés, appels de méthode).
 - Chaque comportement nouveau a un test ; chaque route serveur a au moins **un cas nominal et un cas d'erreur**.
