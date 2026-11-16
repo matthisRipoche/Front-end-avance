@@ -12,6 +12,35 @@ Code source : `~/projects/CelesteDeathTracker/api/`. Ce projet **ne modifie pas*
 - Toutes les lectures sont filtrées par le compte connecté. Sans session : **401**.
 - Le serveur Node d'Analog relaie `/api/**` vers Spring : le navigateur ne voit qu'une origine, donc pas de CORS.
 
+### Authentification du navigateur (via le relais)
+
+> Relevé le 2026-11-16 à travers le relais, sur le serveur construit, contre l'API de production et l'API locale.
+
+Cookies posés par Spring :
+
+| Cookie | Production | Local (Spring en http) |
+|---|---|---|
+| `XSRF-TOKEN` | `<uuid>; Path=/; Secure` | `<uuid>; Path=/` |
+| `JSESSIONID` | `<id>; Path=/; Secure; HttpOnly; SameSite=Lax` | non relevé |
+
+- Aucun `Domain` : les cookies se rattachent à l'origine du front. Le relais les recopie sans les réécrire.
+- `XSRF-TOKEN` n'est pas HttpOnly : le navigateur peut le lire pour remplir l'en-tête.
+
+Parcours CSRF d'une écriture :
+
+1. Un premier `GET /api/…` fait poser `XSRF-TOKEN`.
+2. Le navigateur envoie l'écriture avec le cookie et l'en-tête `X-XSRF-TOKEN` à la même valeur.
+3. Le relais transmet cookie, en-tête et corps à Spring.
+
+Vérifié sur `POST /api/auth/login` : avec le cookie mais sans l'en-tête, **403** ; avec l'en-tête et de faux identifiants, **401**. Le 401 prouve que le CSRF est passé.
+
+Ce que le relais ajoute :
+
+- `/api/_analog/**` (interne à Analog) et `/api/ingest/**` (réservé au mod, Bearer) : **404**, sans appeler Spring.
+- Une adresse qui sortirait de `/api/` une fois `..` ou `%2e%2e` résolus, ou dont l'encodage est invalide : **404**, sans appeler Spring. Le filtre juge l'adresse que Spring recevrait, décodée.
+- Erreur 5xx de Spring : **502** `{ message: "Erreur de l'API" }`, sans en-têtes ni cookies de Spring. Spring injoignable : **503** `{ message: "API indisponible" }`. Les 4xx passent tels quels.
+- Les autres en-têtes de Spring (`strict-transport-security`, `x-frame-options: DENY`, `server: nginx`) sont transmis tels quels.
+
 ## Routes
 
 | Méthode et route | Rôle |
@@ -49,4 +78,4 @@ Modèles TypeScript existants : `web/src/app/core/{face,summary,attempt,live}.mo
 
 ## Connexion Discord (plus tard)
 
-L'adresse de retour OAuth2 est déclarée chez Discord pour le site actuel. Via le relais, il faudra en déclarer une seconde et vérifier comment Spring construit la sienne. On commence par email et mot de passe.
+L'adresse de retour OAuth2 est déclarée chez Discord pour le site actuel. Via le relais, il faudra en déclarer une seconde et vérifier comment Spring construit la sienne. Le relais suit aujourd'hui les redirections : il faudra le passer en `redirect: 'manual'` pour que celle de Discord atteigne le navigateur. On commence par email et mot de passe.
