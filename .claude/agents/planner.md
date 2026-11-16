@@ -4,6 +4,7 @@ description: Transforme une demande ou une issue GitHub en plan d'implémentatio
 tools: Read, Glob, Grep, Bash
 model: opus
 skills:
+  - analogjs
   - conventions-analog
   - bff-spring
 ---

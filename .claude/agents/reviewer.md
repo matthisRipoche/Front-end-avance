@@ -4,6 +4,7 @@ description: Relecture critique du diff de la branche face au plan validé et au
 tools: Read, Glob, Grep, Bash
 skills:
   - review-analog
+  - analogjs
   - conventions-analog
   - bff-spring
   - tests-analog
