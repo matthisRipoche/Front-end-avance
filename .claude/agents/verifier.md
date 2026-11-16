@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: Vérifie que la branche fonctionne vraiment : build, tests, puis requêtes sur le serveur construit (codes HTTP, redirections, pages prérendues). Ne modifie aucun fichier. Étape 4 de la skill /issue, en parallèle du reviewer.
+description: Vérifie que la branche fonctionne vraiment, avec le build, les tests et des requêtes sur le serveur construit (codes HTTP, redirections, pages prérendues). Ne modifie aucun fichier. Étape 4 de la skill /issue, en parallèle du reviewer.
 tools: Read, Glob, Grep, Bash
 ---
 

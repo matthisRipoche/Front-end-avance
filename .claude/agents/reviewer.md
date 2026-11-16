@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Relecture critique du diff de la branche face au plan validé et aux conventions du projet : bugs, cas limites, sécurité, écarts avec la demande. Ne modifie rien. Étape 4 de la skill /issue, en parallèle du verifier.
+description: Relecture critique du diff de la branche face au plan validé et aux conventions du projet (bugs, cas limites, sécurité, écarts avec la demande). Ne modifie rien. Étape 4 de la skill /issue, en parallèle du verifier.
 tools: Read, Glob, Grep, Bash
 ---
 
