@@ -414,3 +414,20 @@ L'agent recommande B : à l'étape 4, les pages connectées auront leur propre g
 **Pour l'oral** : séparer les **rôles** (agents) et le **savoir** (skills). Une règle ne s'écrit qu'une fois, et l'agent qui code et celui qui relit appliquent la même.
 
 **Erreur de l'agent rattrapée au commit** : l'agent `verifier` a disparu de la session juste après l'ajout de `skills:`. Cause : depuis la PR #55, les descriptions du `verifier` et du `reviewer` contenaient « : », ce qui rend le YAML de l'en-tête invalide. Claude Code les acceptait tant que l'en-tête restait simple, mais plus avec une liste. Le `reviewer` du projet, lui, était masqué depuis le début par le `reviewer` global du même nom, sans que personne ne s'en aperçoive. Correction dans un commit `fix` à part. À retenir : valider le YAML des en-têtes avant chaque commit d'agent ou de skill. Sur demande de l'utilisateur, le skill `commit` le fait désormais avec `verifier-entetes.mjs`, essayé sur un en-tête cassé exprès.
+
+---
+
+## 2026-11-16 — Skill officiel d'Analog
+
+**Demande** : « installe les skills de développement Analog ». Elle fait suite au diagnostic du prérendu, où l'utilisateur regrettait de ne pas avoir pris « les skills Analog classiques ».
+
+**Recherche de l'agent** (`npx skills find`, dépôts GitHub de l'éditeur) :
+- `analogjs/angular-skills`, en tête des résultats (jusqu'à 11,8 K installations), est marqué **DEPRECATED** par l'éditeur, qui renvoie vers `angular/skills`. C'est le pack obsolète déjà rencontré le 2026-10-23, et son remplaçant est déjà installé (`angular-developer`).
+- Les skills du dépôt `analogjs/analog` (`.agents/skills`) servent aux mainteneurs du framework (traiter une issue d'Analog, ouvrir une PR), pas à une application.
+- Le seul skill de développement Analog est **officiel et livré dans le paquet** : `node_modules/@analogjs/platform/skills/analogjs/SKILL.md`, manifeste Agent Plugins `plugin.json`, même contenu que l'`AGENTS.md` du paquet.
+
+**Fait** : `.claude/skills/analogjs` est un **lien symbolique** vers ce dossier de `node_modules`, au lieu d'une copie. Le skill suit ainsi la version d'Analog installée, selon le même principe que l'`AGENTS.md` du gabarit. Il est préchargé par `dev`, `planner` et `reviewer`, et référencé dans `conventions-analog` et `CLAUDE.md`.
+
+**À dire honnêtement à l'oral** : ce skill n'aurait pas évité le bug du prérendu. Il dit de placer les tests à côté du fichier (`*.spec.ts`), et le bug venait d'une course dans le plugin Angular, qu'aucune documentation ne décrit. Son intérêt est ailleurs : la source officielle des conventions, à jour avec la version.
+
+**Limite** : le lien est cassé tant que `npm install` n'a pas été lancé (clone neuf). Sans conséquence pour la CI et l'image Docker, qui n'utilisent pas `.claude/`.
