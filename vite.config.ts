@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
       // mais c'est cette option qui active le traitement des fichiers .md.
       // Attention : tout .md de src/content/ ou de src/app/pages/ devient une route.
       content: { highlighter: 'prism' },
-      // Nitro sert comme route tout fichier de src/server/routes/ : sans cette règle,
+      // Nitro charge tout fichier de src/server/ (routes, middleware, plugins) : sans cette règle,
       // health.spec.ts devenait une route /health.spec qui plantait en production.
       nitro: {
         ignore: ['**/*.spec.ts'],
