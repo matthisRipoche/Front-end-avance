@@ -39,7 +39,7 @@ Un agent ne parle pas à l'utilisateur : une décision imprévue remonte à la s
 
 | Skill | Contenu | Agents |
 |---|---|---|
-| `analogjs` | Skill **officiel** d'Analog, livré dans `@analogjs/platform` (lien symbolique vers `node_modules`, suit la version installée) : routage par fichiers, routes serveur, `load`, contenu Markdown | dev, planner, reviewer |
+| `analogjs` | Skill **officiel** d'Analog, livré dans `@analogjs/platform` (copie de `node_modules/@analogjs/platform/skills/analogjs`, version 2.9.1 : à recopier à chaque mise à jour d'Analog) : routage par fichiers, routes serveur, `load`, contenu Markdown | dev, planner, reviewer |
 | `conventions-analog` | Où va chaque fichier, composants, SSR ou SSG, `routeMeta`, Markdown, design system, interdits | dev, planner, reviewer |
 | `bff-spring` | Couche serveur : appeler Spring, cookies et CSRF, validation, traduction des erreurs, `load` SSR | dev, planner, reviewer |
 | `tests-analog` | Tester une page, une route Nitro, un utilitaire ; simuler Spring | dev, reviewer, verifier |

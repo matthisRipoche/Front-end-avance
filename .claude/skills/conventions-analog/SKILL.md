@@ -7,7 +7,7 @@ description: Conventions de code du projet Celeste Tracker (Analog.js 2.9, Angul
 
 Ce skill dit **comment ce projet** écrit son code. Pour le reste :
 - Angular générique (signals, `inject()`, control flow, formulaires, DI…) : skill `angular-developer` ;
-- conventions d'Analog pour la version installée : skill officiel `analogjs` (lien vers `node_modules/@analogjs/platform/skills/analogjs`, même contenu que l'`AGENTS.md` du paquet) ;
+- conventions d'Analog pour la version installée : skill officiel `analogjs` (copie de `node_modules/@analogjs/platform/skills/analogjs` pour Analog 2.9.1, à recopier à chaque mise à jour, même contenu que l'`AGENTS.md` du paquet) ;
 - couche serveur et appels à Spring : skill `bff-spring` ; tests : skill `tests-analog`.
 
 Avant d'écrire, **ouvre un fichier voisin du même type et imite-le**. Les modèles sont cités ci-dessous.
