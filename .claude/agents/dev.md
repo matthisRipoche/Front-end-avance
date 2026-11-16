@@ -3,6 +3,7 @@ name: dev
 description: Développeur du projet Analog. Réalise UN lot d'un plan validé (fichiers listés, consignes précises), en respectant les conventions du projet, puis le teste. Ne commite pas. Étape 3 de la skill /issue.
 tools: Read, Glob, Grep, Edit, Write, Bash
 skills:
+  - analogjs
   - conventions-analog
   - bff-spring
   - tests-analog
