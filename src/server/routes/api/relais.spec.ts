@@ -8,8 +8,7 @@ import { vi } from 'vitest';
 
 import relais from './[...path]';
 
-const config = { apiUrl: 'http://spring.test:5000' };
-vi.mock('nitropack/runtime', () => ({ useRuntimeConfig: () => config }));
+vi.stubEnv('NITRO_API_URL', 'http://spring.test:5000');
 
 const fetchMock = vi.fn();
 
