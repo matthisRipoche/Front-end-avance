@@ -35,6 +35,17 @@ Une fonctionnalité ou une issue non triviale passe par la skill **`/issue <n>`*
 
 Un agent ne parle pas à l'utilisateur : une décision imprévue remonte à la session principale, qui pose la question.
 
+**Bibliothèque de skills des agents** (`.claude/skills/`), préchargés par le champ `skills:` de chaque agent et utilisables aussi par la session principale :
+
+| Skill | Contenu | Agents |
+|---|---|---|
+| `conventions-analog` | Où va chaque fichier, composants, SSR ou SSG, `routeMeta`, Markdown, design system, interdits | dev, planner, reviewer |
+| `bff-spring` | Couche serveur : appeler Spring, cookies et CSRF, validation, traduction des erreurs, `load` SSR | dev, planner, reviewer |
+| `tests-analog` | Tester une page, une route Nitro, un utilitaire ; simuler Spring | dev, reviewer, verifier |
+| `review-analog` | Méthode de relecture, grille des pièges SSR/Nitro, gravité | reviewer |
+
+Une règle de code se met à jour **dans le skill**, pas dans un agent. Les points marqués « à vérifier » se tranchent au premier usage.
+
 ## Backlog : issues GitHub
 
 Les tâches sont des issues GitHub, toutes assignées à l'utilisateur, rangées par jalon (« Étape 2 · Pages publiques » … « Étape 5 · Finitions et oral », « Bonus »). Labels de type : `front`, `serveur`, `outillage`, `design`, `doc`. Les labels `mode : à moi` et `mode : agent` restent sur GitHub mais ne changent plus la façon de travailler. Une branche traite une issue ; sa PR la ferme (`Closes #n`).

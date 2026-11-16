@@ -49,6 +49,16 @@ npm run build
 npx vitest run
 ```
 
+Si les changements touchent `.claude/agents/` ou `.claude/skills/`, valider aussi leurs en-têtes :
+
+```bash
+node .claude/skills/commit/verifier-entetes.mjs
+```
+
+Un en-tête YAML invalide (par exemple une description qui contient « : » sans guillemets) fait
+disparaître l'agent ou le skill **sans message d'erreur**. Le script vérifie aussi que `name`
+correspond au nom du fichier ou du dossier et que `skills` est une liste.
+
 Si une vérification échoue : ne pas commiter, montrer l'erreur à l'utilisateur. Si une vérification
 est impossible, le dire dans le compte rendu.
 
