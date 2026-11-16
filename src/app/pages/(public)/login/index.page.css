@@ -17,8 +17,6 @@
 .login__form .cdt-field { max-width: none; }
 .login__label-row { display: flex; align-items: center; justify-content: space-between; }
 .login__toggle { min-height: 28px; padding: 0 8px; }
-.cdt-field__help { margin: 0; }
-.cdt-field__help svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
 .login__submit { width: 100%; }
 
 .cdt-alert { max-width: none; }

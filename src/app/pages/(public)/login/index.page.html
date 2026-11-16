@@ -28,7 +28,7 @@
         <p class="cdt-alert__text">
           {{ e.texte }}
           @if (e.lienInscription) {
-            <a routerLink="/inscription">Crée-le ici</a>.
+            <a routerLink="/inscription" [queryParams]="suite">Crée-le ici</a>.
           }
         </p>
       </div>
@@ -113,5 +113,5 @@
     </button>
   </form>
 
-  <p class="t-body-sm login__alt">Pas encore de compte ? <a routerLink="/inscription">Créer un compte</a></p>
+  <p class="t-body-sm login__alt">Pas encore de compte ? <a routerLink="/inscription" [queryParams]="suite">Créer un compte</a></p>
 </section>

@@ -23,10 +23,11 @@ describe('cheminDeRetour', () => {
     expect(cheminDeRetour(adresse)).toBe(RETOUR_PAR_DEFAUT);
   });
 
-  it('ne renvoie pas sur la page de connexion', () => {
+  it('ne renvoie ni sur la connexion ni sur l’inscription', () => {
     expect(cheminDeRetour('/login')).toBe(RETOUR_PAR_DEFAUT);
     expect(cheminDeRetour('/login?redirect=/mes-maps')).toBe(RETOUR_PAR_DEFAUT);
     expect(cheminDeRetour('/login#haut')).toBe(RETOUR_PAR_DEFAUT);
+    expect(cheminDeRetour('/inscription')).toBe(RETOUR_PAR_DEFAUT);
   });
 });
 

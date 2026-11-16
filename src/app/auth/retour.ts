@@ -15,8 +15,8 @@ export function cheminDeRetour(redirect: string | null | undefined): string {
   // Caractères de contrôle (tabulation, retour à la ligne) : le navigateur les retire, ce qui
   // pourrait reformer `//` après notre contrôle.
   if (/[\u0000-\u001f\u007f]/.test(redirect)) return RETOUR_PAR_DEFAUT;
-  // Ne jamais revenir sur la page de connexion elle-même.
-  if (estPageConnexion(redirect)) return RETOUR_PAR_DEFAUT;
+  // Ne jamais revenir sur les pages de connexion ou d'inscription : le joueur est connecté.
+  if (estPageConnexion(redirect) || /^\/inscription(?:[/?#]|$)/.test(redirect)) return RETOUR_PAR_DEFAUT;
   return redirect;
 }
 

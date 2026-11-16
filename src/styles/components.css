@@ -31,9 +31,10 @@
 .cdt-field__input { min-height: 44px; padding: 0 14px; border-radius: var(--radius-md); border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--ink); font: 400 16px/24px var(--font-sans); }
 .cdt-field__input::placeholder { color: var(--ink-muted); }
 .cdt-field__input:focus-visible { border-color: var(--accent); outline: 2px solid var(--focus-ring); outline-offset: 2px; }
-.cdt-field__help { font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+.cdt-field__help { margin: 0; font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
 .cdt-field--error .cdt-field__input { border-color: var(--danger); }
-.cdt-field--error .cdt-field__help { color: var(--danger); display: flex; gap: var(--space-1); align-items: center; }
+.cdt-field--error .cdt-field__help { color: var(--danger); display: flex; gap: var(--space-1); align-items: flex-start; }
+.cdt-field__help svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
 
 /* Étiquette de résultat */
 .cdt-result { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 8px; border-radius: var(--radius-sm); font: 600 13px/1 var(--font-sans); }
