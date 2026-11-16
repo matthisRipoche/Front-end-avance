@@ -2,7 +2,7 @@
 import { createApp, createRouter, defineEventHandler, toWebHandler } from 'h3';
 import { vi } from 'vitest';
 
-vi.mock('nitropack/runtime', () => ({ useRuntimeConfig: () => ({ apiUrl: 'http://spring.test:5000' }) }));
+vi.stubEnv('NITRO_API_URL', 'http://spring.test:5000');
 
 /** Le relais, simulé : compte les appels qui seraient partis vers Spring. */
 const spring = vi.fn(() => ({ ok: true }));

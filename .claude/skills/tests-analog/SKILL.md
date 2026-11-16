@@ -121,12 +121,13 @@ fetchMock.mockRejectedValue(new TypeError('fetch failed')); // Spring injoignabl
 
 ## Configuration du serveur
 
-`useRuntimeConfig()` n'existe pas hors de Nitro : on simule le module (modèle : `src/server/utils/spring.spec.ts`) :
+L'adresse de Spring vient de la variable `NITRO_API_URL` (`springUrl`, `src/server/utils/spring.ts`) : on la pose avec `vi.stubEnv` (modèle : `src/server/utils/spring.spec.ts`) :
 
 ```ts
-const config = { apiUrl: 'http://localhost:5000' };
-vi.mock('nitropack/runtime', () => ({ useRuntimeConfig: () => config }));
+vi.stubEnv('NITRO_API_URL', 'http://spring.test:5000');
 ```
+
+**Ne jamais importer `nitropack/runtime`** dans du code serveur chargé par un middleware : en `npm run dev`, Analog charge `src/server/middleware/` par Vite, hors de Nitro, et l'import fait tomber le serveur de dev.
 
 ## Ce que Vitest ne couvre pas
 
