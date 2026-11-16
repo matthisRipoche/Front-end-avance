@@ -26,7 +26,7 @@ export default defineEventHandler((event) => {
   setResponseStatus(event, 429, 'Too Many Requests');
   setResponseHeader(event, 'retry-after', resultat.attenteS);
   return {
-    message: `Trop de tentatives de connexion. Réessayez dans ${resultat.attenteS} s.`,
+    message: `Trop de tentatives de connexion. Réessaie dans ${resultat.attenteS} s.`,
   };
 });
 

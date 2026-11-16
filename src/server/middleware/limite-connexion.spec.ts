@@ -37,7 +37,7 @@ describe('Limitation de débit du login', () => {
 
     expect(res.status).toBe(429);
     expect(Number(res.headers.get('retry-after'))).toBeGreaterThan(0);
-    expect((await res.json()).message).toMatch(/^Trop de tentatives de connexion\. Réessayez dans \d+ s\.$/);
+    expect((await res.json()).message).toMatch(/^Trop de tentatives de connexion\. Réessaie dans \d+ s\.$/);
     expect(spring).toHaveBeenCalledTimes(MAX_ESSAIS);
   });
 
