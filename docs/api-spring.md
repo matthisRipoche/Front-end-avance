@@ -38,6 +38,7 @@ Ce que le relais ajoute :
 
 - `/api/_analog/**` (interne à Analog) et `/api/ingest/**` (réservé au mod, Bearer) : **404**, sans appeler Spring.
 - Une adresse qui sortirait de `/api/` une fois `..` ou `%2e%2e` résolus, ou dont l'encodage est invalide : **404**, sans appeler Spring. Le filtre juge l'adresse que Spring recevrait, décodée.
+- `POST /api/auth/login` au-delà de **10 essais par minute** pour une même adresse IP : **429** `{ message: "Trop de tentatives de connexion. Réessayez dans N s." }` et en-tête `Retry-After`, sans appeler Spring (`src/server/middleware/limite-connexion.ts`). Limite du front seulement : Spring reste joignable directement à son adresse publique.
 - Erreur 5xx de Spring : **502** `{ message: "Erreur de l'API" }`, sans en-têtes ni cookies de Spring. Spring injoignable : **503** `{ message: "API indisponible" }`. Les 4xx passent tels quels.
 - Les autres en-têtes de Spring (`strict-transport-security`, `x-frame-options: DENY`, `server: nginx`) sont transmis tels quels.
 
