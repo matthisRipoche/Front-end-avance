@@ -24,3 +24,14 @@ export function cheminDeRetour(redirect: string | null | undefined): string {
 export function estPageConnexion(url: string): boolean {
   return /^\/login(?:[/?#]|$)/.test(url);
 }
+
+/**
+ * Adresse de la page de connexion qui ramènera le joueur sur `cheminDemande` ensuite.
+ *
+ * Le chemin est encodé en entier : sa propre query (`?x=1&y=2`) resterait sinon mêlée à celle de
+ * `/login` et serait perdue. Pour l'accueil, `?redirect=/` n'apporte rien : `/login` seul y ramène.
+ */
+export function adresseDeConnexion(cheminDemande: string): string {
+  if (!cheminDemande || cheminDemande === RETOUR_PAR_DEFAUT) return '/login';
+  return '/login?redirect=' + encodeURIComponent(cheminDemande);
+}
