@@ -1,0 +1,28 @@
+:host { display: block; }
+
+/* Colonne étroite et centrée : un formulaire court se lit d'un coup d'œil. */
+.login {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: var(--space-16) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.login__intro { display: flex; flex-direction: column; gap: var(--space-2); }
+.login__title { margin: 0; font-size: clamp(32px, 4.4vw, 40px); line-height: 1.1; }
+.login__lead { margin: 0; color: var(--ink-muted); }
+
+.login__form { gap: 20px; }
+.login__form .cdt-field { max-width: none; }
+.login__label-row { display: flex; align-items: center; justify-content: space-between; }
+.login__toggle { min-height: 28px; padding: 0 8px; }
+.cdt-field__help { margin: 0; }
+.cdt-field__help svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+.login__submit { width: 100%; }
+
+.cdt-alert { max-width: none; }
+.cdt-alert:focus { outline: none; }
+.cdt-alert a, .login__alt a { color: var(--accent); }
+
+.login__alt { margin: 0; text-align: center; color: var(--ink-muted); }
