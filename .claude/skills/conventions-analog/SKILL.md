@@ -40,7 +40,7 @@ Groupe `(public)` : `(public).page.ts` est la coque (header, `<router-outlet />`
 ## Rendu : SSR, SSG, navigateur
 
 - **SSG (prérendu au build)** : pour les pages publiques sans donnée de compte. Ajoute l'adresse à `prerender.routes` dans `vite.config.ts` ; la liste remplace la valeur par défaut, donc `/` doit y rester.
-- **SSR (à chaque requête)** : pour les pages connectées ou dont les données changent. Les données arrivent par un `load` dans un `.server.ts` voisin, lu avec `injectLoad` (voir `bff-spring`).
+- **SSR (à chaque requête)** : pour les pages connectées ou dont les données changent. Une **page connectée** : son préfixe dans `PAGES_CONNECTEES` (`src/app/auth/session-contrat.ts`) **et** `canActivate: [connexionRequise]` dans son `routeMeta` (voir `bff-spring`). Le compte s'affiche par le service `Session` (`src/app/auth/session.ts`). Les données arrivent par un `load` dans un `.server.ts` voisin, lu avec `injectLoad` (voir `bff-spring`).
 - Pendant le SSR, **pas de `window`, `document`, `localStorage`** au chargement du composant. Si c'est indispensable : `afterNextRender()`, ou `isPlatformBrowser(inject(PLATFORM_ID))`.
 - Statut HTTP depuis une page : `injectResponse()` (`@analogjs/router/tokens`), qui vaut `null` dans le navigateur (modèle : `[...not-found].page.ts`).
 - L'hydratation est active (`provideClientHydration(withEventReplay())`) : le premier rendu côté navigateur doit produire **le même HTML** que le serveur (pas de date courante, d'aléatoire ou de lecture de `window` dans le template initial).

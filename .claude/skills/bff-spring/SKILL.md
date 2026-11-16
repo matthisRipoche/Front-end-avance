@@ -116,8 +116,13 @@ Types de réponse : à reprendre de `web/src/app/core/*.model.ts` du dépôt d'o
 
 ## Page SSR et connexion côté serveur
 
-- Le `load` d'une page connectée reçoit `{ event, params }` (`PageServerLoad` de `@analogjs/router`). Il appelle **directement** `callSpring(event, …)`, sans repasser par HTTP vers sa propre route `/api` : le cookie est déjà sur l'`event`.
-- Sans session (401 de Spring) : redirection **côté serveur** vers le login, avant d'envoyer le moindre HTML (`sendRedirect(event, '/login?redirect=…', 302)`, chemin de retour filtré par `cheminDeRetour` de `src/app/auth/retour.ts`). **À vérifier** : comportement exact d'une redirection posée dans un `load` d'Analog 2.9, ou s'il faut passer par une garde dans `routeMeta`.
+Façon de faire retenue (#19, #20), vérifiée dans `node_modules` puis au `curl` :
+
+- **Angular ne voit pas les cookies pendant le SSR.** Il reçoit la requête Node (`injectRequest()`, jeton `REQUEST`), pas l'événement h3 ni `event.context`. `HttpClient` pendant le SSR passe par `requestContextInterceptor`, qui appelle `$fetch` **sans le cookie** ; le `load` d'un `.server.ts` est servi en sous-requête, **sans cookie** non plus, et un `sendRedirect` dans un `load` ne redirige que cette sous-requête. Les `load` des pages connectées (étape 4) auront donc besoin d'un moyen de recopier le cookie : à décider avant #24/#25.
+- **La session est lue par le middleware `src/server/middleware/session.ts`** (logique dans `src/server/utils/session.ts`) : pour une page (GET/HEAD, hors `/api`, `/_analog`, `/health`, fichiers), s'il y a un `JSESSIONID`, un appel à Spring `/api/auth/me` (délai 3 s). L'état (`EtatSession`, `src/app/auth/session-contrat.ts`) est posé sur `req[CLE_SESSION]`, lu par le service Angular `Session` et transmis au navigateur par TransferState.
+- **Une page connectée = deux choses à faire ensemble** : ajouter son préfixe à `PAGES_CONNECTEES` (`session-contrat.ts`) **et** `canActivate: [connexionRequise]` dans son `routeMeta`. Le middleware fait le 302 vers `/login?redirect=…` (anonyme) ou le 503 (Spring indisponible) avant tout HTML ; la garde couvre la navigation dans le navigateur et sert de filet côté serveur. Avec la garde seule, Angular rendrait la page de connexion sous l'adresse demandée avec un 200.
+- Toute page rendue pour un joueur connecté reçoit `cache-control: private, no-store` et `Vary: Cookie` : elle porte son compte.
+- **Pièges du mode dev** (Analog charge `src/server/middleware/**/*.ts` par Vite, hors de Nitro) : pas d'import de `nitropack/runtime` (l'adresse de Spring vient de `NITRO_API_URL`) ; `req.url` vaut `/index.html`, la vraie adresse est dans `req.originalUrl` (`cheminDemande`) ; un middleware qui a répondu doit renvoyer une valeur (`true`), sinon Analog enchaîne sur le rendu ; aucun `.spec.ts` dans `middleware/`.
 - Une page connectée n'est **jamais** dans `prerender.routes`.
 - Les appels `HttpClient` faits dans le navigateur vers `/api/…` passent par le relais : même origine, le cookie suit seul.
 
