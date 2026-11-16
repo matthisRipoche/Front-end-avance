@@ -12,7 +12,7 @@ navigateur ──▶ Nitro (src/server/) ──▶ API Spring (springUrl)
 
 Contrat de l'API et vocabulaire (face, SID, tentative) : `docs/api-spring.md`. Ce projet **ne modifie jamais** l'API Spring.
 
-> **État** : seuls `/health` et `springUrl()` existent. Le relais `/api` (#15) et la connexion côté serveur sont à construire : les recettes ci-dessous fixent la façon de faire. Ce qui n'a pas encore été éprouvé dans le projet est marqué **à vérifier** : vérifie-le au premier usage, puis mets ce skill à jour.
+> **État** : `/health`, `springUrl()` et le relais générique `/api/**` (#15) existent. `callSpring()`, les routes dédiées et la connexion côté serveur sont à construire : les recettes ci-dessous fixent la façon de faire. Ce qui n'a pas encore été éprouvé dans le projet est marqué **à vérifier** : vérifie-le au premier usage, puis mets ce skill à jour.
 
 ## Choisir le bon outil
 
@@ -25,6 +25,19 @@ Contrat de l'API et vocabulaire (face, SID, tentative) : `docs/api-spring.md`. C
 | Transversal (journaux, limitation de débit) | middleware Nitro | `src/server/middleware/` |
 
 Une route dédiée n'existe que si elle apporte quelque chose (validation, combinaison, forme adaptée à la page, traduction d'erreurs). Sinon, le relais suffit.
+
+## Le relais générique `/api/**`
+
+`src/server/routes/api/[...path].ts`, toutes méthodes, appuyé sur `proxyRequest` de h3 (utilitaire voisin : `src/server/utils/relais.ts`).
+
+- **`/api/_analog/**` est réservé à Analog.** Dès que `src/server/routes/api/` existe, Analog sert les `load` des pages sous `/api/_analog/pages/…` et son propre relais `/api` (qui retirait le préfixe) disparaît. N'écris jamais de route sous ce préfixe.
+- **Refusés en 404, sans appeler Spring** : `/api/_analog/**` et `/api/ingest/**` (réservé au mod, authentifié par Bearer). Le filtre porte sur le chemin **final, décodé et normalisé** : tout chemin qui sortirait de `/api/` (`..`, `%2e%2e`) est refusé aussi. Un nouveau préfixe interdit s'ajoute à cette liste, avec un test.
+- **Ce que `proxyRequest` fait seul** : transmet `cookie` et `x-xsrf-token`, remplace `host`, retire les en-têtes hop-by-hop, n'envoie pas `accept` (Spring répond en JSON quand même), recopie chaque `Set-Cookie` séparément. Aucune réécriture de cookie n'est nécessaire (voir « Cookies et CSRF »).
+- **Erreurs** : les 4xx de Spring passent tels quels. Spring ≥ 500 → **502** `{ message: "Erreur de l'API" }`, sans les en-têtes ni les `Set-Cookie` de Spring. Spring injoignable → **503** `{ message: "API indisponible" }`. `console.error` avec méthode et chemin **sans la query** (un retour OAuth y porte un code), statut, jamais de cookie.
+- **Piège de la réécriture des 5xx** : elle se fait dans l'option `onResponse` de `proxyRequest`, en écrivant la réponse directement (`res.end`). `send()` y est différé et n'empêche pas `sendProxy` de recopier la réponse de Spring.
+- **Piège de Spring injoignable** : h3 transforme le `fetch` rejeté en un 502 générique. Le relais l'attrape pour renvoyer le 503 du tableau.
+- **Coupure pendant le corps** : si Spring casse après l'envoi des en-têtes, le 503 n'est plus possible. Le relais journalise « réponse interrompue » et détruit la connexion du navigateur (`res.destroy()`), sinon il attend sans fin. Un `end()` ferait passer le corps tronqué pour complet.
+- **Redirections** : `proxyRequest` les suit (`redirect: 'follow'`). Quand Discord arrivera, passer en `redirect: 'manual'` pour que la redirection OAuth2 atteigne le navigateur.
 
 ## Appeler Spring
 
@@ -60,7 +73,9 @@ export async function callSpring<T>(event: H3Event, path: string, init: RequestI
 
 - Le cookie de session (`JSESSIONID`, HttpOnly) et `XSRF-TOKEN` viennent **de la requête en cours** : lus sur l'`event`, jamais gardés dans une variable de module (elle serait partagée entre tous les utilisateurs).
 - Écritures : le navigateur envoie `X-XSRF-TOKEN` ; Nitro le transmet tel quel.
-- Quand Spring pose ou efface un cookie (login, logout), le `Set-Cookie` doit revenir au navigateur. `proxyRequest` le fait. Dans une route dédiée qui fait un login : recopier chaque `Set-Cookie` de la réponse (`res.headers.getSetCookie()`) avec `appendResponseHeader(event, 'set-cookie', …)`. **À vérifier** : attributs `Path` et `Domain` posés par Spring, qui doivent rester valables sur le domaine du front.
+- Quand Spring pose ou efface un cookie (login, logout), le `Set-Cookie` doit revenir au navigateur. `proxyRequest` le fait. Dans une route dédiée qui fait un login : recopier chaque `Set-Cookie` de la réponse (`res.headers.getSetCookie()`) avec `appendResponseHeader(event, 'set-cookie', …)`.
+- Attributs posés par Spring (relevés le 2026-11-16, détail dans `docs/api-spring.md`) : `Path=/` et **aucun `Domain`**, donc les cookies se rattachent à l'origine du front. On les recopie **sans les réécrire**. `Secure` n'apparaît qu'en production (Spring en https) : en local, `XSRF-TOKEN` arrive sans `Secure`.
+- CSRF éprouvé de bout en bout à travers le relais : une écriture sans `X-XSRF-TOKEN` reçoit 403 de Spring. Spring n'a pas de CORS : l'en-tête `Origin` transmis ne gêne pas.
 
 ## Valider les paramètres
 
