@@ -12,7 +12,7 @@ navigateur ──▶ Nitro (src/server/) ──▶ API Spring (springUrl)
 
 Contrat de l'API et vocabulaire (face, SID, tentative) : `docs/api-spring.md`. Ce projet **ne modifie jamais** l'API Spring.
 
-> **État** : `/health`, `springUrl()` et le relais générique `/api/**` (#15) existent. `callSpring()`, les routes dédiées et la connexion côté serveur sont à construire : les recettes ci-dessous fixent la façon de faire. Ce qui n'a pas encore été éprouvé dans le projet est marqué **à vérifier** : vérifie-le au premier usage, puis mets ce skill à jour.
+> **État** : `/health`, `springUrl()` et le relais générique `/api/**` (#15), le journal des requêtes (plugin) et la limitation de débit du login (`src/server/middleware/limite-connexion.ts`, limiteur `src/server/utils/limite-debit.ts`, adresse IP `adresseClient`) existent. `callSpring()`, les routes dédiées et la connexion côté serveur sont à construire : les recettes ci-dessous fixent la façon de faire. Ce qui n'a pas encore été éprouvé dans le projet est marqué **à vérifier** : vérifie-le au premier usage, puis mets ce skill à jour.
 
 ## Choisir le bon outil
 
@@ -22,7 +22,7 @@ Contrat de l'API et vocabulaire (face, SID, tentative) : `docs/api-spring.md`. C
 | Transformer, valider, combiner pour une page | route dédiée | `src/server/routes/api/<nom>.<méthode>.ts` (une route précise passe avant le relais générique) |
 | Données d'une page rendue en SSR | `load` dans un `.server.ts` voisin de la page | `pages/…/<page>.server.ts`, lu par `injectLoad` |
 | Code partagé par les routes et les `load` | utilitaire | `src/server/utils/` |
-| Transversal (journaux, limitation de débit) | middleware Nitro | `src/server/middleware/` |
+| Transversal (journaux, limitation de débit) | plugin Nitro (hook `request`, passe avant les fichiers statiques) ou middleware Nitro | `src/server/plugins/`, `src/server/middleware/` |
 
 Une route dédiée n'existe que si elle apporte quelque chose (validation, combinaison, forme adaptée à la page, traduction d'erreurs). Sinon, le relais suffit.
 
