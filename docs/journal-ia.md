@@ -464,12 +464,32 @@ L'agent recommande B : à l'étape 4, les pages connectées auront leur propre g
 
 **Pour l'oral** : un choix « élégant » (suivre la version automatiquement) s'est révélé fragile sur la vraie machine. Vérifier le résultat là où il sert, pas seulement dans Git.
 
-## 2026-11-16 — Limitation de débit du login (#18), mode solo
+## 2026-11-16 — Journal des requêtes (#16), premier passage en mode solo
 
-**Demande** : suite de l'étape 3 en mode solo. Issue : au-delà de N essais de connexion par minute pour une même adresse IP, refuser en 429 sans appeler Spring.
+**Demande** : « on passe à la suite et fait les PR solo avec un rapport à chaque fois ». Nouvelle façon de travailler : l'agent enchaîne les issues de l'étape 3, tranche seul les décisions selon sa recommandation, pousse et ouvre la PR ; l'utilisateur relit chaque PR et la fusionne. Les points d'arrêt du workflow `/issue` deviennent un rapport par PR.
 
-**Décisions prises seul par l'agent** (rapportées dans la PR) : 10 essais par minute ; fenêtre fixe en mémoire (un seul conteneur, état perdu au redémarrage : limite assumée) ; 429 + `Retry-After` + `{ message }` comme les autres erreurs du relais ; adresse IP lue en **dernière** valeur de `X-Forwarded-For` (posée par Traefik), pour qu'un client ne puisse pas changer de compteur en inventant une première valeur ; chemin comparé après normalisation par `cibleSpring`, la fonction déjà écrite pour le relais.
+**Proposition** : issue petite, donc sans `planner` (le skill `/issue` le permet). Une ligne par requête, `[req] GET /faq 200 12ms`, écrite quand Node a fini d'envoyer la réponse (statut et durée définitifs). Ni query (code OAuth), ni cookie, ni corps (mot de passe). `/health` seulement en cas d'échec : Docker l'appelle toutes les 30 s.
 
-**Vérification** : le `verifier` confirme sur le serveur construit (10 essais passent, le 11e est un 429 sans appel à Spring, une autre IP passe). Le `reviewer` ne trouve rien de bloquant, mais trois points que l'agent a corrigés : un slash final, `//` ou une casse différente échappaient au compteur (contournement seulement si Spring les accepte ; normaliser coûtait moins cher que de le vérifier) ; la purge de la mémoire parcourait toute la table à chaque essai au-delà de 10 000 adresses (elle s'arrête maintenant à la première fenêtre ouverte) ; le 429 n'était documenté nulle part.
+**Ce que la vérification a attrapé** : la première version était un **middleware Nitro** (`src/server/middleware/`), comme l'indiquait le skill `bff-spring`. Le `reviewer` (en lisant le code de Nitro) et le `verifier` (en interrogeant le serveur construit) ont trouvé indépendamment le même défaut bloquant : en production, Nitro place son gestionnaire de fichiers statiques **avant** les middlewares. Les pages prérendues (`/`, `/faq`…) et les JS/CSS partaient sans ligne de journal, alors que les tests, montés sur une petite application h3, passaient. Le `verifier` a aussi vu une ligne « interrompue » en double pour chaque page pendant le prérendu.
 
-**Pour l'oral** : la limite protège le chemin qui passe par le front, pas l'API : Spring reste joignable directement à son adresse publique. C'est le périmètre fixé au départ (ne pas modifier l'API), mais il faut le dire.
+**Correction** : un **plugin Nitro** (`src/server/plugins/journal.ts`) branché sur le hook `request`, appelé avant tout gestionnaire. Le test reproduit désormais l'ordre réel (suivi dans `onRequest`, gestionnaire « statique » avant le routeur). « Interrompue » se décide sur `res.writableEnded`, plus sur un drapeau posé par `finish`. Le skill `bff-spring` est corrigé, pour que la prochaine fois parte du bon endroit.
+
+**Pour l'oral** : des tests verts ne suffisaient pas, parce qu'ils ne reproduisaient pas l'ordre des gestionnaires du vrai serveur. C'est la requête sur le serveur construit qui a montré le trou, et la règle fausse venait d'un skill écrit par l'agent lui-même.
+
+---
+
+## 2026-11-17 — Échec aléatoire en CI : relance plutôt qu'agent correcteur
+
+**Constat** : la CI de la PR #61 (limitation des tentatives de connexion) échoue au build. Le garde-fou de la #57 signale 4 pages prérendues vides : c'est la course du plugin Angular d'Analog, pas le code de la PR. Une simulation des cinq PR ouvertes fusionnées ensemble construit sans erreur.
+
+**Demande** : « un agent qui se réveille si la pipeline ne passe pas, pour corriger le code ».
+
+**Réponse de l'agent** : sur cet échec-là, un agent correcteur se tromperait de cible. Le code est sain, et l'agent risquerait de le « corriger » pour faire passer la CI. Il propose de séparer deux besoins :
+- **échec aléatoire du prérendu** : le régler dans la pipeline, sans agent ;
+- **vrais échecs** (test cassé, erreur de type) : un agent a du sens. Deux options : l'**Auto-fix de l'app** (la session est réveillée sur un échec de CI, un conflit ou un commentaire de relecture, rien à installer) ou un **agent dans GitHub Actions** (`claude-code-action` : marche sans session ouverte, mais clé d'API en secret, coût par échec, poussées sans relecture, et sur-outillage).
+
+**Validé** : relance automatique du build, et Auto-fix de l'app.
+
+**Fait** : dans `ci-cd.yml` et `deploy/Dockerfile`, un build en échec est relancé une fois, avec un avertissement visible dans la CI. Une vraie erreur échoue deux fois, et la CI reste rouge. La logique (`a || { avertir; a; }`) a été essayée sur un faux build : code 0 si le second essai passe, code 1 s'il échoue aussi.
+
+**Pour l'oral** : ne pas mettre un agent là où une règle suffit. L'agent correcteur aurait été spectaculaire, mais il aurait traité le symptôme, et sur du code sain.
