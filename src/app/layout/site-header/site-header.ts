@@ -3,10 +3,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, map } from 'rxjs';
 
-import { Compte } from '../auth/compte';
-import { estPageConnexion } from '../auth/retour';
-import { Session } from '../auth/session';
-import { estPageConnectee } from '../auth/session-contrat';
+import { Compte } from '../../auth/compte';
+import { estPageConnexion } from '../../auth/retour';
+import { Session } from '../../auth/session';
+import { estPageConnectee } from '../../auth/session-contrat';
 
 // Barre de navigation des pages publiques.
 @Component({

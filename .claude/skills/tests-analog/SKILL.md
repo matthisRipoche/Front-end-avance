@@ -19,7 +19,7 @@ Vitest 5, environnement `jsdom`, `globals: true` (`describe`, `it`, `expect` san
 
 ## Page ou composant Angular
 
-Modèle : `src/app/pages/(public)/index.page.spec.ts`.
+Modèle : `src/app/pages/(public)/(accueil)/index.page.spec.ts`.
 
 ```ts
 import { TestBed } from '@angular/core/testing';

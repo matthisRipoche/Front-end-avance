@@ -8,11 +8,17 @@
 // `vite build` sort quand même en code 0. Ça arrive quand la machine est chargée (CI, tests en
 // parallèle). Ce contrôle empêche une telle image d'être construite et mise en ligne.
 //
-// Critère : chaque page prérendue contient un <h1> (toutes les pages du site en ont un ; une
-// coquille vide n'a que <app-root><router-outlet>).
+// Critères :
+// - chaque page de PAGES_PRERENDUES a son fichier. Une page qui répond 404 au prérendu n'est pas
+//   écrite : c'est arrivé le 2026-11-17, quand la page 404 rangée dans un dossier de groupe a pris
+//   le pas sur `/` et `/mod`, et que ce contrôle n'avait vu que les 2 pages restantes ;
+// - chaque page prérendue contient un <h1> (toutes les pages du site en ont un ; une coquille vide
+//   n'a que <app-root><router-outlet>).
 
-import { readdir, readFile } from 'node:fs/promises';
+import { access, readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+
+import { PAGES_PRERENDUES } from './pages-prerendues.mjs';
 
 const racine = 'dist/analog/public';
 
@@ -25,6 +31,18 @@ async function pagesHtml(dossier) {
     else if (entree.name === 'index.html') pages.push(chemin);
   }
   return pages;
+}
+
+// `/` → index.html, `/faq` → faq/index.html.
+const fichierDe = (adresse) => join(racine, adresse.replace(/^\/+/, ''), 'index.html');
+const manquantes = [];
+for (const adresse of PAGES_PRERENDUES) {
+  await access(fichierDe(adresse)).catch(() => manquantes.push(adresse));
+}
+if (manquantes.length > 0) {
+  console.error(`✗ Prérendu : ${manquantes.length} page(s) attendue(s) non écrite(s) : ${manquantes.join(', ')}.`);
+  console.error('  Une page qui répond 404 ou plante au prérendu n\'est pas écrite : lire « [req] GET … » plus haut.');
+  process.exit(1);
 }
 
 const pages = await pagesHtml(racine).catch(() => []);
