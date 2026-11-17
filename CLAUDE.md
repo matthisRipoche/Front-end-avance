@@ -63,7 +63,7 @@ C'est la matière de l'oral. **À chaque étape** (décision, fonctionnalité, c
 - **Chaque commit passe par le skill `commit`** (`.claude/skills/commit/SKILL.md`).
 - Jamais de commit sur `main`. Une branche par sujet (`feat/…`, `fix/…`, `docs/…`, `chore/…`), puis pull request, fusion en **squash** (le titre de la PR devient le commit sur `main`).
 - **Auto-fix** est activé sur chaque PR à sa création (skill `commit`) : l'app réveille la session sur un échec de CI, un conflit ou un commentaire. Un conflit se résout avec le skill `conflits`, et la session pousse sans redemander.
-- **Conventional Commits en français**, commits atomiques, build et tests avant chaque commit.
+- **Conventional Commits en français**, commits atomiques, build et tests avant chaque commit. Imposé par un hook (`.claude/hooks/verifier-avant-commit.mjs`) : un `git commit` de l'agent est bloqué si les tests, le build ou les en-têtes échouent.
 - Demander avant chaque `git push`.
 
 ## Commandes

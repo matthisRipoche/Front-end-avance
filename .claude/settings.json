@@ -7,5 +7,19 @@
       "Bash(npx impeccable:*)",
       "Bash(sh .claude/skills/impeccable/scripts/impeccable:*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/verifier-avant-commit.mjs\"",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
   }
 }

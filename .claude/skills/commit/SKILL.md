@@ -59,6 +59,11 @@ Un en-tête YAML invalide (par exemple une description qui contient « : » sans
 disparaître l'agent ou le skill **sans message d'erreur**. Le script vérifie aussi que `name`
 correspond au nom du fichier ou du dossier et que `skills` est une liste.
 
+**Le hook `.claude/hooks/verifier-avant-commit.mjs` l'impose** : tout `git commit` lancé par un
+agent passe d'abord par les tests, le build et la validation des en-têtes, et il est bloqué si l'un
+échoue. Lancer quand même les vérifications avant, pour lire les erreurs plus tôt et ne pas
+attendre le blocage.
+
 Si une vérification échoue : ne pas commiter, montrer l'erreur à l'utilisateur. Si une vérification
 est impossible, le dire dans le compte rendu.
 
