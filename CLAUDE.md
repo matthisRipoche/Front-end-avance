@@ -44,6 +44,7 @@ Un agent ne parle pas à l'utilisateur : une décision imprévue remonte à la s
 | `bff-spring` | Couche serveur : appeler Spring, cookies et CSRF, validation, traduction des erreurs, `load` SSR | dev, planner, reviewer |
 | `tests-analog` | Tester une page, une route Nitro, un utilitaire ; simuler Spring | dev, reviewer, verifier |
 | `review-analog` | Méthode de relecture, grille des pièges SSR/Nitro, gravité | reviewer |
+| `conflits` | Résoudre les conflits d'une PR avec `main` sans rien perdre (PR empilées après un squash, doc modifiée des deux côtés) | session principale, réveillée par Auto-fix |
 
 Une règle de code se met à jour **dans le skill**, pas dans un agent. Les points marqués « à vérifier » se tranchent au premier usage.
 
@@ -51,14 +52,17 @@ Une règle de code se met à jour **dans le skill**, pas dans un agent. Les poin
 
 Les tâches sont des issues GitHub, toutes assignées à l'utilisateur, rangées par jalon (« Étape 2 · Pages publiques » … « Étape 5 · Finitions et oral », « Bonus »). Labels de type : `front`, `serveur`, `outillage`, `design`, `doc`. Les labels `mode : à moi` et `mode : agent` restent sur GitHub mais ne changent plus la façon de travailler. Une branche traite une issue ; sa PR la ferme (`Closes #n`).
 
-## Journal de l'IA : `docs/journal-ia.md`
+## Journal de l'IA : `docs/journal/`
 
 C'est la matière de l'oral. **À chaque étape** (décision, fonctionnalité, correction notable), l'agent ajoute une entrée : la demande, sa proposition, ce que l'utilisateur a validé ou corrigé, et pourquoi. Noter aussi les erreurs de l'agent et la façon dont elles ont été rattrapées.
+
+**Une entrée = un nouveau fichier** `docs/journal/AAAA-MM-JJ-NN-sujet.md` (règles dans `docs/journal/README.md`), jamais un ajout à un fichier commun : deux PR ouvertes n'entrent ainsi pas en conflit.
 
 ## Git
 
 - **Chaque commit passe par le skill `commit`** (`.claude/skills/commit/SKILL.md`).
 - Jamais de commit sur `main`. Une branche par sujet (`feat/…`, `fix/…`, `docs/…`, `chore/…`), puis pull request, fusion en **squash** (le titre de la PR devient le commit sur `main`).
+- **Auto-fix** est activé sur chaque PR à sa création (skill `commit`) : l'app réveille la session sur un échec de CI, un conflit ou un commentaire. Un conflit se résout avec le skill `conflits`, et la session pousse sans redemander.
 - **Conventional Commits en français**, commits atomiques, build et tests avant chaque commit.
 - Demander avant chaque `git push`.
 
