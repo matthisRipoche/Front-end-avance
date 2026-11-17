@@ -113,6 +113,39 @@ Forme `TableauDeBord` (détail : `src/app/modeles/tableau-de-bord.ts`). Champs e
 | `enJeu` | Partie en cours (`/api/live`), ou `null` |
 | `vide` | Vrai si `reprendre` est `null` **et** aucune tentative sur les 14 jours d'`activite` (`activite.max` vaut 0) : la page montre l'accueil d'un nouveau joueur |
 
+### `GET /api/maps`
+
+> Issue #26. Route : `src/server/routes/api/maps.get.ts`, logique : `src/server/utils/mes-maps.ts`.
+
+Appelle `GET /api/faces` avec le cookie de la requête et renvoie les faces jouées dans la forme dont la page `/maps` a besoin : nom de repli, mod déduit du SID, liste des mods, ordre stable.
+
+- **Aucun paramètre** de tri, de filtre ni de fuseau : le résolveur de la page appelle toujours la même URL (même clé de TransferState côté serveur et côté navigateur), et la page trie et filtre elle-même. Un `?tz=` est ignoré.
+- Fuseau : le cookie `tz` s'il est valide (même règle que le tableau de bord), sinon `Europe/Paris`. Il ne sert qu'à l'affichage des dates : `/api/faces` ne le reçoit pas.
+
+Codes :
+
+| Cas | Réponse |
+|---|---|
+| Succès | **200** `MesMaps` |
+| Pas de cookie de session | **401** `{ message: "Connexion requise" }`, sans appeler Spring |
+| Spring répond 401 (session expirée ou fausse) | **401** `{ message: "Connexion requise" }` |
+| Spring répond 5xx | **502** `{ message: "Erreur de l'API" }` |
+| Spring injoignable ou plus lent que 5 s | **503** `{ message: "API indisponible" }` |
+
+- En succès : `cache-control: private, no-store` et `Vary: Cookie`.
+
+Forme `MesMaps` (détail : `src/app/modeles/mes-maps.ts`). Champs en français, en liste blanche.
+
+| Champ | Contenu |
+|---|---|
+| `fuseau` | Fuseau retenu pour afficher les dates |
+| `faces` | Une `FaceJouee` par face : `sid, side, nom, mod, tentatives` (`attempts`), `deathless` (`clears`), `dernierePartie` (`lastPlayedAt`, ms Unix). Triées par `dernierePartie` décroissante, ex aequo par `sid` puis `side` |
+| `mods` | `{ nom, faces }` pour chaque mod joué, par nombre de faces décroissant, puis par nom |
+
+- `nom` : `mapName` de Spring, sinon le dernier segment du SID (`StrawberryJam2021/1-Beginner/maya` → `maya`).
+- `mod` : premier segment du SID (`Celeste/1-ForsakenCity` → `Celeste`), sinon le SID entier.
+- **Limite** : `/api/faces` ne donne aucune progression (rooms atteintes, rooms vues). La page n'affiche donc pas de meilleure progression ; elle viendra avec le détail d'une face (#27).
+
 ## Vocabulaire
 
 - **Face** : une map (SID, par exemple `Celeste/1-ForsakenCity`) + un côté A, B ou C. Le SID contient des `/` : il passe **toujours en paramètre de requête**, jamais dans le chemin.

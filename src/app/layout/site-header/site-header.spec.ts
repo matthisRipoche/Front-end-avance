@@ -82,6 +82,27 @@ describe('Navigation des pages publiques', () => {
     expect(nav.textContent).not.toContain('Se connecter');
   });
 
+  it('propose « Mes maps » au joueur connecté', async () => {
+    const { nav } = await monter('/faq', CONNECTE);
+    const lien = nav.querySelector('a[href="/maps"]');
+    expect(lien?.textContent).toContain('Mes maps');
+    expect(lien?.getAttribute('aria-current')).toBeNull();
+  });
+
+  it('marque « Mes maps » comme page courante sur /maps', async () => {
+    const { fixture, nav } = await monter('/maps?tri=alpha', CONNECTE);
+    // routerLinkActive calcule son état après le premier rendu : un second passage l'affiche.
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(nav.querySelector('a[href="/maps"]')?.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('ne propose pas « Mes maps » à un anonyme', async () => {
+    const { nav } = await monter('/faq');
+    expect(nav.querySelector('a[href="/maps"]')).toBeNull();
+    expect(nav.textContent).not.toContain('Mes maps');
+  });
+
   it('montre le pseudo Discord d’un compte sans email', async () => {
     const etat: EtatSession = {
       statut: 'connecte',

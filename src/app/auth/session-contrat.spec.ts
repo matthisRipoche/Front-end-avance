@@ -10,6 +10,9 @@ describe('estPageConnectee', () => {
     '/tableau-de-bord;a=b',
     '//tableau-de-bord',
     '/tableau-de-bord/sous-page',
+    '/maps',
+    '/maps/',
+    '/maps?tri=alpha',
   ])('reconnaît une page connectée, même écrite autrement : %j', (chemin) => {
     expect(estPageConnectee(chemin)).toBe(true);
   });
@@ -18,7 +21,7 @@ describe('estPageConnectee', () => {
     expect(estPageConnectee('/%zz')).toBe(true);
   });
 
-  it.each(['/', '/faq', '/tableau-de-bord-x', '/login'])(
+  it.each(['/', '/faq', '/tableau-de-bord-x', '/mapsx', '/login'])(
     'laisse passer une page publique : %j',
     (chemin) => {
       expect(estPageConnectee(chemin)).toBe(false);

@@ -5,6 +5,11 @@
       <div class="cdt-nav__links">
         <a class="cdt-nav__link" routerLink="/mod" routerLinkActive #mod="routerLinkActive" [attr.aria-current]="mod.isActive ? 'page' : null">Le mod</a>
         <a class="cdt-nav__link" routerLink="/faq" routerLinkActive #faq="routerLinkActive" [attr.aria-current]="faq.isActive ? 'page' : null">FAQ</a>
+        <!-- Même @if que le bloc du compte ci-dessous : lien réservé au joueur connecté, rangé avec
+             les autres liens de navigation plutôt qu'avec les boutons. -->
+        @if (utilisateur()) {
+          <a class="cdt-nav__link" routerLink="/maps" routerLinkActive #maps="routerLinkActive" [attr.aria-current]="maps.isActive ? 'page' : null">Mes maps</a>
+        }
       </div>
       @if (utilisateur()) {
         <span class="header__compte" [title]="nom()">{{ nom() }}</span>
