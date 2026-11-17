@@ -3,8 +3,7 @@ import { vi } from 'vitest';
 
 import { cibleSpring } from './relais';
 
-const config = { apiUrl: 'http://spring.test:5000' };
-vi.mock('nitropack/runtime', () => ({ useRuntimeConfig: () => config }));
+vi.stubEnv('NITRO_API_URL', 'http://spring.test:5000');
 
 describe('cibleSpring : adresse Spring d’une requête /api', () => {
   it.each([

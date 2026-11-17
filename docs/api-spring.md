@@ -2,7 +2,7 @@
 
 Production : `https://celeste.matthisripoche.com`. En local, l'API tourne sur le port 5000.
 
-Le serveur Node ne l'écrit nulle part en dur : il lit `runtimeConfig.apiUrl` (`http://localhost:5000` par défaut, `NITRO_API_URL` en production) et construit les adresses avec `springUrl()` (`src/server/utils/spring.ts`).
+Le serveur Node ne l'écrit nulle part en dur : il lit la variable `NITRO_API_URL` au démarrage (`http://localhost:5000` par défaut) et construit les adresses avec `springUrl()` (`src/server/utils/spring.ts`).
 Code source : `~/projects/CelesteDeathTracker/api/`. Ce projet **ne modifie pas** l'API.
 
 ## Authentification du navigateur
@@ -38,6 +38,7 @@ Ce que le relais ajoute :
 
 - `/api/_analog/**` (interne à Analog) et `/api/ingest/**` (réservé au mod, Bearer) : **404**, sans appeler Spring.
 - Une adresse qui sortirait de `/api/` une fois `..` ou `%2e%2e` résolus, ou dont l'encodage est invalide : **404**, sans appeler Spring. Le filtre juge l'adresse que Spring recevrait, décodée.
+- `POST /api/auth/login` au-delà de **10 essais par minute** pour une même adresse IP : **429** `{ message: "Trop de tentatives de connexion. Réessaie dans N s." }` et en-tête `Retry-After`, sans appeler Spring (`src/server/middleware/limite-connexion.ts`). Limite du front seulement : Spring reste joignable directement à son adresse publique.
 - Erreur 5xx de Spring : **502** `{ message: "Erreur de l'API" }`, sans en-têtes ni cookies de Spring. Spring injoignable : **503** `{ message: "API indisponible" }`. Les 4xx passent tels quels.
 - Les autres en-têtes de Spring (`strict-transport-security`, `x-frame-options: DENY`, `server: nginx`) sont transmis tels quels.
 

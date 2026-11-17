@@ -17,16 +17,11 @@ export default defineConfig(({ mode }) => ({
       // mais c'est cette option qui active le traitement des fichiers .md.
       // Attention : tout .md de src/content/ ou de src/app/pages/ devient une route.
       content: { highlighter: 'prism' },
-      // Nitro sert comme route tout fichier de src/server/routes/ : sans cette règle,
+      // Nitro charge tout fichier de src/server/ (routes, middleware, plugins) : sans cette règle,
       // health.spec.ts devenait une route /health.spec qui plantait en production.
       nitro: {
         ignore: ['**/*.spec.ts'],
-        // Configuration lue par le serveur Node au démarrage, pas figée au build : chaque clé
-        // se remplace par une variable d'environnement NITRO_<CLÉ> (apiUrl → NITRO_API_URL).
-        // Valeur par défaut : l'API Spring lancée en local. La production donne son adresse publique.
-        runtimeConfig: {
-          apiUrl: 'http://localhost:5000',
-        },
+        // Adresse de l'API Spring : variable NITRO_API_URL, lue au démarrage (src/server/utils/spring.ts).
       },
       // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
       // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
