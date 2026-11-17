@@ -136,4 +136,5 @@ Le prérendu, le vrai rendu SSR de bout en bout et les redirections réelles se 
 Le plugin Angular partage une compilation entre les builds client et SSR, lancés en parallèle. Si le client finit le premier, le SSR embarque des composants non compilés : le prérendu affiche `Component '…' is not resolved`, les pages sortent vides, et `vite build` réussit quand même. Ça arrive sous charge (CI, tests lancés en même temps). Cause prouvée le 2026-11-16 (SSR ralenti exprès : échec à chaque fois) ; le nom des fichiers n'y est pour rien.
 
 - `npm run build` lance ensuite `scripts/verifier-prerendu.mjs` (postbuild), qui **échoue** si une page prérendue n'a pas de `<h1>`. Un build n'est réussi que si ce contrôle affiche `✓ Prérendu`.
-- S'il échoue, relance le build **seul**, sans tests ni autre build en parallèle, avant de soupçonner le code. Si l'échec persiste, c'est le code.
+- **Corrigé à la source** : le plugin `buildsSequentiels()` de `vite.config.ts` enchaîne les builds client et SSR (Analog les lançait en parallèle avec `Promise.all`). Avec lui, le SSR ralenti exprès passe ; sans lui, il échoue. Ne pas le retirer tant qu'Analog n'a pas corrigé le partage de la compilation.
+- Si le contrôle échoue malgré tout, c'est le code (ou une régression du plugin) : lire les erreurs `Component '…' is not resolved` du prérendu.
