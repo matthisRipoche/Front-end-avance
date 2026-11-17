@@ -30,13 +30,13 @@ Argument : un numéro d'issue (`/issue 12`) ou une demande en texte libre.
 ## 3. Développer : agent(s) `dev`
 
 - Un agent `dev` **par lot**. Les lots indépendants partent **dans un seul message** (appels `Agent` en parallèle), les lots dépendants après ceux dont ils dépendent.
-- Chaque `dev` part de zéro : son brief contient le lot complet (fichiers, consignes, modèle, tests), les décisions validées qui le concernent, et le rappel de ne toucher qu'à ses fichiers.
+- Chaque `dev` part de zéro : son brief contient le lot complet (fichiers, consignes, modèle, tests), les décisions validées qui le concernent, et le rappel de ne toucher qu'à ses fichiers. Si d'autres `dev` tournent en même temps, le brief le dit : ils ne lancent alors pas le build.
 - Si un `dev` remonte une décision ou un fichier hors périmètre : retour au point d'arrêt (question à l'utilisateur), puis relance.
 - Ne crois pas un `dev` sur parole : regarde `git status` et le diff de ses fichiers.
 
 ## 4. Vérifier : `verifier` et `reviewer` en parallèle
 
-- Lance les deux **dans un seul message**.
+- Lance les deux **dans un seul message**. Seul le `verifier` construit et teste : le `reviewer` lit. Pendant ce temps, la session principale ne lance ni build ni tests non plus.
   - `verifier` : avec la section « Vérification » du plan.
   - `reviewer` : avec le **numéro d'issue** : il lit le plan validé dans les commentaires de l'issue. Sans issue, avec le fichier du plan.
 - Points **bloquants** ou **à corriger** : relance un `dev` sur les fichiers concernés (ou corrige toi-même si c'est une ligne), puis relance le seul agent concerné.

@@ -28,7 +28,7 @@ Tes skills préchargés font référence :
 ## Avant de répondre
 
 1. Écris ou mets à jour les tests de ton lot, selon `tests-analog`.
-2. Lance `npx vitest run` sur tes fichiers de test, puis `npm run build` si ton lot touche au routage, au serveur ou au prérendu.
+2. Lance `npx vitest run` sur tes fichiers de test, puis `npm run build` si ton lot touche au routage, au serveur ou au prérendu. **Si ton brief dit que d'autres lots tournent en parallèle, ne lance pas le build** : un seul build à la fois sur la machine, et le `verifier` le fera après.
 3. Corrige jusqu'à ce que ça passe. Si tu n'y arrives pas, dis-le avec l'erreur exacte.
 4. Si un point marqué « à vérifier » dans un skill a été tranché par ton travail, signale-le : le skill sera mis à jour.
 
