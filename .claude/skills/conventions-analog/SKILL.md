@@ -14,13 +14,18 @@ Avant d'écrire, **ouvre un fichier voisin du même type et imite-le**. Les mod�
 
 ## Où va quoi
 
+**Règle : un composant par dossier** (décision de l'utilisateur, 2026-11-17). Chaque composant, page comprise, a son propre dossier, qui ne contient que ses fichiers : `.ts`, `.html`, `.css`, `.spec.ts`, plus ses utilitaires propres (`format.ts`, `<page>.donnees.ts`). Jamais deux composants dans le même dossier. L'accueil (`index.page.ts`, adresse `/`) va dans un **dossier de groupe** `(accueil)/`, qui n'apparaît pas dans l'adresse. Exceptions imposées par le routage :
+- la coque `(public).page.*` est à côté du dossier `(public)/` qu'elle entoure ;
+- la page 404 `[...not-found].page.*` reste dans `(public)/` : placée dans un dossier de groupe, elle passe avant les autres routes et `/`, `/mod`, `/login` répondent 404 (essayé le 2026-11-17) ;
+- les pages Markdown (`faq.md`) sont des fichiers seuls.
+
 | Je crée… | Emplacement | Modèle |
 |---|---|---|
-| Page publique (accueil, mod…) | `src/app/pages/(public)/<nom>.page.ts`, ou `(public)/<nom>/index.page.ts` si elle a plusieurs fichiers | `(public)/index.page.ts`, `(public)/mod/index.page.ts` |
+| Page publique | `src/app/pages/(public)/<nom>/index.page.ts` (+ `.html`, `.css`, `.spec.ts`) ; l'accueil dans un groupe : `(public)/(accueil)/index.page.ts` | `(public)/mod/index.page.ts`, `(public)/(accueil)/index.page.ts` |
 | Page de texte (FAQ, confidentialité) | `src/app/pages/(public)/<nom>.md` (titre et meta dans le frontmatter) | `(public)/faq.md` |
 | Page hors coque publique | `src/app/pages/<nom>/index.page.ts` | `design-system/index.page.ts` |
-| Coque (navigation, pied de page) | `src/app/layout/` | `site-header.ts` |
-| Composant réutilisable du design system | `src/app/ui/<nom>.ts` (+ `.html`, `.css`) | `ui/result-tag.ts` |
+| Coque (navigation, pied de page) | `src/app/layout/<nom>/<nom>.ts` | `layout/site-header/site-header.ts` |
+| Composant réutilisable du design system | `src/app/ui/<nom>/<nom>.ts` (+ `.html`, `.css`, `.spec.ts`) | `ui/result-tag/result-tag.ts` |
 | Route serveur Nitro | `src/server/routes/…` (méthode dans le nom : `faces.get.ts`) | `server/routes/health.ts` |
 | Utilitaire serveur | `src/server/utils/` | `server/utils/spring.ts` |
 | Styles globaux | jetons `src/styles/tokens.css`, classes `src/styles/components.css` | |
@@ -31,18 +36,18 @@ Groupe `(public)` : `(public).page.ts` est la coque (header, `<router-outlet />`
 
 - **Trois fichiers côte à côte** : `.ts` + `.html` (+ `.css` s'il a des styles), reliés par `templateUrl` et `styleUrl`. **Jamais** de `template:` ni de `styles:` en ligne. Le test est à côté : `.spec.ts`.
 - Standalone, `changeDetection: ChangeDetectionStrategy.OnPush`, dépendances déclarées dans `imports`.
-- Une page fait `export default class …` (exigé par le routage d'Analog), sélecteur `app-…`. Un composant de `ui/` est un export nommé, sélecteur `cdt-…`, et pose sa classe `.cdt-*` par `host` (modèle : `ui/result-tag.ts`).
+- Une page fait `export default class …` (exigé par le routage d'Analog), sélecteur `app-…`. Un composant de `ui/` est un export nommé, sélecteur `cdt-…`, et pose sa classe `.cdt-*` par `host` (modèle : `ui/result-tag/result-tag.ts`).
 - Une information ne passe jamais par la couleur seule : couleur + forme ou mot.
 - `inject()` plutôt que des paramètres de constructeur ; signals et `input()` ; control flow `@if` / `@for` (avec `track`).
 - Membres utilisés seulement par le template : `protected readonly`.
-- Données d'exemple : constantes en haut du fichier, et la page dit qu'elles sont fictives (modèle : `(public)/index.page.ts`).
+- Données d'exemple : constantes en haut du fichier, et la page dit qu'elles sont fictives (modèle : `(public)/(accueil)/index.page.ts`).
 
 ## Rendu : SSR, SSG, navigateur
 
-- **SSG (prérendu au build)** : pour les pages publiques sans donnée de compte. Ajoute l'adresse à `prerender.routes` dans `vite.config.ts` ; la liste remplace la valeur par défaut, donc `/` doit y rester.
+- **SSG (prérendu au build)** : pour les pages publiques sans donnée de compte. Ajoute l'adresse à `PAGES_PRERENDUES` (`scripts/pages-prerendues.mjs`), lue par `prerender.routes` de `vite.config.ts` et par le contrôle du build, qui échoue si une page de la liste n'est pas écrite ; la liste remplace la valeur par défaut, donc `/` doit y rester.
 - **SSR (à chaque requête)** : pour les pages connectées ou dont les données changent. Une **page connectée** : son préfixe dans `PAGES_CONNECTEES` (`src/app/auth/session-contrat.ts`) **et** `canActivate: [connexionRequise]` dans son `routeMeta` (voir `bff-spring`). Le compte s'affiche par le service `Session` (`src/app/auth/session.ts`). Ses données arrivent par un **résolveur** (`resolve` dans `routeMeta`) qui appelle une route du front `/api/…` par `HttpClient`, la même URL côté serveur et côté navigateur ; la page les lit par `ActivatedRoute.data` (modèle : `(public)/tableau-de-bord/tableau-de-bord.donnees.ts`, détail dans `bff-spring`). Un `load` dans un `.server.ts` voisin, lu avec `injectLoad`, reste possible pour des données **publiques** : il est servi sans cookie.
 - Pendant le SSR, **pas de `window`, `document`, `localStorage`** au chargement du composant. Si c'est indispensable : `afterNextRender()`, ou `isPlatformBrowser(inject(PLATFORM_ID))`.
-- Statut HTTP depuis une page : `injectResponse()` (`@analogjs/router/tokens`), qui vaut `null` dans le navigateur (modèle : `[...not-found].page.ts`).
+- Statut HTTP depuis une page : `injectResponse()` (`@analogjs/router/tokens`), qui vaut `null` dans le navigateur (modèle : `(public)/[...not-found].page.ts`).
 - L'hydratation est active (`provideClientHydration(withEventReplay())`) : le premier rendu côté navigateur doit produire **le même HTML** que le serveur (pas de date courante, d'aléatoire ou de lecture de `window` dans le template initial).
 - **Dates dans le rendu initial** : jamais `Date.now()` ni `new Date()` sans argument, jamais de date relative (« il y a 2 h ») ; une date se formate par `Intl` avec le `timeZone` **porté par les données** (le fuseau du joueur), pas celui de la machine, sinon le serveur (UTC) et le navigateur écrivent des heures différentes. Le fuseau arrive au serveur par le cookie `tz`, posé par `memoriserFuseau` (`src/app/auth/fuseau.ts`) à la connexion et par la page connectée après rendu (`afterNextRender`).
 

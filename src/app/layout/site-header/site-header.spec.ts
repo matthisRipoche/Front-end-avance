@@ -4,8 +4,8 @@ import { Component, PLATFORM_ID, TransferState } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
-import { CLE_ETAT_SESSION } from '../auth/session';
-import type { EtatSession, Utilisateur } from '../auth/session-contrat';
+import { CLE_ETAT_SESSION } from '../../auth/session';
+import type { EtatSession, Utilisateur } from '../../auth/session-contrat';
 import { SiteHeader } from './site-header';
 
 @Component({ template: '' })

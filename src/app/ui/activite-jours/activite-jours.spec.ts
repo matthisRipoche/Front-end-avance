@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import type { Activite } from '../modeles/tableau-de-bord';
+import type { Activite } from '../../modeles/tableau-de-bord';
 import { ActiviteJoursGraphique } from './activite-jours';
 
 // 14 jours, du 2026-11-04 au 2026-11-17 ; tentatives fixées par jour, deathless optionnels.

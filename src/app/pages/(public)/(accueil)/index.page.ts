@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RouteMeta } from '@analogjs/router';
 
-import { ReachTrack } from '../../ui/reach-track';
-import { ResultTag } from '../../ui/result-tag';
-import { RoomBreakdown, RoomStops } from '../../ui/room-breakdown';
+import { ReachTrack } from '../../../ui/reach-track/reach-track';
+import { ResultTag } from '../../../ui/result-tag/result-tag';
+import { RoomBreakdown, RoomStops } from '../../../ui/room-breakdown/room-breakdown';
 
 const DESCRIPTION =
   'Un mod Everest enregistre chaque tentative de deathless sur Celeste. Le site te montre, face par face, jusqu’où tu vas, où tu tombes, et si tu progresses.';

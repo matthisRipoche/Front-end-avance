@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-import type { Activite } from '../modeles/tableau-de-bord';
+import type { Activite } from '../../modeles/tableau-de-bord';
 
 const MOIS = [
   'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
