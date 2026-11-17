@@ -12,7 +12,7 @@ navigateur ──▶ Nitro (src/server/) ──▶ API Spring (springUrl)
 
 Contrat de l'API et vocabulaire (face, SID, tentative) : `docs/api-spring.md`. Ce projet **ne modifie jamais** l'API Spring.
 
-> **État** : `/health`, `springUrl()` et le relais générique `/api/**` (#15), le journal des requêtes (plugin) et la limitation de débit du login (`src/server/middleware/limite-connexion.ts`, limiteur `src/server/utils/limite-debit.ts`, adresse IP `adresseClient`) existent. `callSpring()`, les routes dédiées et la connexion côté serveur sont à construire : les recettes ci-dessous fixent la façon de faire. Ce qui n'a pas encore été éprouvé dans le projet est marqué **à vérifier** : vérifie-le au premier usage, puis mets ce skill à jour.
+> **État** : `/health`, `springUrl()` et le relais générique `/api/**` (#15), le journal des requêtes (plugin) et la limitation de débit du login (`src/server/middleware/limite-connexion.ts`, limiteur `src/server/utils/limite-debit.ts`, adresse IP `adresseClient`) et la session vérifiée côté serveur (#19, #20) existent. `callSpring`, `springError` et `repondreErreur` sont dans `src/server/utils/spring.ts`. Première route dédiée : `src/server/routes/api/tableau-de-bord.get.ts` (#24), logique dans `src/server/utils/tableau-de-bord.ts`. Modèles partagés entre Nitro et Angular : `src/app/modeles/`. Les recettes ci-dessous fixent la façon de faire. Ce qui n'a pas encore été éprouvé dans le projet est marqué **à vérifier** : vérifie-le au premier usage, puis mets ce skill à jour.
 
 ## Choisir le bon outil
 
@@ -43,31 +43,31 @@ Une route dédiée n'existe que si elle apporte quelque chose (validation, combi
 
 - Adresse : **toujours** `springUrl('/api/…')` (`src/server/utils/spring.ts`), jamais d'adresse en dur.
 - Client : le `fetch` natif de Node. Aucune dépendance à ajouter, et simple à simuler en test (skill `tests-analog`).
-- Passe par **un seul utilitaire** qui reçoit l'`event` h3, pour que le relais des cookies et la traduction des erreurs soient écrits une fois (à créer dans `src/server/utils/spring.ts` au premier besoin) :
+- Passe par **un seul utilitaire**, `callSpring` (`src/server/utils/spring.ts`), qui reçoit l'`event` h3 : le relais des cookies et la traduction des erreurs sont écrits une fois. Délai de 5 s ; Spring injoignable ou trop lent → 503, JSON illisible → 502. Principe (le fichier fait foi) :
 
 ```ts
-import { createError, getRequestHeader, type H3Event } from 'h3';
+export interface OptionsSpring {
+  method?: string;
+  body?: unknown;                                                  // envoyé en JSON
+  query?: Record<string, string | number | boolean | undefined>;   // encodée par URLSearchParams
+  timeoutMs?: number;                                              // 5000 par défaut
+}
 
 /** Appelle Spring au nom de l'utilisateur de la requête en cours. */
-export async function callSpring<T>(event: H3Event, path: string, init: RequestInit = {}): Promise<T> {
-  const headers = new Headers(init.headers);
-  const cookie = getRequestHeader(event, 'cookie');
-  if (cookie) headers.set('cookie', cookie);            // JSESSIONID + XSRF-TOKEN
-  const xsrf = getRequestHeader(event, 'x-xsrf-token');
-  if (xsrf) headers.set('x-xsrf-token', xsrf);           // écritures (POST, PUT, DELETE)
+export async function callSpring<T>(event: H3Event, path: string, init: OptionsSpring = {}): Promise<T>;
+// - recopie `cookie` (JSESSIONID + XSRF-TOKEN) et `x-xsrf-token` de l'event, s'ils existent ;
+// - injoignable ou délai dépassé → 503, réponse non OK → springError(status), JSON illisible → 502 ;
+// - ne recopie jamais un Set-Cookie de Spring.
 
-  let res: Response;
-  try {
-    res = await fetch(springUrl(path), { ...init, headers });
-  } catch {
-    throw createError({ statusCode: 503, statusMessage: 'API indisponible' });
-  }
-  if (!res.ok) throw springError(res.status);
-  return (await res.json()) as T;
+// Dans une route :
+try {
+  return await callSpring<Summary>(event, '/api/summary', { query: { tz: fuseau } });
+} catch (e) {
+  return repondreErreur(event, e);   // corps { message }
 }
 ```
 
-`springError(status)` applique le tableau « Traduire les erreurs » ci-dessous et renvoie un `createError`.
+`springError(status)` applique le tableau « Traduire les erreurs » ci-dessous et renvoie un `createError`. `repondreErreur` écrit le corps d'erreur. Le texte français va dans `message` de `createError`, pas dans `statusMessage` : h3 en retire les accents (ligne de statut HTTP).
 
 ## Cookies et CSRF
 
@@ -98,7 +98,8 @@ Un paramètre invalide donne **400** avec un message en français, sans appeler 
 | 5xx | **502** `Erreur de l'API` | L'erreur vient de Spring, pas de Nitro |
 | injoignable | **503** `API indisponible` | |
 
-Jamais de trace, de message interne ni d'adresse de Spring dans la réponse. Journalise côté serveur (`console.error`) avec la route et le statut, sans cookie.
+- **Corps d'erreur d'une route du front : `{ message }`**, en français, écrit par `repondreErreur` (`src/server/utils/spring.ts`). C'est la forme du relais : le navigateur lit les erreurs de la même façon, quelle que soit la route.
+- Jamais de trace, de message interne ni d'adresse de Spring dans la réponse. Journalise côté serveur (`console.error`) avec la route et le statut, sans cookie ni query.
 
 ## Combiner des réponses
 
@@ -106,22 +107,26 @@ Les appels indépendants partent ensemble, et la route renvoie **la forme dont l
 
 ```ts
 const [summary, faces] = await Promise.all([
-  callSpring<Summary>(event, '/api/summary?tz=Europe/Paris'),
+  callSpring<Summary>(event, '/api/summary', { query: { tz: 'Europe/Paris' } }),
   callSpring<Face[]>(event, '/api/faces'),
 ]);
 return { resume: summary.resume, faces: faces.slice(0, 5) };
 ```
 
-Types de réponse : à reprendre de `web/src/app/core/*.model.ts` du dépôt d'origine, dans un fichier de modèles partagé.
+- Un appel accessoire ne fait pas tomber la route : `/api/tableau-de-bord` donne `enJeu: null` si `/api/live` échoue ou dépasse 2 s, mais échoue si `/api/summary` échoue.
+- Garde la logique (validation, appels, mise en forme) dans un utilitaire de `src/server/utils/`, la route ne fait que l'appeler : un `load` pourra la réutiliser. Une fonction pure qui met en forme (`versTableauDeBord`) se teste sans simuler Spring.
+- Types : ceux de Spring dans `src/app/modeles/` (copies de `web/src/app/core/*.model.ts` du dépôt d'origine, noms de Spring), et le contrat de la page en français à côté (`tableau-de-bord.ts`), en liste blanche de champs. Aucun import d'Angular ni de h3 dans ce dossier : Nitro et Angular l'importent tous deux.
 
 ## Page SSR et connexion côté serveur
 
 Façon de faire retenue (#19, #20), vérifiée dans `node_modules` puis au `curl` :
 
-- **Angular ne voit pas les cookies pendant le SSR.** Il reçoit la requête Node (`injectRequest()`, jeton `REQUEST`), pas l'événement h3 ni `event.context`. `HttpClient` pendant le SSR passe par `requestContextInterceptor`, qui appelle `$fetch` **sans le cookie** ; le `load` d'un `.server.ts` est servi en sous-requête, **sans cookie** non plus, et un `sendRedirect` dans un `load` ne redirige que cette sous-requête. Les `load` des pages connectées (étape 4) auront donc besoin d'un moyen de recopier le cookie : à décider avant #24/#25.
+- **Angular ne voit pas les cookies pendant le SSR.** Il reçoit la requête Node (`injectRequest()`, jeton `REQUEST`), pas l'événement h3 ni `event.context`. `HttpClient` pendant le SSR passe par `requestContextInterceptor`, qui appelle `$fetch` **sans le cookie** ; le `load` d'un `.server.ts` est servi en sous-requête, **sans cookie** non plus, et un `sendRedirect` dans un `load` ne redirige que cette sous-requête.
+- **Données d'une page connectée pendant le SSR (décision D1, reportée à #25).** Piste recommandée : un intercepteur Angular côté serveur qui recopie l'en-tête `cookie` de `injectRequest()` sur les requêtes **relatives `/api/…` uniquement** (jamais vers une autre origine), placé avant `requestContextInterceptor`. La logique reste dans un utilitaire (`src/server/utils/tableau-de-bord.ts`) pour qu'un `load` de `.server.ts` puisse l'appeler directement si l'intercepteur ne convient pas. **À vérifier** : `requestContextInterceptor` rejette avec autre chose qu'une `HttpErrorResponse` ; la page devra gérer 401 et 503 pendant le SSR.
 - **La session est lue par le middleware `src/server/middleware/session.ts`** (logique dans `src/server/utils/session.ts`) : pour une page (GET/HEAD, hors `/api`, `/_analog`, `/health`, fichiers), s'il y a un `JSESSIONID`, un appel à Spring `/api/auth/me` (délai 3 s). L'état (`EtatSession`, `src/app/auth/session-contrat.ts`) est posé sur `req[CLE_SESSION]`, lu par le service Angular `Session` et transmis au navigateur par TransferState.
 - **Une page connectée = deux choses à faire ensemble** : ajouter son préfixe à `PAGES_CONNECTEES` (`session-contrat.ts`) **et** `canActivate: [connexionRequise]` dans son `routeMeta`. Le middleware fait le 302 vers `/login?redirect=…` (anonyme) ou le 503 (Spring indisponible) avant tout HTML ; la garde couvre la navigation dans le navigateur et sert de filet côté serveur. Avec la garde seule, Angular rendrait la page de connexion sous l'adresse demandée avec un 200.
-- Toute page rendue pour un joueur connecté reçoit `cache-control: private, no-store` et `Vary: Cookie` : elle porte son compte.
+- Toute page rendue pour un joueur connecté, et toute route du front qui renvoie ses données, reçoit `cache-control: private, no-store` et `Vary: Cookie` : elle porte son compte.
+- **Une route ou une page privée ne se met jamais en cache**, ni côté serveur ni côté navigateur. Le cache serveur (#33) ne concernera que des données publiques.
 - **Pièges du mode dev** (Analog charge `src/server/middleware/**/*.ts` par Vite, hors de Nitro) : pas d'import de `nitropack/runtime` (l'adresse de Spring vient de `NITRO_API_URL`) ; `req.url` vaut `/index.html`, la vraie adresse est dans `req.originalUrl` (`cheminDemande`) ; un middleware qui a répondu doit renvoyer une valeur (`true`), sinon Analog enchaîne sur le rendu ; aucun `.spec.ts` dans `middleware/`.
 - Une page connectée n'est **jamais** dans `prerender.routes`.
 - Les appels `HttpClient` faits dans le navigateur vers `/api/…` passent par le relais : même origine, le cookie suit seul.

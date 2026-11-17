@@ -69,6 +69,50 @@ Ce que le relais ajoute :
 - `recent` : 3 faces au plus, sans celle de `resume`.
 - `activity` : 14 éléments `{day: "AAAA-MM-JJ", attempts, clears}`.
 
+## Routes du front
+
+Routes écrites dans Nitro (`src/server/routes/api/`), sans équivalent chez Spring. Une route précise passe avant le relais générique. Leurs erreurs ont le même corps que celles du relais : `{ message }`, en français.
+
+### `GET /api/tableau-de-bord`
+
+> Issue #24. Route : `src/server/routes/api/tableau-de-bord.get.ts`, logique : `src/server/utils/tableau-de-bord.ts`.
+
+Combine `GET /api/summary` et `GET /api/live`, appelés en parallèle avec le cookie de la requête, et renvoie la forme dont la page a besoin.
+
+Fuseau horaire, dans cet ordre :
+
+1. `?tz=` : doit être un fuseau connu d'`Intl` (64 caractères au plus, une seule fois), sinon **400** `{ message: "Le fuseau horaire doit être un nom IANA, par exemple Europe/Paris." }` (un `?tz=` vide aussi) ;
+2. sinon le cookie `tz` : un fuseau invalide est ignoré ;
+3. sinon `Europe/Paris`.
+
+Le fuseau retenu, sous sa forme canonique, est transmis à `/api/summary`.
+
+Codes :
+
+| Cas | Réponse |
+|---|---|
+| Succès | **200** `TableauDeBord` |
+| `?tz=` invalide | **400** `{ message: "Le fuseau horaire doit être un nom IANA, par exemple Europe/Paris." }`, sans appeler Spring |
+| Pas de cookie de session | **401** `{ message: "Connexion requise" }`, sans appeler Spring |
+| Spring répond 401 (session expirée ou fausse) | **401** `{ message: "Connexion requise" }` |
+| Spring répond 5xx sur `/api/summary` | **502** `{ message: "Erreur de l'API" }` |
+| Spring injoignable ou plus lent que 5 s | **503** `{ message: "API indisponible" }` |
+
+- `/api/live` est accessoire : s'il échoue ou dépasse **2 s**, la route répond quand même avec `enJeu: null`. Si `/api/summary` échoue, la route échoue.
+- En succès : `cache-control: private, no-store` et `Vary: Cookie`. La réponse porte le compte du joueur : aucun cache ne doit la garder.
+
+Forme `TableauDeBord` (détail : `src/app/modeles/tableau-de-bord.ts`). Champs en français, en liste blanche : un champ ajouté par Spring n'arrive pas au navigateur.
+
+| Champ | Contenu |
+|---|---|
+| `fuseau` | Fuseau retenu |
+| `reprendre` | Dernière face jouée (`resume` de Spring), ou `null` |
+| `aujourdhui` | Bilan du jour (`today`) |
+| `recentes` | Faces récentes (`recent`) |
+| `activite` | 14 derniers jours (`activity`) |
+| `enJeu` | Partie en cours (`/api/live`), ou `null` |
+| `vide` | Vrai si `reprendre` est `null` **et** aucune tentative sur les 14 jours d'`activite` (`activite.max` vaut 0) : la page montre l'accueil d'un nouveau joueur |
+
 ## Vocabulaire
 
 - **Face** : une map (SID, par exemple `Celeste/1-ForsakenCity`) + un côté A, B ou C. Le SID contient des `/` : il passe **toujours en paramètre de requête**, jamais dans le chemin.
