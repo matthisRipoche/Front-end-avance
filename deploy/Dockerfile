@@ -8,7 +8,8 @@ WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+# Une relance : build SSR parfois non compilé sous charge (Analog 2.9), voir scripts/verifier-prerendu.mjs.
+RUN npm run build || (echo "Build en échec, relance" && npm run build)
 
 # ---- Étape 2 : seulement le serveur produit par Nitro ----
 # dist/analog/server embarque ses propres dépendances : pas de node_modules complet dans l'image.

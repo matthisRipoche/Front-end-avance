@@ -10,6 +10,7 @@ Vitest 5, environnement `jsdom`, `globals: true` (`describe`, `it`, `expect` san
 ## Règles
 
 - Le test est **à côté** du fichier : `foo.ts` → `foo.spec.ts`. Les specs de `src/server/routes/` sont exclues des routes par `nitro.ignore` (`vite.config.ts`).
+- **Exception : `src/server/middleware/`**. En `npm run dev`, Analog charge comme middleware **tout** `.ts` de ce dossier, sans tenir compte de `nitro.ignore` (`register-dev-middleware.js`) : un spec y serait exécuté à chaque requête. Le test d'un middleware va dans `src/server/utils/<nom>.spec.ts` et importe `../middleware/<nom>`.
 - `describe` et `it` **en français**, qui décrivent un comportement visible : `'renvoie 401 sans session'`, pas `'test getFaces'`.
 - Un test vérifie **ce que voit l'utilisateur ou l'appelant** : texte, lien, statut HTTP, corps JSON. Pas les détails internes (champs privés, appels de méthode).
 - Chaque comportement nouveau a un test ; chaque route serveur a au moins **un cas nominal et un cas d'erreur**.
@@ -120,12 +121,13 @@ fetchMock.mockRejectedValue(new TypeError('fetch failed')); // Spring injoignabl
 
 ## Configuration du serveur
 
-`useRuntimeConfig()` n'existe pas hors de Nitro : on simule le module (modèle : `src/server/utils/spring.spec.ts`) :
+L'adresse de Spring vient de la variable `NITRO_API_URL` (`springUrl`, `src/server/utils/spring.ts`) : on la pose avec `vi.stubEnv` (modèle : `src/server/utils/spring.spec.ts`) :
 
 ```ts
-const config = { apiUrl: 'http://localhost:5000' };
-vi.mock('nitropack/runtime', () => ({ useRuntimeConfig: () => config }));
+vi.stubEnv('NITRO_API_URL', 'http://spring.test:5000');
 ```
+
+**Ne jamais importer `nitropack/runtime`** dans du code serveur chargé par un middleware : en `npm run dev`, Analog charge `src/server/middleware/` par Vite, hors de Nitro, et l'import fait tomber le serveur de dev.
 
 ## Ce que Vitest ne couvre pas
 

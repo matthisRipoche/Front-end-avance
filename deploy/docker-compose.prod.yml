@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
     environment:
       # Adresse publique de l'API Spring, lue par le serveur Node au démarrage (relais et
-      # couche serveur). NITRO_API_URL remplace runtimeConfig.apiUrl de vite.config.ts.
+      # couche serveur). NITRO_API_URL est lue par src/server/utils/spring.ts.
       NITRO_API_URL: ${API_URL:?définir API_URL dans .env}
     networks:
       - traefik
