@@ -42,6 +42,6 @@ Le serveur Node joint l'API Spring à `http://localhost:5000` par défaut. Pour 
 - `AGENTS.md` : renvoie aux conventions d'Analog livrées avec la version installée.
 - `.claude/` : agents du projet (`planner`, `dev`, `verifier`, `reviewer`), skills (`issue` pour le workflow agentique ; `conventions-analog`, `bff-spring`, `tests-analog`, `review-analog` pour les agents ; `commit`, Angular, design) et configuration.
 - `skills-lock.json` : versions des skills installés. Il reste à la racine, où l'outil `skills` le cherche ; c'est aussi le cas de `PRODUCT.md` pour le skill `impeccable`.
-- `docs/journal-ia.md` : chaque étape, avec les propositions de l'agent, les corrections de l'utilisateur et les erreurs rattrapées.
+- `docs/journal/` : un fichier par étape, avec les propositions de l'agent, les corrections de l'utilisateur et les erreurs rattrapées.
 
 Les tâches sont suivies dans les [issues GitHub](https://github.com/matthisRipoche/Front-end-avance/issues), par étape.

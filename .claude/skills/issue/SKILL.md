@@ -40,7 +40,7 @@ Argument : un numéro d'issue (`/issue 12`) ou une demande en texte libre.
 
 ## 5. Consigner et commiter
 
-- Ajoute l'entrée de `docs/journal-ia.md` : la demande, le plan, les décisions validées, ce que les agents ont produit, les erreurs rattrapées (y compris celles des agents).
+- Ajoute une entrée dans `docs/journal/`, un nouveau fichier `AAAA-MM-JJ-NN-sujet.md` (voir `docs/journal/README.md`) : la demande, le plan, les décisions validées, ce que les agents ont produit, les erreurs rattrapées (y compris celles des agents).
 - Commite avec le skill `commit` (commits atomiques, build et tests avant).
 
 ## 6. Pousser et ouvrir la PR : point d'arrêt, utilisateur
