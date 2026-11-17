@@ -10,12 +10,16 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { provideFileRouter, requestContextInterceptor } from '@analogjs/router';
 import { provideContent, withMarkdownRenderer } from '@analogjs/content';
 
+import { transmettreCookieSsr } from './auth/cookie-ssr';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideFileRouter(),
+    // Le cookie d'abord : côté serveur, requestContextInterceptor répond lui-même sans passer
+    // la main aux intercepteurs suivants.
     provideHttpClient(
-      withInterceptors([requestContextInterceptor])
+      withInterceptors([transmettreCookieSsr, requestContextInterceptor])
     ),
     provideClientHydration(withEventReplay()),
     // Rendu du Markdown en HTML : pages Markdown de pages/(public)/ (FAQ, confidentialité)
