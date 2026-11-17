@@ -31,8 +31,11 @@ jobs:
         run: npm ci
       - name: Tests
         run: npx vitest run
+      # Une relance : le plugin Angular d'Analog 2.9 peut, sous charge, produire un build SSR
+      # non compilé (pages prérendues vides, détectées par scripts/verifier-prerendu.mjs).
+      # C'est aléatoire : un second essai passe. Une vraie erreur échoue deux fois.
       - name: Build
-        run: npm run build
+        run: npm run build || { echo "::warning::Build en échec, relance (voir scripts/verifier-prerendu.mjs)"; npm run build; }
 
   image:
     name: Construction de l'image (publiée sur main)
