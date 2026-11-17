@@ -18,7 +18,7 @@ flowchart TD
         B --> D1[Agent dev, lot 1]
         B --> D2[Agent dev, lot 2<br/>en parallèle si indépendant]
         D1 & D2 --> C[git status + diff :<br/>ne pas croire un agent sur parole]
-        C --> VR[Agent verifier<br/>build, tests, curl<br/>sur le serveur construit]
+        C --> VR[Agent verifier, Sonnet<br/>seul à construire :<br/>build, tests, curl]
         C --> RV[Agent reviewer<br/>diff face au plan lu sur l'issue,<br/>gravité + scénario d'échec]
         VR & RV --> OK{Bloquant ou<br/>à corriger ?}
         OK -- oui, 2 tours max --> D1
@@ -57,12 +57,12 @@ flowchart TD
 | Relecteur qui n'a pas vu l'écriture du code, sans droit d'écrire | Anthropic | ✅ `reviewer` en lecture seule, frais |
 | Relire **face à la spec**, en ignorant le style (sinon on corrige des faux problèmes) | Anthropic | ✅ relecture face au plan ; « ce qu'il ne faut pas signaler » dans `review-analog` |
 | Ce qui doit **toujours** arriver va dans un hook, pas dans `CLAUDE.md` | Anthropic | ✅ hook avant `git commit` (A) |
-| `CLAUDE.md` court ; procédures d'équipe dans des skills | Anthropic | ⚠️ procédures dans des skills, mais `CLAUDE.md` est long (voir E) |
+| `CLAUDE.md` court ; procédures d'équipe dans des skills | Anthropic | ✅ procédures dans des skills, `CLAUDE.md` réduit à l'essentiel (E) |
 | Spec écrite et versionnée (spec → plan → tâches), qui sert de référence à la relecture | GitHub Spec Kit | ✅ version légère : le plan validé est posté sur l'issue, et le `reviewer` le lit là (B) |
 | Planificateur, codeur, testeur, relecteur, chacun avec un rôle strict et des outils limités | AgentMesh, guides multi-agents | ✅ quatre rôles, outils limités |
 | Boucle de correction bornée entre relecteur et codeur | Guides multi-agents | ✅ deux tours au maximum, puis l'utilisateur tranche |
-| Un modèle par rôle, selon le besoin et le coût | Anthropic, guides multi-agents | ⚠️ seul `planner` fixe Opus (voir D) |
-| Sessions parallèles isolées (worktrees) | Anthropic | ⚠️ les agents partagent un seul dossier (voir C) |
+| Un modèle par rôle, selon le besoin et le coût | Anthropic, guides multi-agents | ✅ `planner` sur Opus, `verifier` sur Sonnet (D) |
+| Sessions parallèles isolées (worktrees) | Anthropic | ✅ autrement : un seul agent construit à la fois (C) |
 | Agent dans la CI qui corrige seul | GitHub Actions (`claude-code-action`) | Écarté volontairement : coût, clé d'API, poussées sans relecture. Auto-fix de l'app à la place. |
 
 **Ce que ce projet fait en plus** : deux points d'arrêt humains explicites ; un journal qui garde aussi les erreurs de l'agent ; un `verifier` qui teste le **serveur construit** plutôt que de se contenter des tests unitaires. C'est lui qui a trouvé les pages prérendues vides et le contournement du relais.
@@ -81,14 +81,20 @@ Le plan du `planner` et les décisions validées ne vivent que dans la conversat
 
 *Fait* : la skill `issue` poste le plan validé (`## Plan validé`, avec chaque décision et l'option retenue) juste après le point d'arrêt 1, puis un `## Plan modifié` si une décision change. Le `reviewer` lit ce commentaire avec `gh issue view <n> --comments`, et signale l'absence de plan au lieu de relire au jugé. Sans issue, le plan va dans la description de la PR. Pas de fichier de spec dans le dépôt : un fichier de plus par issue aurait été du sur-outillage, et l'issue est déjà l'endroit où le travail est décrit.
 
-**C. Isoler les agents qui construisent** *(priorité moyenne)*
+**C. Isoler les agents qui construisent** *(fait le 2026-11-17)*
 Le `verifier` et le `reviewer` ont lancé des builds et des tests en même temps dans le même dossier. Cette charge a fait apparaître la course du plugin, et a d'abord égaré le diagnostic vers le nom d'un fichier. La course est corrigée, mais le partage reste : `dist/` commun et ports locaux. Proposition : `isolation: worktree` pour le `verifier`, ou la règle « un seul agent construit à la fois ».
 
-**D. Choisir le modèle selon le rôle** *(priorité basse)*
+*Fait, avec la règle* : un worktree part du dernier commit, or le `verifier` doit tester le travail des `dev`, qui n'est pas encore commité à cette étape. Il ne l'aurait donc pas vu. À la place, le `verifier` est seul à construire et à tester, une commande après l'autre. Le `reviewer` ne lance plus ni build ni tests : il décrit la requête à faire s'il faut le serveur. Les `dev` lancés en parallèle ne construisent pas.
+
+**D. Choisir le modèle selon le rôle** *(fait le 2026-11-17)*
 Le `verifier` exécute surtout des commandes et compare des codes HTTP. Un modèle plus léger (Sonnet) suffit et coûte moins cher. Le `planner` et le `reviewer` gagnent à rester sur le plus fort.
 
-**E. Raccourcir `CLAUDE.md`** *(priorité basse)*
+*Fait* : `model: sonnet` dans `.claude/agents/verifier.md`. Le `dev` reste sur le modèle de la session : c'est lui qui écrit le code.
+
+**E. Raccourcir `CLAUDE.md`** *(fait le 2026-11-17)*
 Le guide d'Anthropic note qu'une règle se perd dans un `CLAUDE.md` long. Le nôtre mêle des règles permanentes et de l'historique : décisions datées, périmètre, production. On peut y laisser l'essentiel (commandes, interdits, workflow) et renvoyer le reste vers `docs/` et les skills.
+
+*Fait* : 143 lignes et 1 780 mots deviennent 104 lignes et 1 203 mots. Le périmètre et l'architecture partent dans `docs/architecture.md`, sans changement de fond. Les conventions de code renvoient à `conventions-analog`, qui les contenait déjà, plus le détail d'`injectContent`. Le détail du design renvoie à `docs/design-system.md`, et celui de la production à `deploy/README.md`, avec le modèle d'images GHCR qui n'était écrit nulle part ailleurs. Restent dans `CLAUDE.md` : la façon de travailler, le workflow, Git, les commandes, les interdits (Celeste, ports 80/443) et les pièges. Chaque information retirée a été cherchée dans son nouvel emplacement.
 
 **À ne pas faire** : multiplier les agents. Les guides conseillent de commencer simple et de n'ajouter un rôle que quand le précédent échoue. Le projet l'a vérifié deux fois : la relance en CI et l'idée d'un agent correcteur traitaient le symptôme, alors qu'une règle à la source réglait le problème.
 

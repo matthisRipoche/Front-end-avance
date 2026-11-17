@@ -7,6 +7,8 @@ Site : **https://new-celeste.matthisripoche.com**
  fusion sur main ─▶ tests ─▶ image Docker (GHCR) ─▶ SSH ─▶ VPS ─▶ Traefik ─▶ conteneur web (Node)
 ```
 
+Images publiées sur `ghcr.io/<owner>/celeste-next:sha-<12 premiers caractères du commit>`. Ce modèle (image par commit, SSH depuis la CI, port SSH injoignable depuis le poste de dev) reprend `docker-compose.prod.yml`, `.github/workflows/ci-cd.yml` et `deploy/README.md` du dépôt d'origine.
+
 ## Ce dossier
 
 | Fichier | Rôle |
