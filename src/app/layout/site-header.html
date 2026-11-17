@@ -6,11 +6,25 @@
         <a class="cdt-nav__link" routerLink="/mod" routerLinkActive #mod="routerLinkActive" [attr.aria-current]="mod.isActive ? 'page' : null">Le mod</a>
         <a class="cdt-nav__link" routerLink="/faq" routerLinkActive #faq="routerLinkActive" [attr.aria-current]="faq.isActive ? 'page' : null">FAQ</a>
       </div>
-      @if (surConnexion()) {
+      @if (utilisateur()) {
+        <span class="header__compte" [title]="nom()">{{ nom() }}</span>
+        <a class="cdt-btn cdt-btn--primary cdt-btn--sm" routerLink="/tableau-de-bord">Tableau de bord</a>
+        <button
+          class="cdt-btn cdt-btn--ghost cdt-btn--sm"
+          type="button"
+          [attr.aria-busy]="deconnexionEnCours()"
+          (click)="deconnecter()"
+        >Se déconnecter</button>
+      } @else if (surConnexion()) {
         <a class="cdt-btn cdt-btn--secondary cdt-btn--sm" routerLink="/inscription">Créer un compte</a>
       } @else {
         <a class="cdt-btn cdt-btn--primary cdt-btn--sm" routerLink="/login">Se connecter</a>
       }
     </div>
   </nav>
+  <p class="header__erreur" role="status">
+    @if (erreurDeconnexion()) {
+      Déconnexion impossible pour l’instant. Réessaie.
+    }
+  </p>
 </header>

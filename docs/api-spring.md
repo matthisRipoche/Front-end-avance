@@ -48,7 +48,7 @@ Ce que le relais ajoute :
 |---|---|
 | `POST /api/auth/register` | Créer un compte |
 | `POST /api/auth/login` | Connexion, corps `{email, password}` |
-| `POST /api/auth/logout` | Déconnexion |
+| `POST /api/auth/logout` | Déconnexion : 204 ; exige une session (401 sinon) et le CSRF |
 | `GET /api/auth/me` | Compte connecté (401 sinon) |
 | `GET /api/auth/providers` | Fournisseurs disponibles : `{discord: bool}` |
 | `GET /api/summary?tz=Europe/Paris` | Tableau de bord : `{resume, today, recent, activity}` (voir plus bas) |

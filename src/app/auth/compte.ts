@@ -2,6 +2,9 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+import { Session } from './session';
+import type { Utilisateur } from './session-contrat';
+
 export type Identifiants = { email: string; password: string };
 
 /**
@@ -19,10 +22,30 @@ export type Identifiants = { email: string; password: string };
 @Injectable({ providedIn: 'root' })
 export class Compte {
   private readonly http = inject(HttpClient);
+  private readonly session = inject(Session);
 
-  /** Ouvre la session : Spring pose le cookie JSESSIONID sur l'origine du front. */
-  connecter(identifiants: Identifiants): Promise<unknown> {
-    return this.ecrire('/api/auth/login', identifiants);
+  /**
+   * Ouvre la session : Spring pose le cookie JSESSIONID sur l'origine du front et renvoie
+   * l'utilisateur. On le range dans la `Session` pour que la navigation change sans recharger.
+   */
+  async connecter(identifiants: Identifiants): Promise<Utilisateur> {
+    const utilisateur = (await this.ecrire('/api/auth/login', identifiants)) as Utilisateur;
+    this.session.definir(utilisateur);
+    return utilisateur;
+  }
+
+  /**
+   * Ferme la session. Un 401 veut dire qu'elle était déjà finie (expirée, fermée dans un autre
+   * onglet) : le but est atteint, on vide la session comme pour un 204. Toute autre erreur
+   * remonte et laisse la session telle quelle : on ne sait pas si Spring l'a fermée.
+   */
+  async deconnecter(): Promise<void> {
+    try {
+      await this.ecrire('/api/auth/logout', {});
+    } catch (e) {
+      if (!(e instanceof HttpErrorResponse) || e.status !== 401) throw e;
+    }
+    this.session.definir(null);
   }
 
   /** Crée le compte (201). Spring n'ouvre pas de session : il faut se connecter ensuite. */

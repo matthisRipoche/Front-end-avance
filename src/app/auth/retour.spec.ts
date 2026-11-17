@@ -1,4 +1,4 @@
-import { cheminDeRetour, estPageConnexion, RETOUR_PAR_DEFAUT } from './retour';
+import { adresseDeConnexion, cheminDeRetour, estPageConnexion, RETOUR_PAR_DEFAUT } from './retour';
 
 describe('cheminDeRetour', () => {
   it('garde un chemin interne, avec sa query', () => {
@@ -41,5 +41,23 @@ describe('estPageConnexion', () => {
   it('ne confond pas une autre page qui commence pareil', () => {
     expect(estPageConnexion('/loginx')).toBe(false);
     expect(estPageConnexion('/faq')).toBe(false);
+  });
+});
+
+describe('adresseDeConnexion', () => {
+  it('passe le chemin demandé, avec sa query, en paramètre redirect', () => {
+    expect(adresseDeConnexion('/tableau-de-bord?x=1&y=2')).toBe(
+      '/login?redirect=%2Ftableau-de-bord%3Fx%3D1%26y%3D2',
+    );
+  });
+
+  it('renvoie /login seul pour l’accueil ou un chemin vide', () => {
+    expect(adresseDeConnexion('/')).toBe('/login');
+    expect(adresseDeConnexion('')).toBe('/login');
+  });
+
+  it('produit un redirect que cheminDeRetour accepte tel quel', () => {
+    const redirect = new URL(adresseDeConnexion('/tableau-de-bord?x=1'), 'http://localhost').searchParams.get('redirect');
+    expect(cheminDeRetour(redirect)).toBe('/tableau-de-bord?x=1');
   });
 });

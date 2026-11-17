@@ -1,9 +1,11 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TransferState } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 
+import { CLE_ETAT_SESSION } from '../../../auth/session';
 import InscriptionPage from './index.page';
 
 async function monter(query = '') {
@@ -15,6 +17,8 @@ async function monter(query = '') {
       provideHttpClientTesting(),
     ],
   });
+  // Visiteur anonyme, comme l'aurait dit le serveur : la session n'appelle pas /api/auth/me.
+  TestBed.inject(TransferState).set(CLE_ETAT_SESSION, { statut: 'anonyme' });
   const router = TestBed.inject(Router);
   await router.navigateByUrl(`/inscription${query}`);
   const fixture = TestBed.createComponent(InscriptionPage);
