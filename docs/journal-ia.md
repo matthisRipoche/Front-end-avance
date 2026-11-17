@@ -480,6 +480,21 @@ L'agent recommande B : à l'étape 4, les pages connectées auront leur propre g
 - L'agent a renoncé à saisir de faux identifiants dans le navigateur contre l'API de production ; le test navigateur prévu ensuite n'a pas pu se faire (navigateur intégré qui refuse le port local). Reste à faire : une vraie connexion avec un compte existant.
 
 **Pour l'oral** : la maquette a coûté un aller-retour, mais elle a fait apparaître une incohérence de ton dans une PR déjà ouverte. Et deux agents indépendants se sont complétés : l'un posait la bonne question, l'autre avait déjà la preuve.
+
+## 2026-11-16 — Page d'inscription (première moitié de #21)
+
+**Demande** : « Oui, continue » après la PR de la connexion. L'issue #21 regroupe inscription et déconnexion ; l'agent fait l'inscription maintenant (maquette déjà validée) et rattache la déconnexion à #19, puisqu'un bouton « Se déconnecter » n'a de sens que dans une navigation qui sait si l'on est connecté.
+
+**Fait** : le contrat d'inscription est lu dans le dépôt d'origine (`AuthController`) : 201 **sans** ouvrir de session, 409 si l'email existe, 400 sinon. La page enchaîne donc inscription puis connexion. L'appel à Spring (jeton CSRF, réessai sur 403) est sorti de la page de connexion dans un service `Compte`, partagé par les deux pages. Branche empilée sur celle de la connexion (PR 62 pas encore fusionnée).
+
+**Ce que la vérification a apporté** :
+- `verifier` : SSR de `/inscription` conforme ; contrat vérifié sur l'API de production **sans créer de compte** (corps volontairement invalide → 400, preuve que le CSRF passe et que la validation de Spring tranche).
+- `reviewer` : deux points à corriger. Une phrase cassée (« La connexion automatique a échoué. connecte-toi. »), que le test ne voyait pas parce qu'il ne lisait qu'un mot ; et surtout la limite de BCrypt, **72 octets** et non 72 caractères : une phrase de passe de 72 caractères avec un accent passait le front et `@Size`, puis Spring répondait 500 (« Le service ne répond pas », message trompeur). Corrigé par un validateur qui compte les octets UTF-8, testé avec des accents. Mineurs corrigés aussi : `?redirect=` transmis entre connexion et inscription, retour interdit vers `/inscription`, succès partiel « Compte créé » en alerte neutre.
+
+**Pour l'oral** : la règle « 8 à 72 » lue dans le code de Spring était exacte, mais son unité ne l'était pas ; c'est une relecture indépendante qui l'a vu. Et tester la phrase entière plutôt qu'un mot-clé aurait attrapé le premier défaut.
+
+---
+
 ## 2026-11-16 — Journal des requêtes (#16), premier passage en mode solo
 
 **Demande** : « on passe à la suite et fait les PR solo avec un rapport à chaque fois ». Nouvelle façon de travailler : l'agent enchaîne les issues de l'étape 3, tranche seul les décisions selon sa recommandation, pousse et ouvre la PR ; l'utilisateur relit chaque PR et la fusionne. Les points d'arrêt du workflow `/issue` deviennent un rapport par PR.

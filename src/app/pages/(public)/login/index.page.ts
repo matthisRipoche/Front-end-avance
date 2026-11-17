@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,8 +14,8 @@ import {
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RouteMeta } from '@analogjs/router';
-import { firstValueFrom } from 'rxjs';
 
+import { Compte } from '../../../auth/compte';
 import { cheminDeRetour } from '../../../auth/retour';
 
 export const routeMeta = {
@@ -32,15 +32,9 @@ type Erreur = { titre: string; texte: string; lienInscription?: boolean };
 /**
  * Page de connexion par email et mot de passe (/login).
  *
- * Le formulaire part directement vers Spring par le relais /api : le cookie de session
- * (JSESSIONID, HttpOnly) est posé par Spring sur l'origine du front, et suit ensuite chaque requête.
- *
- * CSRF : Spring exige l'en-tête X-XSRF-TOKEN, copie du cookie XSRF-TOKEN. L'intercepteur XSRF
- * d'HttpClient l'ajoute tout seul aux écritures vers la même origine que la page (l'intercepteur
- * d'Analog rend l'adresse absolue, mais l'origine reste celle du site). Le cookie n'est posé
- * qu'après un premier GET vers l'API, même quand Spring répond 401 : s'il manque (première
- * visite, pages servies par Node), on le demande avant. Un 403 veut dire que le jeton n'est plus
- * le bon : on en redemande un et on réessaie une fois.
+ * Le formulaire part vers Spring par le relais /api (service Compte, qui gère le jeton CSRF) :
+ * le cookie de session (JSESSIONID, HttpOnly) est posé par Spring sur l'origine du front, et
+ * suit ensuite chaque requête.
  *
  * Après la connexion : retour à la page demandée (?redirect=…), contrôlée par cheminDeRetour.
  */
@@ -52,7 +46,7 @@ type Erreur = { titre: string; texte: string; lienInscription?: boolean };
   styleUrl: './index.page.css',
 })
 export default class LoginPage {
-  private readonly http = inject(HttpClient);
+  private readonly compte = inject(Compte);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly injector = inject(Injector);
@@ -60,6 +54,8 @@ export default class LoginPage {
   private readonly redirect = this.route.snapshot.queryParamMap.get('redirect');
   /** Bandeau « Connecte-toi pour continuer » : seulement après une redirection. */
   protected readonly redirige = this.redirect !== null;
+  /** La page demandée suit le joueur s'il passe à l'inscription. */
+  protected readonly suite = this.redirect ? { redirect: this.redirect } : null;
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -96,29 +92,13 @@ export default class LoginPage {
     this.envoi.set(true);
     this.erreur.set(null);
     try {
-      await this.assurerJetonCsrf();
-      await this.connecter().catch(async (e) => {
-        if (!(e instanceof HttpErrorResponse) || e.status !== 403) throw e;
-        await this.assurerJetonCsrf(true);
-        await this.connecter();
-      });
+      await this.compte.connecter(this.form.getRawValue());
       await this.router.navigateByUrl(cheminDeRetour(this.redirect));
     } catch (e) {
       this.echec(e);
     } finally {
       this.envoi.set(false);
     }
-  }
-
-  private connecter(): Promise<unknown> {
-    return firstValueFrom(this.http.post('/api/auth/login', this.form.getRawValue()));
-  }
-
-  /** Fait poser le cookie XSRF-TOKEN par Spring s'il manque (ou toujours, avec `renouveler`). */
-  private async assurerJetonCsrf(renouveler = false): Promise<void> {
-    if (!renouveler && document.cookie.split('; ').some((c) => c.startsWith('XSRF-TOKEN='))) return;
-    // Sans session, Spring répond 401, mais pose le cookie : la réponse elle-même n'importe pas.
-    await firstValueFrom(this.http.get('/api/auth/me')).catch(() => undefined);
   }
 
   private echec(e: unknown): void {
