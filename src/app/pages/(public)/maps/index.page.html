@@ -1,0 +1,105 @@
+<div class="maps">
+  <div class="maps__intro">
+    <h1 class="t-display maps__title">Mes maps</h1>
+    @if (donnees() && !vide()) {
+      <!-- Annoncé à chaque changement de recherche ou de filtre. -->
+      <p class="t-body-sm maps__muted maps__compte" aria-live="polite">{{ compte() }}</p>
+    }
+  </div>
+
+  @if (enErreur()) {
+    <div class="cdt-alert cdt-alert--error maps__erreur" role="alert">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.25" />
+        <path d="M10 6.5v4.5M10 13.5h.01" />
+      </svg>
+      <div class="cdt-stack maps__erreur-corps">
+        <p class="cdt-alert__text">Les données ne répondent pas pour l’instant.</p>
+        <!-- Lien simple, sans JavaScript : recharger la page relance le rendu serveur. -->
+        <a class="cdt-btn cdt-btn--secondary cdt-btn--sm" href="/maps">Réessayer</a>
+      </div>
+    </div>
+  } @else if (vide()) {
+    <section class="cdt-empty" aria-labelledby="maps-vide">
+      <h2 id="maps-vide" class="cdt-empty__title">Aucune face jouée pour l’instant</h2>
+      <p class="cdt-empty__text">Tes maps apparaissent ici dès que le mod envoie ta première tentative.</p>
+      <a class="cdt-btn cdt-btn--primary" routerLink="/mod">Voir comment installer le mod</a>
+    </section>
+  } @else if (donnees()) {
+    <div class="maps__filtres" role="search" aria-label="Filtrer mes maps">
+      <div class="cdt-field maps__recherche">
+        <label class="cdt-field__label" for="maps-q">Rechercher une map</label>
+        <input
+          class="cdt-field__input"
+          id="maps-q"
+          type="search"
+          placeholder="Nom de la map"
+          autocomplete="off"
+          [value]="filtres().q"
+          (input)="chercher($any($event.target).value)"
+        />
+      </div>
+
+      <div class="cdt-field maps__mod">
+        <label class="cdt-field__label" for="maps-mod">Mod</label>
+        <!-- [attr.selected] écrit le choix dans le HTML du serveur (le DOM serveur ne reflète pas la
+             propriété) ; [selected] le garde juste dans le navigateur après un choix de l'utilisateur. -->
+        <select class="maps__select" id="maps-mod" (change)="filtrerParMod($any($event.target).value)">
+          <option value="" [selected]="filtres().mod === null" [attr.selected]="filtres().mod === null ? '' : null">
+            Tous les mods
+          </option>
+          @for (mod of mods(); track mod.nom) {
+            <option
+              [value]="mod.nom"
+              [selected]="filtres().mod === mod.nom"
+              [attr.selected]="filtres().mod === mod.nom ? '' : null"
+            >
+              {{ mod.nom }} ({{ mod.faces }})
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="maps__tri">
+        <span class="cdt-field__label" id="maps-tri">Trier</span>
+        <div class="cdt-tabs" role="group" aria-labelledby="maps-tri">
+          @for (tri of tris; track tri.id) {
+            <button class="cdt-tabs__tab" type="button" [attr.aria-pressed]="filtres().tri === tri.id" (click)="trier(tri.id)">
+              {{ tri.libelle }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (faces().length > 0) {
+      <!-- Des lignes, pas des liens tant que la page d'une face n'existe pas (#27). -->
+      <ul class="maps__liste">
+        @for (face of faces(); track face.cle) {
+          <li class="cdt-face maps__face">
+            <span class="cdt-side" aria-hidden="true">{{ face.side }}</span>&ngsp;
+            <span class="cdt-face__main">
+              <span class="cdt-face__name">{{ face.nom }}</span>&ngsp;
+              <span class="cdt-face__meta">Face {{ face.side }} · {{ face.mod }}</span>
+            </span>&ngsp;
+            <span class="cdt-face__aside">
+              <span class="t-data maps__tentatives">{{ face.tentatives }}</span>&ngsp;
+              @if (face.deathless) {
+                <span class="t-body-sm maps__deathless">{{ face.deathless }}</span>&ngsp;
+              } @else {
+                <span class="t-body-sm maps__muted">aucun deathless</span>&ngsp;
+              }
+              <span class="t-body-sm maps__muted">{{ face.derniere }}</span>
+            </span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <section class="cdt-empty" aria-labelledby="maps-aucun">
+        <h2 id="maps-aucun" class="cdt-empty__title">Aucune face ne correspond</h2>
+        <p class="cdt-empty__text">Change la recherche ou le mod, ou repars de la liste complète.</p>
+        <button class="cdt-btn cdt-btn--secondary" type="button" (click)="effacer()">Effacer les filtres</button>
+      </section>
+    }
+  }
+</div>

@@ -1,0 +1,60 @@
+:host { display: block; }
+
+/* Même largeur que le tableau de bord : la page vit dans la coque publique. */
+.maps {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-8) max(16px, 4vw) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.maps__intro { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.maps__title { margin: 0; }
+.maps__compte { margin: 0; }
+.maps__muted { color: var(--ink-muted); }
+
+/* Erreur */
+.maps__erreur { max-width: 720px; }
+.maps__erreur-corps { gap: var(--space-3); align-items: flex-start; }
+
+/* Recherche, mod, tri : sur une ligne, qui passe à la suivante si la place manque. */
+.maps__filtres { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-4); }
+.maps__recherche { flex: 1 1 260px; }
+.maps__mod { flex: 0 1 240px; }
+.maps__tri { display: flex; flex-direction: column; gap: 6px; }
+
+/* Le design system n'a pas de liste déroulante : même allure que cdt-field__input, flèche dessinée. */
+.maps__select {
+  appearance: none;
+  min-height: 44px;
+  padding: 0 40px 0 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-strong);
+  background:
+    linear-gradient(45deg, transparent 50%, var(--ink-muted) 50%) right 20px center / 6px 6px no-repeat,
+    linear-gradient(-45deg, transparent 50%, var(--ink-muted) 50%) right 14px center / 6px 6px no-repeat,
+    var(--surface);
+  color: var(--ink);
+  font: 400 16px/24px var(--font-sans);
+  cursor: pointer;
+}
+.maps__select:focus-visible { border-color: var(--accent); outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.maps__select option { background: var(--surface); color: var(--ink); }
+
+/* Liste */
+.maps__liste { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
+/* Pas un lien (D5) : le survol de cdt-face ne doit pas promettre un clic. */
+.maps__face:hover { background: var(--surface); }
+.maps__tentatives { color: var(--ink); }
+/* Pas d'or ici (D8) : le deathless est écrit, sans pastille dorée. */
+.maps__deathless { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 760px) {
+  .maps { padding-top: var(--space-6); }
+  .maps__title { font-size: 30px; line-height: 34px; }
+  .maps__recherche, .maps__mod { flex-basis: 100%; max-width: none; }
+  .maps__tri .cdt-tabs { display: flex; }
+  .maps__tri .cdt-tabs__tab { flex: 1; padding: 0 8px; }
+}
