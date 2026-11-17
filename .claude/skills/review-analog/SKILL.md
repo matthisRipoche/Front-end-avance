@@ -9,7 +9,7 @@ Les règles de code sont dans le skill `conventions-analog`, celles de la couche
 
 ## Méthode
 
-1. **Le contexte d'abord** : l'issue (`gh issue view <n>`) et le plan validé. Tu relis un écart à une intention, pas seulement du code.
+1. **Le contexte d'abord** : l'issue (`gh api repos/{owner}/{repo}/issues/<n> --jq '.title, .body'` : `gh issue view` échoue dans ce dépôt) et le plan validé. Tu relis un écart à une intention, pas seulement du code.
 2. **Le diff entier** : `git diff main...HEAD --stat`, puis `git diff main...HEAD`, et `git diff` pour ce qui n'est pas commité. Lis les fichiers nouveaux en entier.
 3. **Pour chaque fichier, demande-toi où il s'exécute** : au build (prérendu), sur le serveur Node (SSR, route Nitro), dans le navigateur, ou plusieurs. La plupart des bugs de ce projet viennent d'un code écrit pour un endroit et exécuté dans un autre.
 4. **Suis les données** : de Spring à la route Nitro, à la page, au HTML envoyé. Que se passe-t-il si Spring répond 401, 404, 500, une liste vide, un champ `null` ?
