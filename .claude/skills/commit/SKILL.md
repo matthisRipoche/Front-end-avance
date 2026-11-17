@@ -161,6 +161,15 @@ cours, ne rien créer.
    - `## Changements` : liste à tirets, un point par commit ou par intention ;
    - `## Vérifications` : build et tests lancés, et leur résultat ;
    - s'il y a lieu, `## À savoir` : ce qui reste à faire, les choix à relire ;
+   - **`## Guide de relecture`** (demande de l'utilisateur, 2026-11-17 : les PR restent complètes,
+     mais chacune doit se relire facilement) :
+     - **ordre de lecture** : les fichiers dans l'ordre où ils se comprennent, du contrat (types,
+       route) vers l'usage (page, vue), avec une ligne sur le rôle de chacun ;
+     - **où regarder de près** : 3 à 5 endroits précis (`fichier:ligne`), et pour chacun ce qui
+       pourrait mal tourner (sécurité, données privées, hydratation, erreurs, choix discutable) ;
+     - **à survoler** : ce qui est mécanique (tests qui suivent le code, docs, skills, renommages) ;
+     - **questions à se poser** en relisant, liées aux décisions validées ;
+     - **voir le résultat** : la commande ou l'adresse pour l'essayer, et ce qu'on doit y voir ;
    - si la branche traite une issue : `Closes #<n>` en dernière ligne, pour la fermer à la fusion.
    Aucune signature (pas de « Generated with … »).
 3. Créer la PR vers `main`, **assignée à l'utilisateur** :
@@ -176,7 +185,8 @@ cours, ne rien créer.
    `set_monitor` avec `auto_fix: true` et l'URL de la PR. L'app réveille alors la session sur un
    échec de CI, un conflit ou un commentaire de relecture. Un conflit se résout avec le skill
    `conflits`. Hors de l'app, le dire dans le compte rendu.
-5. Donner le lien de la PR et rappeler qu'elle se fusionne en **squash**.
+5. Donner le lien de la PR, rappeler qu'elle se fusionne en **squash**, et résumer le guide de
+   relecture en quelques lignes dans le message à l'utilisateur.
 6. Si un commit est poussé sur une PR après la demande de relecture, **le signaler** à
    l'utilisateur : la #65 a été fusionnée 34 secondes avant un correctif, qui n'est jamais arrivé
    dans `main`.
