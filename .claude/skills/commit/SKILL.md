@@ -127,7 +127,7 @@ Rendre compte : la liste des commits créés (hash + message), les vérification
 résultat, et ce qui a été volontairement laissé hors commit.
 
 **Journal de l'IA** : si la branche termine une étape ou contient une décision notable, vérifier
-que `docs/journal-ia.md` a son entrée (demande, proposition, validation ou correction, pourquoi).
+qu'une entrée existe dans `docs/journal/` (un fichier par entrée, voir son `README.md`) (demande, proposition, validation ou correction, pourquoi).
 Sinon, la proposer avant la PR.
 
 ## 7. Demander pour le push
@@ -165,4 +165,13 @@ cours, ne rien créer.
      --body-file "<scratchpad>/pr.md" --assignee @me
    ```
 
-4. Donner le lien de la PR et rappeler qu'elle se fusionne en **squash**.
+4. **Activer Auto-fix sur la PR** (décision de l'utilisateur, 2026-11-17), si l'outil
+   `mcp__ccd_pr__set_monitor` est disponible, c'est-à-dire dans l'app Claude Code :
+   `get_status` pour vérifier que la PR est liée à la session (sinon `bind_pr` avec son URL), puis
+   `set_monitor` avec `auto_fix: true` et l'URL de la PR. L'app réveille alors la session sur un
+   échec de CI, un conflit ou un commentaire de relecture. Un conflit se résout avec le skill
+   `conflits`. Hors de l'app, le dire dans le compte rendu.
+5. Donner le lien de la PR et rappeler qu'elle se fusionne en **squash**.
+6. Si un commit est poussé sur une PR après la demande de relecture, **le signaler** à
+   l'utilisateur : la #65 a été fusionnée 34 secondes avant un correctif, qui n'est jamais arrivé
+   dans `main`.
