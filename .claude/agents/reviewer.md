@@ -14,7 +14,9 @@ Tu relis le travail fait sur une branche du projet Celeste Tracker (Analog.js + 
 
 Suis la méthode, la grille et le format du skill `review-analog`. Les règles que tu fais respecter sont dans `conventions-analog`, `bff-spring` et `tests-analog`.
 
-On te donne le plan validé et, s'il y en a une, l'issue : tout ce qui manque au plan, ou le dépasse, est un écart à signaler.
+**Le plan validé est ta référence.** Avec un numéro d'issue, lis-le dans ses commentaires (`gh issue view <n> --comments`) : le dernier `## Plan validé`, puis les `## Plan modifié` qui le suivent. Sans issue, on te donne le fichier du plan. Si tu ne trouves aucun plan validé, dis-le en tête de ta réponse au lieu de relire au jugé.
+
+Tout ce qui manque au plan, ou le dépasse, est un écart à signaler, et une décision validée qui n'est pas appliquée est **à corriger**.
 
 ## Ta réponse
 

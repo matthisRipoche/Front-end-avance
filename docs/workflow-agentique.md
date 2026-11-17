@@ -13,12 +13,13 @@ flowchart TD
         S -- oui --> P[Agent planner<br/>lecture seule, Opus<br/>lots aux fichiers disjoints,<br/>décisions à trancher]
         S -- non, mode solo --> D1
         P --> V1{{Point d'arrêt 1<br/>l'utilisateur valide le plan<br/>et tranche les décisions}}
-        V1 --> B[Branche depuis main à jour]
+        V1 --> PL[Plan validé posté<br/>en commentaire de l'issue]
+        PL --> B[Branche depuis main à jour]
         B --> D1[Agent dev, lot 1]
         B --> D2[Agent dev, lot 2<br/>en parallèle si indépendant]
         D1 & D2 --> C[git status + diff :<br/>ne pas croire un agent sur parole]
         C --> VR[Agent verifier<br/>build, tests, curl<br/>sur le serveur construit]
-        C --> RV[Agent reviewer<br/>diff face au plan,<br/>gravité + scénario d'échec]
+        C --> RV[Agent reviewer<br/>diff face au plan lu sur l'issue,<br/>gravité + scénario d'échec]
         VR & RV --> OK{Bloquant ou<br/>à corriger ?}
         OK -- oui, 2 tours max --> D1
         OK -- non --> J[Entrée de journal<br/>docs/journal/…md]
@@ -57,7 +58,7 @@ flowchart TD
 | Relire **face à la spec**, en ignorant le style (sinon on corrige des faux problèmes) | Anthropic | ✅ relecture face au plan ; « ce qu'il ne faut pas signaler » dans `review-analog` |
 | Ce qui doit **toujours** arriver va dans un hook, pas dans `CLAUDE.md` | Anthropic | ✅ hook avant `git commit` (A) |
 | `CLAUDE.md` court ; procédures d'équipe dans des skills | Anthropic | ⚠️ procédures dans des skills, mais `CLAUDE.md` est long (voir E) |
-| Spec écrite et versionnée (spec → plan → tâches), qui sert de référence à la relecture | GitHub Spec Kit | ⚠️ le plan existe mais n'est pas conservé : il vit dans la conversation (voir B) |
+| Spec écrite et versionnée (spec → plan → tâches), qui sert de référence à la relecture | GitHub Spec Kit | ✅ version légère : le plan validé est posté sur l'issue, et le `reviewer` le lit là (B) |
 | Planificateur, codeur, testeur, relecteur, chacun avec un rôle strict et des outils limités | AgentMesh, guides multi-agents | ✅ quatre rôles, outils limités |
 | Boucle de correction bornée entre relecteur et codeur | Guides multi-agents | ✅ deux tours au maximum, puis l'utilisateur tranche |
 | Un modèle par rôle, selon le besoin et le coût | Anthropic, guides multi-agents | ⚠️ seul `planner` fixe Opus (voir D) |
@@ -75,8 +76,10 @@ Deux fois, une vérification « demandée » a été sautée. Un agent `dev` a a
 
 *Fait* : `.claude/hooks/verifier-avant-commit.mjs`, déclaré en `PreToolUse` sur `Bash`. Il ne réagit qu'à `git commit`, puis lance l'une après l'autre les étapes tests, build (avec le contrôle du prérendu) et en-têtes. En cas d'échec, il bloque avec le code 2 et renvoie les 40 dernières lignes à l'agent. Essayé sur quatre cas : commande ordinaire ignorée, dépôt sain autorisé, test cassé bloqué, prérendu vide bloqué.
 
-**B. Garder le plan validé dans le dépôt ou sur l'issue** *(priorité moyenne)*
+**B. Garder le plan validé dans le dépôt ou sur l'issue** *(fait le 2026-11-17)*
 Le plan du `planner` et les décisions validées ne vivent que dans la conversation. Le `reviewer` les reçoit recopiés dans son brief, et ils disparaissent ensuite. Proposition, version légère de Spec Kit : poster le plan validé en commentaire de l'issue (`gh issue comment`). Le `reviewer` le lit là, et l'oral garde la trace de chaque décision.
+
+*Fait* : la skill `issue` poste le plan validé (`## Plan validé`, avec chaque décision et l'option retenue) juste après le point d'arrêt 1, puis un `## Plan modifié` si une décision change. Le `reviewer` lit ce commentaire avec `gh issue view <n> --comments`, et signale l'absence de plan au lieu de relire au jugé. Sans issue, le plan va dans la description de la PR. Pas de fichier de spec dans le dépôt : un fichier de plus par issue aurait été du sur-outillage, et l'issue est déjà l'endroit où le travail est décrit.
 
 **C. Isoler les agents qui construisent** *(priorité moyenne)*
 Le `verifier` et le `reviewer` ont lancé des builds et des tests en même temps dans le même dossier. Cette charge a fait apparaître la course du plugin, et a d'abord égaré le diagnostic vers le nom d'un fichier. La course est corrigée, mais le partage reste : `dist/` commun et ports locaux. Proposition : `isolation: worktree` pour le `verifier`, ou la règle « un seul agent construit à la fois ».

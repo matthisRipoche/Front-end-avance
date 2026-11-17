@@ -20,6 +20,11 @@ Argument : un numéro d'issue (`/issue 12`) ou une demande en texte libre.
 - Présente le plan en bref : objectif, lots, vérification prévue.
 - S'il y a des **décisions à trancher**, pose-les avec `AskUserQuestion` (recommandation en premier) et **attends** les réponses.
 - Sans décision à trancher, demande simplement le feu vert sur le plan.
+- **Conserve le plan validé** : c'est la référence de la relecture et la trace de l'oral. Écris-le dans un fichier du scratchpad (outil Write), puis :
+  - **issue** : `gh issue comment <n> --body-file <fichier>`, avec un titre `## Plan validé` ;
+  - **demande sans issue** : garde le fichier, et colle son contenu dans la PR sous `## Plan validé` (étape 6).
+
+  Le commentaire contient l'objectif, les lots, la vérification prévue, et **chaque décision avec l'option retenue** (et ce que l'utilisateur a corrigé, s'il y a lieu). Si une décision change en cours de route, ajoute un commentaire `## Plan modifié` plutôt que de réécrire le premier.
 - Puis crée la branche proposée depuis `main` à jour (`git switch main && git pull && git switch -c <branche>`), jamais de travail sur `main`.
 
 ## 3. Développer : agent(s) `dev`
@@ -33,7 +38,7 @@ Argument : un numéro d'issue (`/issue 12`) ou une demande en texte libre.
 
 - Lance les deux **dans un seul message**.
   - `verifier` : avec la section « Vérification » du plan.
-  - `reviewer` : avec le plan validé et le numéro d'issue.
+  - `reviewer` : avec le **numéro d'issue** : il lit le plan validé dans les commentaires de l'issue. Sans issue, avec le fichier du plan.
 - Points **bloquants** ou **à corriger** : relance un `dev` sur les fichiers concernés (ou corrige toi-même si c'est une ligne), puis relance le seul agent concerné.
 - Deux tours au maximum. Au-delà, présente les points restants à l'utilisateur au lieu de boucler.
 - Les points **mineurs** sont listés à l'utilisateur, pas corrigés d'office.
@@ -46,6 +51,7 @@ Argument : un numéro d'issue (`/issue 12`) ou une demande en texte libre.
 ## 6. Pousser et ouvrir la PR : point d'arrêt, utilisateur
 
 - Le skill `commit` demande l'accord pour le push, puis ouvre la PR (`Closes #n`), fusionnée en squash après relecture de l'utilisateur.
+- Demande sans issue : la description de la PR reprend le plan validé sous `## Plan validé`.
 
 ## Compte rendu final
 
