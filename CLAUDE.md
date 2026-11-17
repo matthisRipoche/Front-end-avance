@@ -13,8 +13,6 @@ Conventions du framework (routage par fichiers, routes serveur, chargement de do
 
 ## Façon de travailler
 
-Décision du 2026-11-16 : la partie apprentissage (leçons, quiz, skill `teach`) est abandonnée.
-
 - L'agent implémente tout (code, outillage, configuration, déploiement) et explique brièvement ses choix.
 - **Décisions structurantes** (architecture, découpage, dépendance ajoutée, contrat avec l'API) : l'agent présente les options et leurs compromis, recommande, et **attend la validation avant de coder**.
 - L'utilisateur relit les PR.
@@ -29,7 +27,7 @@ Une fonctionnalité ou une issue non triviale passe par la skill **`/issue <n>`*
 | 1 | `planner` | Plan découpé en lots aux fichiers disjoints, décisions à trancher. Lecture seule. |
 | 2 | **utilisateur** | Valide le plan et tranche les décisions. |
 | 3 | `dev` (un par lot, en parallèle si indépendants) | Code et tests d'un lot, selon les conventions. Ne commite pas. |
-| 4 | `verifier` + `reviewer` en parallèle | Build, tests, requêtes sur le serveur construit ; relecture du diff. Lecture seule. |
+| 4 | `verifier` (Sonnet) + `reviewer` en parallèle | Le `verifier` est **seul** à construire et tester (build, tests, requêtes sur le serveur construit) ; le `reviewer` relit le diff face au plan posté sur l'issue. Lecture seule. |
 | 5 | session principale | Corrections, journal, commits (skill `commit`). |
 | 6 | **utilisateur** | Accord pour le push, relecture de la PR. |
 
@@ -63,7 +61,7 @@ C'est la matière de l'oral. **À chaque étape** (décision, fonctionnalité, c
 - **Chaque commit passe par le skill `commit`** (`.claude/skills/commit/SKILL.md`).
 - Jamais de commit sur `main`. Une branche par sujet (`feat/…`, `fix/…`, `docs/…`, `chore/…`), puis pull request, fusion en **squash** (le titre de la PR devient le commit sur `main`).
 - **Auto-fix** est activé sur chaque PR à sa création (skill `commit`) : l'app réveille la session sur un échec de CI, un conflit ou un commentaire. Un conflit se résout avec le skill `conflits`, et la session pousse sans redemander.
-- **Conventional Commits en français**, commits atomiques, build et tests avant chaque commit.
+- **Conventional Commits en français**, commits atomiques, build et tests avant chaque commit. Imposé par un hook (`.claude/hooks/verifier-avant-commit.mjs`) : un `git commit` de l'agent est bloqué si les tests, le build ou les en-têtes échouent.
 - Demander avant chaque `git push`.
 
 ## Commandes
@@ -77,64 +75,27 @@ C'est la matière de l'oral. **À chaque étape** (décision, fonctionnalité, c
 
 ## Conventions de code
 
-- **Template et styles séparés de la logique** (choix de l'utilisateur, 2026-10-23) : chaque composant a son `.ts`, son `.html` et, s'il a des styles, son `.css`, côte à côte (`templateUrl`, `styleUrl`). Pas de `template:` ni de `styles:` en ligne.
-- Une page avec plusieurs fichiers vit dans son dossier : `src/app/pages/design-system/index.page.ts` (+ `.html`, `.css`, données, test) donne `/design-system`.
-- Pages publiques dans `src/app/pages/(public)/` : la coque `(public).page.ts` (navigation, pied de page) les entoure, sans changer leur adresse.
-- **Pages Markdown** : `src/app/pages/(public)/faq.md` donne `/faq` (titre et balises meta dans le frontmatter). Piège d'Analog 2.9 : **tout `.md` de `src/content/` ou `src/app/pages/` devient une route** ; un texte chargé par `injectContent` crée donc aussi une page.
-- Composants partagés : `src/app/layout/` (coque des pages), `src/app/ui/` (composants du design system).
+Dans le skill **`conventions-analog`** (où va chaque fichier, template et styles séparés de la logique, pages Markdown, design system, interdits). Il fait foi : une règle de code se met à jour là, pas ici.
 
-## Périmètre
+## Périmètre et architecture
 
-Un nouveau front pour CelesteDeathTracker, en partie neuf. Ce n'est pas une copie du site Angular actuel (`web/` du dépôt d'origine).
+Détail dans `docs/architecture.md`. L'essentiel :
 
-| Partie | Site actuel | Ce front |
-|---|---|---|
-| Pages publiques : accueil, page du mod, FAQ, confidentialité | N'existent pas | **Nouvelles**, en SSR ou SSG (FAQ et confidentialité en Markdown) |
-| Pages connectées : tableau de bord, mes maps, détail d'une face | Rendues dans le navigateur | **Refaites** sur la couche serveur et la connexion côté serveur |
-| Historique, détail d'une room, direct, appareils, appairage | Existent | Hors périmètre au départ, s'il reste du temps |
-
-Remplacer un jour le site actuel : à décider à la fin. La comparaison des deux architectures sert l'oral.
-
-## Architecture visée
-
-```
-navigateur ──▶ serveur Node d'Analog (Nitro) ──────────────▶ API Spring (celeste.matthisripoche.com)
-                 ├─ pages publiques : SSR ou SSG
-                 ├─ pages connectées : SSR, connexion vérifiée côté serveur
-                 ├─ couche serveur dédiée au front (routes src/server/routes/)
-                 └─ middlewares : /health, journaux, limitation de débit
-```
-
-Rôle du serveur Node (validé, pistes A + B + E) :
-
-- **A. Couche serveur dédiée au front (BFF)** : des routes Nitro (`h3`) qui appellent Spring, combinent les réponses et renvoient ce dont la page a besoin. Validation des paramètres, traduction des erreurs.
-- **B. Connexion vérifiée côté serveur** : pendant le rendu SSR, Node transmet le cookie de session à Spring et sait si l'utilisateur est connecté avant d'envoyer la page. La redirection vers le login se fait côté serveur, sans clignotement.
-- **E. Transversal** : route `/health` (contrôle de santé Docker), journaux des requêtes, limitation de débit sur le login.
-- S'il reste du temps : **C.** cache serveur de données publiques (page du mod), **D.** relais du flux SSE `/api/live/stream`. Pas de base de données propre, sauf si la consigne l'exige.
-
-Détails techniques :
-
-- Le navigateur ne voit qu'une origine : le cookie de session `JSESSIONID` et le CSRF (`XSRF-TOKEN` → en-tête `X-XSRF-TOKEN`) fonctionnent sans CORS. Les appels qui n'ont pas besoin d'être transformés sont relayés tels quels vers Spring.
-- En production, Spring est joint par son **adresse publique**, donnée par une variable d'environnement : son conteneur est sur le réseau privé de l'autre projet.
-- Contrat de l'API et vocabulaire (face, tentative, SID) : `docs/api-spring.md`.
-- Spécification des pages : `docs/arborescence-pages.md` du dépôt d'origine. Modèles TypeScript à reprendre : `web/src/app/core/*.model.ts` du dépôt d'origine.
-- Connexion : **email et mot de passe d'abord**. Discord (OAuth2) plus tard : il faudra déclarer une seconde adresse de retour.
+- Pages publiques en SSR ou SSG ; pages connectées refaites en SSR, connexion vérifiée côté serveur. Historique, direct, appareils : hors périmètre au départ.
+- Le serveur Node a de vraies responsabilités (pistes A + B + E validées) : couche serveur dédiée au front (BFF), session vérifiée pendant le rendu, `/health`, journaux, limitation de débit.
+- Le navigateur ne voit qu'une origine (relais `/api`) ; Spring est joint par son adresse publique (`NITRO_API_URL`). Contrat de l'API : `docs/api-spring.md`.
 
 ## Design
 
-- **Nouvelle identité visuelle** (le design system « Topo » du site actuel est abandonné). Produit : `PRODUCT.md`. Design system : `docs/design-system.md`, source dans Claude Design.
-- Code : jetons `src/styles/tokens.css`, composants `src/styles/components.css` (classes `.cdt-*`, styles de texte `.t-*`), vitrine `/design-system`.
-- Sombre d'abord, accent cyan pour l'action, un seul élément doré par écran (deathless). Unbounded, Geist et Geist Mono auto-hébergées (`@fontsource-variable`). Pas de Tailwind.
-- Toute maquette part du design system ; demander les goûts de l'utilisateur avant de proposer une direction visuelle.
-- **Interdit** : sprites et assets de Celeste (© Extremely OK Games), police du jeu (Renogare). Icônes en SVG dessinées pour le site.
-- **Seule exception** (décision du 2026-10-25) : des captures recadrées sur l'interface du mod (menu Mod Options, bandeau du code), sans sprites ni décor du jeu, pour illustrer la page du mod et la FAQ.
+- Design system : `docs/design-system.md` (source dans Claude Design), produit : `PRODUCT.md`, vitrine `/design-system`. Pas de Tailwind.
+- Toute maquette part du design system ; **demander les goûts de l'utilisateur** avant de proposer une direction visuelle.
+- **Interdit** : sprites, assets et police (Renogare) de Celeste (© Extremely OK Games). Seule exception (2026-10-25) : captures recadrées sur l'interface du mod.
 
 ## Production
 
-- Domaine : `new-celeste.matthisripoche.com` (enregistrement DNS créé le 2026-10-22), sur le VPS 57.129.139.62.
-- **Traefik v3.7** (conteneur `traefik-traefik-1`, réseau Docker `frontend`) possède les ports 80 et 443 : **ne jamais publier 80/443 ni lancer un second reverse proxy**. Labels : entrypoint `websecure`, certresolver `ovhcloud`.
-- Tout ce qui sert au déploiement est dans `deploy/` (`Dockerfile`, `Dockerfile.dockerignore`, `docker-compose.prod.yml`, `README.md`) ; seul le workflow reste dans `.github/workflows/ci-cd.yml`.
-- Le VPS héberge d'autres applications. Modèle de déploiement : `docker-compose.prod.yml`, `.github/workflows/ci-cd.yml` et `deploy/README.md` du dépôt d'origine (images `ghcr.io/<owner>/…:sha-…`, SSH depuis la CI ; le port SSH n'est pas joignable depuis le poste de dev).
+- `new-celeste.matthisripoche.com`, sur un VPS partagé avec d'autres applications. Détail et modèle de déploiement : `deploy/README.md`.
+- **Traefik possède les ports 80 et 443 : ne jamais publier 80/443 ni lancer un second reverse proxy.**
+- Tout le déploiement est dans `deploy/` ; seul le workflow reste dans `.github/workflows/ci-cd.yml`.
 
 ## Pièges d'environnement
 

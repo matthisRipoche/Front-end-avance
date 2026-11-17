@@ -60,7 +60,7 @@ Gardes, résolveurs et `data` passent aussi par `routeMeta`. Page qu'on ne veut 
 
 ## Pages Markdown
 
-- **Tout `.md` dans `src/content/` ou `src/app/pages/` devient une route.** N'y pose jamais un `.md` qui n'est pas une page.
+- **Tout `.md` dans `src/content/` ou `src/app/pages/` devient une route.** N'y pose jamais un `.md` qui n'est pas une page : un texte chargé par `injectContent` crée donc aussi une page.
 - Titre et balises meta dans le frontmatter. Les notes pour les rédacteurs vont dans le frontmatter (commentaires YAML), pas dans le corps.
 - Le HTML passe tel quel : une question de FAQ est un `<details>`. Laisse une ligne vide après `</summary>` et avant `</details>`, sinon le Markdown intérieur n'est pas interprété.
 - Une page riche en colonnes ou en cartes devient un composant, pas du Markdown (c'est le cas de `/mod`).
