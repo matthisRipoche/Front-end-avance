@@ -6,7 +6,11 @@
         <a class="cdt-nav__link" routerLink="/mod" routerLinkActive #mod="routerLinkActive" [attr.aria-current]="mod.isActive ? 'page' : null">Le mod</a>
         <a class="cdt-nav__link" routerLink="/faq" routerLinkActive #faq="routerLinkActive" [attr.aria-current]="faq.isActive ? 'page' : null">FAQ</a>
       </div>
-      <a class="cdt-btn cdt-btn--primary cdt-btn--sm" routerLink="/login">Se connecter</a>
+      @if (surConnexion()) {
+        <a class="cdt-btn cdt-btn--secondary cdt-btn--sm" routerLink="/inscription">Créer un compte</a>
+      } @else {
+        <a class="cdt-btn cdt-btn--primary cdt-btn--sm" routerLink="/login">Se connecter</a>
+      }
     </div>
   </nav>
 </header>

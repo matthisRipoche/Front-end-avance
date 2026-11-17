@@ -1,0 +1,117 @@
+<section class="login">
+  @if (redirige) {
+    <div class="cdt-alert" role="status">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4.5" y="9" width="11" height="8" rx="2" />
+        <path d="M7 9V6.5a3 3 0 0 1 6 0V9" />
+      </svg>
+      <div>
+        <p class="cdt-alert__title">Connecte-toi pour continuer</p>
+        <p class="cdt-alert__text">Tu reviendras sur la page demandée juste après.</p>
+      </div>
+    </div>
+  }
+
+  <div class="login__intro">
+    <h1 class="t-display login__title">Connexion</h1>
+    <p class="login__lead">Retrouve tes faces et l’endroit où tes tentatives s’arrêtent.</p>
+  </div>
+
+  @if (erreur(); as e) {
+    <div class="cdt-alert cdt-alert--error" role="alert" tabindex="-1" #alerte>
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.25" />
+        <path d="M7.5 7.5l5 5M12.5 7.5l-5 5" />
+      </svg>
+      <div>
+        <p class="cdt-alert__title">{{ e.titre }}</p>
+        <p class="cdt-alert__text">
+          {{ e.texte }}
+          @if (e.lienInscription) {
+            <a routerLink="/inscription">Crée-le ici</a>.
+          }
+        </p>
+      </div>
+    </div>
+  }
+
+  <form class="cdt-panel login__form" [formGroup]="form" (ngSubmit)="envoyer()" novalidate>
+    @let email = form.controls.email;
+    @let emailFaux = email.touched && email.invalid;
+    <div class="cdt-field" [class.cdt-field--error]="emailFaux">
+      <label class="cdt-field__label" for="email">Email</label>
+      <input
+        class="cdt-field__input"
+        id="email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        placeholder="nom@exemple.fr"
+        [attr.aria-invalid]="emailFaux"
+        [attr.aria-describedby]="emailFaux ? 'email-aide' : null"
+      />
+      @if (emailFaux) {
+        <p class="cdt-field__help" id="email-aide">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+            <circle cx="8" cy="8" r="6.25" />
+            <path d="M8 4.75v3.75M8 11h.01" />
+          </svg>
+          <span>{{ email.hasError('required') ? 'Saisis ton adresse email.' : 'Saisis une adresse complète, par exemple nom@exemple.fr.' }}</span>
+        </p>
+      }
+    </div>
+
+    @let mdp = form.controls.password;
+    @let mdpFaux = mdp.touched && mdp.invalid;
+    <div class="cdt-field" [class.cdt-field--error]="mdpFaux">
+      <div class="login__label-row">
+        <label class="cdt-field__label" for="password">Mot de passe</label>
+        <button
+          class="cdt-btn cdt-btn--ghost cdt-btn--sm login__toggle"
+          type="button"
+          aria-controls="password"
+          [attr.aria-label]="motDePasseVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          (click)="basculerMotDePasse()"
+        >
+          {{ motDePasseVisible() ? 'Masquer' : 'Afficher' }}
+        </button>
+      </div>
+      <input
+        class="cdt-field__input"
+        id="password"
+        [type]="motDePasseVisible() ? 'text' : 'password'"
+        formControlName="password"
+        autocomplete="current-password"
+        [attr.aria-invalid]="mdpFaux"
+        [attr.aria-describedby]="mdpFaux ? 'password-aide' : null"
+      />
+      @if (mdpFaux) {
+        <p class="cdt-field__help" id="password-aide">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+            <circle cx="8" cy="8" r="6.25" />
+            <path d="M8 4.75v3.75M8 11h.01" />
+          </svg>
+          <span>Saisis ton mot de passe.</span>
+        </p>
+      }
+    </div>
+
+    <button
+      class="cdt-btn cdt-btn--primary login__submit"
+      type="submit"
+      [disabled]="attente() > 0"
+      [attr.aria-busy]="envoi()"
+    >
+      @if (envoi()) {
+        <span class="cdt-spinner" aria-hidden="true"></span>
+        Connexion…
+      } @else if (attente() > 0) {
+        Réessaie dans {{ attente() }} s
+      } @else {
+        Se connecter
+      }
+    </button>
+  </form>
+
+  <p class="t-body-sm login__alt">Pas encore de compte ? <a routerLink="/inscription">Créer un compte</a></p>
+</section>

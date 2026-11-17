@@ -117,7 +117,7 @@ Types de réponse : à reprendre de `web/src/app/core/*.model.ts` du dépôt d'o
 ## Page SSR et connexion côté serveur
 
 - Le `load` d'une page connectée reçoit `{ event, params }` (`PageServerLoad` de `@analogjs/router`). Il appelle **directement** `callSpring(event, …)`, sans repasser par HTTP vers sa propre route `/api` : le cookie est déjà sur l'`event`.
-- Sans session (401 de Spring) : redirection **côté serveur** vers le login, avant d'envoyer le moindre HTML (`sendRedirect(event, '/connexion?retour=…', 302)`). **À vérifier** : comportement exact d'une redirection posée dans un `load` d'Analog 2.9, ou s'il faut passer par une garde dans `routeMeta`.
+- Sans session (401 de Spring) : redirection **côté serveur** vers le login, avant d'envoyer le moindre HTML (`sendRedirect(event, '/login?redirect=…', 302)`, chemin de retour filtré par `cheminDeRetour` de `src/app/auth/retour.ts`). **À vérifier** : comportement exact d'une redirection posée dans un `load` d'Analog 2.9, ou s'il faut passer par une garde dans `routeMeta`.
 - Une page connectée n'est **jamais** dans `prerender.routes`.
 - Les appels `HttpClient` faits dans le navigateur vers `/api/…` passent par le relais : même origine, le cookie suit seul.
 
