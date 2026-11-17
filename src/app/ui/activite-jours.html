@@ -1,0 +1,18 @@
+<div class="cdt-activite__graphique" role="img" [attr.aria-label]="label()">
+  @for (barre of barres(); track barre.jour) {
+    <div class="cdt-activite__jour" [class.cdt-activite__jour--aujourdhui]="barre.aujourdhui">
+      <div class="cdt-activite__piste">
+        <span class="cdt-activite__barre" [style.height.%]="barre.hauteur"></span>
+      </div>
+      <span class="cdt-activite__repere" [class.cdt-activite__repere--deathless]="barre.deathless"></span>
+      <span class="cdt-activite__numero">{{ barre.numero }}</span>
+    </div>
+  }
+</div>
+@if (avecDeathless()) {
+  <!-- Hors du role="img", qui masquerait son texte aux lecteurs d'écran. -->
+  <p class="cdt-activite__legende">
+    <span class="cdt-activite__repere cdt-activite__repere--deathless" aria-hidden="true"></span>&ngsp;
+    <span>jour avec deathless</span>
+  </p>
+}

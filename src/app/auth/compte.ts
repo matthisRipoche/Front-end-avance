@@ -1,7 +1,8 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { DOCUMENT, Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+import { memoriserFuseau } from './fuseau';
 import { Session } from './session';
 import type { Utilisateur } from './session-contrat';
 
@@ -23,14 +24,19 @@ export type Identifiants = { email: string; password: string };
 export class Compte {
   private readonly http = inject(HttpClient);
   private readonly session = inject(Session);
+  private readonly document = inject(DOCUMENT);
 
   /**
    * Ouvre la session : Spring pose le cookie JSESSIONID sur l'origine du front et renvoie
    * l'utilisateur. On le range dans la `Session` pour que la navigation change sans recharger.
+   * On mémorise aussi le fuseau du navigateur (cookie `tz`), qui sert à couper les jours du
+   * tableau de bord côté serveur.
    */
   async connecter(identifiants: Identifiants): Promise<Utilisateur> {
     const utilisateur = (await this.ecrire('/api/auth/login', identifiants)) as Utilisateur;
     this.session.definir(utilisateur);
+    // Prudence : connecter ne tourne que dans le navigateur, mais pas de cookie sans fenêtre.
+    if (this.document.defaultView) memoriserFuseau(this.document);
     return utilisateur;
   }
 

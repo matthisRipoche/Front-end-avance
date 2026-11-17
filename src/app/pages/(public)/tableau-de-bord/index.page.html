@@ -1,18 +1,165 @@
-<section class="tableau">
+<div class="tableau">
   <div class="tableau__intro">
     <h1 class="t-display tableau__title">Tableau de bord</h1>
-    <p class="tableau__lead">Connecté en tant que <strong>{{ nom() }}</strong>.</p>
+    @if (ville() && !vide()) {
+      <p class="t-body-sm tableau__lead">Journées comptées en heure de {{ ville() }}</p>
+    }
   </div>
 
-  <div class="cdt-alert" role="status">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.25" />
-      <path d="M10 9v4.5M10 6.5h.01" />
-    </svg>
-    <div>
-      <p class="cdt-alert__text">Page provisoire : le vrai tableau de bord arrive bientôt.</p>
+  @if (enErreur()) {
+    <div class="cdt-alert cdt-alert--error tableau__erreur" role="alert">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.25" />
+        <path d="M10 6.5v4.5M10 13.5h.01" />
+      </svg>
+      <div class="cdt-stack tableau__erreur-corps">
+        <p class="cdt-alert__text">Les données ne répondent pas pour l’instant.</p>
+        <!-- Lien simple, sans JavaScript : recharger la page relance le rendu serveur. -->
+        <a class="cdt-btn cdt-btn--secondary cdt-btn--sm" href="/tableau-de-bord">Réessayer</a>
+      </div>
     </div>
-  </div>
+  } @else if (vide()) {
+    <section class="cdt-panel tableau__vide" aria-labelledby="tdb-vide">
+      <div class="tableau__vide-intro">
+        <h2 id="tdb-vide" class="cdt-panel__title">Aucune tentative pour l’instant</h2>
+        <p class="tableau__muted">
+          Ton tableau de bord se remplit dès que le mod envoie ta première tentative. Trois étapes, une seule fois.
+        </p>
+      </div>
+      <ol class="tableau__etapes">
+        <li class="tableau__etape"><span class="t-data tableau__etape-num">1</span>&ngsp;<span>Installe le mod dans Everest</span></li>
+        <li class="tableau__etape"><span class="t-data tableau__etape-num">2</span>&ngsp;<span>Associe ton jeu à ce compte avec le code affiché en jeu</span></li>
+        <li class="tableau__etape"><span class="t-data tableau__etape-num">3</span>&ngsp;<span>Lance une face : chaque tentative arrive ici</span></li>
+      </ol>
+      <div class="cdt-row">
+        <a class="cdt-btn cdt-btn--primary" routerLink="/mod">Voir comment installer le mod</a>
+      </div>
+    </section>
+  } @else if (donnees()) {
+    @if (enJeu(); as jeu) {
+      <!-- &ngsp; : Angular retire les blancs entre deux balises ; sans lui, le texte lu (lecteur
+           d'écran, copier-coller) collerait les morceaux. Invisible dans un conteneur flex. -->
+      <p class="tableau__en-jeu">
+        <span class="tableau__en-jeu-point" aria-hidden="true"></span>
+        <span class="tableau__en-jeu-titre">En jeu</span>&ngsp;
+        <span class="tableau__muted">{{ jeu.libelle }}</span>&ngsp;
+        @if (jeu.room) {
+          <span class="t-data">{{ jeu.room }}</span>&ngsp;
+        }
+        <span class="tableau__muted tableau__en-jeu-debut">depuis le <span class="t-data">{{ jeu.debut }}</span></span>
+      </p>
+    }
 
-  <p class="t-body-sm tableau__retour"><a routerLink="/">Retour à l’accueil</a></p>
-</section>
+    <div class="tableau__grille">
+      @if (reprendre(); as face) {
+        <section class="cdt-panel tableau__reprendre" aria-labelledby="tdb-reprendre">
+          <h2 id="tdb-reprendre" class="cdt-panel__title">Reprendre</h2>
+          <div class="cdt-row">
+            <span class="t-stat tableau__face-nom">{{ face.nom }}</span>&ngsp;
+            <span class="t-label tableau__side">face {{ face.side }}</span>
+          </div>
+          <div class="tableau__progression">
+            <div class="t-body-sm tableau__progression-ligne">
+              <span>Plus loin atteint</span>&ngsp;
+              @if (face.rooms) {
+                <span class="t-data tableau__fort">{{ face.rooms }} rooms · {{ face.pourcentage }}</span>
+              } @else {
+                <span class="tableau__fort">progression inconnue</span>
+              }
+            </div>
+            <div class="tableau__piste tableau__piste--large" role="img" [attr.aria-label]="face.libelleBarre">
+              <span class="tableau__barre tableau__barre--succes" [style.width.%]="face.largeur"></span>
+            </div>
+          </div>
+          <dl class="tableau__faits">
+            <div class="cdt-stat">
+              <dt class="cdt-stat__label">Tentatives</dt>
+              <dd class="t-data cdt-num">{{ face.tentatives }}</dd>
+            </div>
+            <div class="cdt-stat">
+              <dt class="cdt-stat__label">Dernière partie</dt>
+              <dd>{{ face.derniere }}</dd>
+            </div>
+          </dl>
+        </section>
+      }
+
+      @if (aujourdhui(); as jour) {
+        <section class="cdt-panel" aria-labelledby="tdb-aujourdhui">
+          <h2 id="tdb-aujourdhui" class="cdt-panel__title">Aujourd’hui</h2>
+          <dl class="tableau__jour">
+            <div class="cdt-stat">
+              <dt class="cdt-stat__label">Tentatives</dt>
+              <dd class="cdt-stat__value">{{ jour.tentatives }}</dd>
+            </div>
+            <div class="cdt-stat">
+              <dt class="cdt-stat__label">Deathless</dt>
+              <dd>
+                @if (jour.deathless > 0) {
+                  <span class="cdt-result cdt-result--deathless">
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M10 6c3.5 0 6 2.4 6 5.4 0 3.3-3 6.1-6 6.6-3-.5-6-3.3-6-6.6C4 8.4 6.5 6 10 6Z" fill="currentColor" />
+                      <path d="M10 6V3M7.5 4.5 10 6l2.5-1.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" fill="none" />
+                    </svg>
+                    {{ jour.deathlessTexte }}
+                  </span>
+                } @else {
+                  <span class="cdt-stat__value">0</span>
+                }
+              </dd>
+            </div>
+            <div class="cdt-stat">
+              <dt class="cdt-stat__label">Plus longue</dt>
+              <dd class="t-data tableau__duree">{{ jour.plusLongue }}</dd>
+            </div>
+            <div class="cdt-stat">
+              <dt class="cdt-stat__label">La plus travaillée</dt>
+              @if (jour.plusTravaillee; as face) {
+                <dd>
+                  <span class="t-heading">{{ face.face }}</span>&ngsp;
+                  <span class="t-body-sm tableau__muted">{{ face.tentatives }}</span>
+                </dd>
+              } @else {
+                <dd>—</dd>
+              }
+            </div>
+          </dl>
+        </section>
+      }
+    </div>
+
+    @if (activite(); as activite) {
+      <section class="cdt-panel tableau__activite" aria-labelledby="tdb-activite">
+        <div class="tableau__entete">
+          <h2 id="tdb-activite" class="cdt-panel__title">14 derniers jours</h2>&ngsp;
+          <span class="t-body-sm tableau__muted">Tentatives par jour · max {{ activite.max }}</span>
+        </div>
+        <cdt-activite-jours [activite]="activite" />
+      </section>
+    }
+
+    @if (recentes().length > 0) {
+      <section class="cdt-panel" aria-labelledby="tdb-recentes">
+        <h2 id="tdb-recentes" class="cdt-panel__title">Faces récentes</h2>
+        <ul class="tableau__recentes">
+          @for (face of recentes(); track face.cle) {
+            <li class="tableau__recente">
+              <span class="tableau__recente-nom">
+                <span class="t-heading tableau__ellipse">{{ face.nom }}</span>&ngsp;
+                <span class="t-label tableau__side">{{ face.side }}</span>
+              </span>&ngsp;
+              <span class="tableau__recente-progression">
+                <span class="tableau__piste" role="img" [attr.aria-label]="face.libelleBarre">
+                  <span class="tableau__barre" [style.width.%]="face.largeur"></span>
+                </span>&ngsp;
+                <span class="t-data tableau__recente-rooms">{{ face.rooms ?? 'progression inconnue' }}</span>
+              </span>&ngsp;
+              <span class="t-data tableau__muted tableau__recente-tentatives">{{ face.tentatives }} tent.</span>&ngsp;
+              <span class="t-body-sm tableau__muted tableau__recente-date">{{ face.derniere }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</div>
