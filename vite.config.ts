@@ -1,7 +1,42 @@
 /// <reference types="vitest" />
 
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import analog from '@analogjs/platform';
+
+/**
+ * Construit le client puis le SSR l'un après l'autre, au lieu d'en parallèle.
+ *
+ * Analog 2.9 lance les deux builds avec Promise.all et des plugins partagés : le plugin Angular
+ * n'a qu'une compilation pour les deux. Si le client finit le premier, il la libère pendant que
+ * le SSR en a encore besoin, et le SSR embarque des composants non compilés (pages prérendues
+ * vides). Ça arrive sous charge, et presque à chaque fois dans le conteneur Docker de la CI.
+ * Enchaînés, chaque build fait sa propre compilation. Le garde-fou reste
+ * scripts/verifier-prerendu.mjs.
+ */
+function buildsSequentiels(): Plugin {
+  return {
+    name: 'builds-sequentiels',
+    enforce: 'post',
+    config(config) {
+      const buildApp = config.builder?.buildApp;
+      if (!buildApp) return;
+      return {
+        builder: {
+          buildApp: async (builder) => {
+            const build = builder.build.bind(builder);
+            let precedent: Promise<unknown> = Promise.resolve();
+            builder.build = (environment) => {
+              const suivant = precedent.then(() => build(environment));
+              precedent = suivant.catch(() => undefined);
+              return suivant;
+            };
+            await buildApp(builder);
+          },
+        },
+      };
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -29,6 +64,7 @@ export default defineConfig(({ mode }) => ({
         routes: async () => ['/', '/faq', '/mod', '/confidentialite'],
       },
     }),
+    buildsSequentiels(),
   ],
   test: {
     globals: true,
