@@ -134,10 +134,15 @@ describe('Tableau de bord', () => {
       expect(texte(bandeau)).toBe('En jeu Forsaken City · B, room b-06 depuis le 17 novembre à 21:04');
     });
 
-    it('ne met aucun lien vers une page qui n’existe pas encore', () => {
+    it('mène à la liste de toutes les maps', () => {
       const page = render(ok(TABLEAU));
-      expect(page.querySelector('a[href^="/maps"]')).toBeNull();
-      expect(page.querySelectorAll('a')).toHaveLength(0);
+      expect(page.querySelector('a[href="/maps"]')?.textContent).toContain('Toutes mes maps');
+    });
+
+    it('mène à la liste des maps même sans face récente', () => {
+      const page = render(ok({ ...TABLEAU, recentes: [] }));
+      expect(section(page, 'Faces récentes')).toBeUndefined();
+      expect(page.querySelector('a[href="/maps"]')?.textContent).toContain('Toutes mes maps');
     });
   });
 
@@ -187,6 +192,8 @@ describe('Tableau de bord', () => {
       expect(page.querySelector('a[href="/mod"]')?.textContent).toContain('Voir comment installer le mod');
       expect(section(page, 'Reprendre')).toBeUndefined();
       expect(page.querySelector('cdt-activite-jours')).toBeNull();
+      // Rien à lister tant qu'aucune tentative n'est arrivée.
+      expect(page.querySelector('a[href="/maps"]')).toBeNull();
     });
   });
 
@@ -197,6 +204,7 @@ describe('Tableau de bord', () => {
       expect(texte(alerte)).toContain('Les données ne répondent pas pour l’instant.');
       expect(alerte?.querySelector('a[href="/tableau-de-bord"]')?.textContent).toContain('Réessayer');
       expect(section(page, 'Reprendre')).toBeUndefined();
+      expect(page.querySelector('a[href="/maps"]')).toBeNull();
     });
 
     it('n’affiche pas l’alerte pour une session expirée, déjà redirigée', () => {
