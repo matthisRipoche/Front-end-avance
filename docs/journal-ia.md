@@ -493,3 +493,9 @@ L'agent recommande B : à l'étape 4, les pages connectées auront leur propre g
 **Fait** : dans `ci-cd.yml` et `deploy/Dockerfile`, un build en échec est relancé une fois, avec un avertissement visible dans la CI. Une vraie erreur échoue deux fois, et la CI reste rouge. La logique (`a || { avertir; a; }`) a été essayée sur un faux build : code 0 si le second essai passe, code 1 s'il échoue aussi.
 
 **Pour l'oral** : ne pas mettre un agent là où une règle suffit. L'agent correcteur aurait été spectaculaire, mais il aurait traité le symptôme, et sur du code sain.
+
+**Suite, le même jour : la relance ne suffisait pas.** Activé sur la PR #65, l'Auto-fix réveille l'agent : la construction de l'image Docker échoue, et la relance a échoué **deux fois de suite** dans le conteneur. `main` était rouge aussi depuis la fusion de la #60. La recommandation de l'agent (« c'est rare, une relance suffit ») était fausse : sous Docker, la course arrive presque à chaque fois.
+
+**Correction à la source** : le code d'Analog (`vite-plugin-nitro`, `buildApp`) lance les builds client et SSR avec `Promise.all` et des plugins partagés. Un petit plugin du projet, `buildsSequentiels()` dans `vite.config.ts`, les enchaîne. Preuve : avec le SSR ralenti exprès, 2 builds sur 2 passent avec le plugin, et le même build échoue sans lui. C'était l'option « builds séquentiels » écartée la veille parce qu'elle touchait au fonctionnement interne d'Analog. La relance reste en filet de sécurité.
+
+**Pour l'oral** : l'Auto-fix a servi dès le premier échec. Mais c'est le constat « deux échecs de suite », pas l'agent seul, qui a montré que le diagnostic de départ était trop optimiste.
