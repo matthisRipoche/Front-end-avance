@@ -1,0 +1,64 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cdt-activite__graphique {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--space-1);
+}
+
+.cdt-activite__jour {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* La piste porte la ligne de base : un jour sans tentative reste lisible.
+   Sa hauteur se règle par --activite-hauteur, posée par la page qui l'affiche. */
+.cdt-activite__piste {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: var(--activite-hauteur, 72px);
+  border-bottom: 1px solid var(--surface-raised);
+}
+
+.cdt-activite__barre {
+  width: 100%;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--ink-muted);
+}
+
+.cdt-activite__jour--aujourdhui .cdt-activite__barre { background: var(--ink); }
+
+/* Repère de forme (pas de couleur) : un point sous la barre d'un jour avec deathless. */
+.cdt-activite__repere {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+}
+
+.cdt-activite__repere--deathless { background: var(--ink-muted); }
+
+/* Légende du repère : discrète, en gris comme le repère (jamais d'or, réservé au deathless du jour). */
+.cdt-activite__legende {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  font: 400 12px/16px var(--font-sans);
+  color: var(--ink-muted);
+}
+
+.cdt-activite__numero {
+  font: 500 12px/16px var(--font-mono);
+  color: var(--ink-muted);
+}
+
+.cdt-activite__jour--aujourdhui .cdt-activite__numero { color: var(--ink); font-weight: 600; }
