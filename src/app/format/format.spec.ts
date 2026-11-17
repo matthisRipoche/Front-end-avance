@@ -1,4 +1,4 @@
-import { formaterChrono, formaterDate, formaterPourcentage, villeDuFuseau } from './format';
+import { anneeDe, formaterChrono, formaterDate, formaterPourcentage, villeDuFuseau } from './format';
 
 // 17 novembre 2026, 20:04:00 UTC : 21:04 à Paris (UTC+1), 15:04 à New York (UTC-5).
 const INSTANT = Date.UTC(2026, 10, 17, 20, 4);
@@ -40,6 +40,30 @@ describe('formaterDate', () => {
 
   it('retombe sur Paris pour un fuseau inconnu, sans lever', () => {
     expect(formaterDate(INSTANT, 'Pas/Un_Fuseau')).toBe('17 novembre à 21:04');
+  });
+
+  it('n’écrit pas l’année quand elle est celle de la référence', () => {
+    expect(formaterDate(INSTANT, 'Europe/Paris', 2026)).toBe('17 novembre à 21:04');
+  });
+
+  it('écrit l’année quand elle diffère de la référence', () => {
+    const anPasse = Date.UTC(2025, 10, 17, 20, 4);
+    expect(formaterDate(anPasse, 'Europe/Paris', 2026)).toBe('17 novembre 2025 à 21:04');
+  });
+
+  it('compare l’année dans le fuseau du joueur, pas en UTC', () => {
+    // 1er janvier 2027, 02:00 UTC : encore le 31 décembre 2026 au soir à New York.
+    const nouvelAnUtc = Date.UTC(2027, 0, 1, 2, 0);
+    expect(formaterDate(nouvelAnUtc, 'America/New_York', 2026)).toBe('31 décembre à 21:00');
+    expect(formaterDate(nouvelAnUtc, 'Europe/Paris', 2026)).toBe('1 janvier 2027 à 03:00');
+  });
+});
+
+describe('anneeDe', () => {
+  it('donne l’année dans le fuseau du joueur', () => {
+    const nouvelAnUtc = Date.UTC(2027, 0, 1, 2, 0);
+    expect(anneeDe(nouvelAnUtc, 'America/New_York')).toBe(2026);
+    expect(anneeDe(nouvelAnUtc, 'Europe/Paris')).toBe(2027);
   });
 });
 

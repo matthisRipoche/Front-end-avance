@@ -14,7 +14,7 @@ Avant d'écrire, **ouvre un fichier voisin du même type et imite-le**. Les mod�
 
 ## Où va quoi
 
-**Règle : un composant par dossier** (décision de l'utilisateur, 2026-11-17). Chaque composant, page comprise, a son propre dossier, qui ne contient que ses fichiers : `.ts`, `.html`, `.css`, `.spec.ts`, plus ses utilitaires propres (`format.ts`, `<page>.donnees.ts`). Jamais deux composants dans le même dossier. L'accueil (`index.page.ts`, adresse `/`) va dans un **dossier de groupe** `(accueil)/`, qui n'apparaît pas dans l'adresse. Exceptions imposées par le routage :
+**Règle : un composant par dossier** (décision de l'utilisateur, 2026-11-17). Chaque composant, page comprise, a son propre dossier, qui ne contient que ses fichiers : `.ts`, `.html`, `.css`, `.spec.ts`, plus ses utilitaires propres (`filtres.ts`, `<page>.donnees.ts`). Un utilitaire reste dans le dossier de sa page tant qu'elle seule s'en sert ; dès qu'une deuxième page l'importe, une fonction d'affichage passe dans `src/app/format/` (décision de l'utilisateur, 2026-11-17, pour `format.ts`) ; un autre utilitaire partagé est une décision à faire valider. Jamais d'import d'un dossier de page à un autre. Jamais deux composants dans le même dossier. L'accueil (`index.page.ts`, adresse `/`) va dans un **dossier de groupe** `(accueil)/`, qui n'apparaît pas dans l'adresse. Exceptions imposées par le routage :
 - la coque `(public).page.*` est à côté du dossier `(public)/` qu'elle entoure ;
 - la page 404 `[...not-found].page.*` reste dans `(public)/` : placée dans un dossier de groupe, elle passe avant les autres routes et `/`, `/mod`, `/login` répondent 404 (essayé le 2026-11-17) ;
 - les pages Markdown (`faq.md`) sont des fichiers seuls.
@@ -26,6 +26,7 @@ Avant d'écrire, **ouvre un fichier voisin du même type et imite-le**. Les mod�
 | Page hors coque publique | `src/app/pages/<nom>/index.page.ts` | `design-system/index.page.ts` |
 | Coque (navigation, pied de page) | `src/app/layout/<nom>/<nom>.ts` | `layout/site-header/site-header.ts` |
 | Composant réutilisable du design system | `src/app/ui/<nom>/<nom>.ts` (+ `.html`, `.css`, `.spec.ts`) | `ui/result-tag/result-tag.ts` |
+| Fonction d'affichage commune à plusieurs pages (dates, chronos, pourcentages) | `src/app/format/` : fonctions pures, sans Angular, testées à côté | `format/format.ts` |
 | Route serveur Nitro | `src/server/routes/…` (méthode dans le nom : `faces.get.ts`) | `server/routes/health.ts` |
 | Utilitaire serveur | `src/server/utils/` | `server/utils/spring.ts` |
 | Styles globaux | jetons `src/styles/tokens.css`, classes `src/styles/components.css` | |
@@ -49,7 +50,7 @@ Groupe `(public)` : `(public).page.ts` est la coque (header, `<router-outlet />`
 - Pendant le SSR, **pas de `window`, `document`, `localStorage`** au chargement du composant. Si c'est indispensable : `afterNextRender()`, ou `isPlatformBrowser(inject(PLATFORM_ID))`.
 - Statut HTTP depuis une page : `injectResponse()` (`@analogjs/router/tokens`), qui vaut `null` dans le navigateur (modèle : `(public)/[...not-found].page.ts`).
 - L'hydratation est active (`provideClientHydration(withEventReplay())`) : le premier rendu côté navigateur doit produire **le même HTML** que le serveur (pas de date courante, d'aléatoire ou de lecture de `window` dans le template initial).
-- **Dates dans le rendu initial** : jamais `Date.now()` ni `new Date()` sans argument, jamais de date relative (« il y a 2 h ») ; une date se formate par `Intl` avec le `timeZone` **porté par les données** (le fuseau du joueur), pas celui de la machine, sinon le serveur (UTC) et le navigateur écrivent des heures différentes. Le fuseau arrive au serveur par le cookie `tz`, posé par `memoriserFuseau` (`src/app/auth/fuseau.ts`) à la connexion et par la page connectée après rendu (`afterNextRender`).
+- **Dates dans le rendu initial** : jamais `Date.now()` ni `new Date()` sans argument, jamais de date relative (« il y a 2 h ») ; une date se formate par `Intl` avec le `timeZone` **porté par les données** (le fuseau du joueur), pas celui de la machine, sinon le serveur (UTC) et le navigateur écrivent des heures différentes. Le fuseau arrive au serveur par le cookie `tz`, posé par `memoriserFuseau` (`src/app/auth/fuseau.ts`) à la connexion et par la page connectée après rendu (`afterNextRender`). Pour écrire l'année seulement quand elle change, la référence est l'année d'une date **des données** (`anneeDe`, `formaterDate(ms, fuseau, anneeDeReference)` dans `src/app/format/format.ts`), jamais l'année courante.
 
 ## routeMeta
 

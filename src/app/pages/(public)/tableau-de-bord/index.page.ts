@@ -9,7 +9,7 @@ import { connexionRequise } from '../../../auth/connexion-requise';
 import { memoriserFuseau } from '../../../auth/fuseau';
 import type { FaceProgression } from '../../../modeles/tableau-de-bord';
 import { ActiviteJoursGraphique } from '../../../ui/activite-jours/activite-jours';
-import { formaterChrono, formaterDate, formaterPourcentage, villeDuFuseau } from './format';
+import { formaterChrono, formaterDate, formaterPourcentage, villeDuFuseau } from '../../../format/format';
 import { type ResultatTableau, chargerTableau } from './tableau-de-bord.donnees';
 
 export const routeMeta = {

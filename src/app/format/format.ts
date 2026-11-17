@@ -1,5 +1,6 @@
 /*
- * Mise en forme des chiffres et des dates du tableau de bord.
+ * Mise en forme des chiffres et des dates, commune aux pages du front (tableau de bord, mes maps).
+ * Fonctions pures, sans Angular.
  *
  * Tout est calculé à partir des données, jamais de l'heure courante : le serveur et le navigateur
  * doivent écrire le même texte pour que l'hydratation reprenne le HTML tel quel. Pas de « il y a… ».
@@ -27,14 +28,28 @@ export function formaterChrono(ms: number | null): string {
 /**
  * Date et heure dans le fuseau du joueur : « 17 novembre à 21:04 ».
  *
+ * Avec `anneeDeReference`, l'année est écrite quand elle en diffère : « 17 novembre 2025 à 21:04 ».
+ * La référence vient des données (voir `anneeDe`), jamais de l'année courante : le serveur et le
+ * navigateur n'ont pas forcément la même horloge, surtout autour du 1er janvier.
+ *
  * Assemblée à partir de `formatToParts` plutôt que par `format` : la ponctuation entre le jour et
  * l'heure varie selon la version d'ICU (Node et navigateur n'ont pas toujours la même), les
  * morceaux eux-mêmes non.
  */
-export function formaterDate(ms: number, fuseau: string): string {
+export function formaterDate(ms: number, fuseau: string, anneeDeReference?: number): string {
   const parties = formateur(fuseau).formatToParts(ms);
   const partie = (type: Intl.DateTimeFormatPartTypes) => parties.find((p) => p.type === type)?.value ?? '';
-  return `${partie('day')} ${partie('month')} à ${partie('hour')}:${partie('minute')}`;
+  const annee = partie('year');
+  const jour =
+    anneeDeReference !== undefined && Number(annee) !== anneeDeReference
+      ? `${partie('day')} ${partie('month')} ${annee}`
+      : `${partie('day')} ${partie('month')}`;
+  return `${jour} à ${partie('hour')}:${partie('minute')}`;
+}
+
+/** Année d'un instant dans le fuseau du joueur : le 31 décembre à 23 h UTC est encore 31 décembre à New York. */
+export function anneeDe(ms: number, fuseau: string): number {
+  return Number(formateur(fuseau).formatToParts(ms).find((p) => p.type === 'year')?.value);
 }
 
 /** Nom de ville d'un fuseau IANA : `Europe/Paris` → « Paris », `America/New_York` → « New York ». */
@@ -49,7 +64,9 @@ export function formaterPourcentage(progression: number): string {
 }
 
 function formateur(fuseau: string): Intl.DateTimeFormat {
+  // L'année est toujours demandée, puis écrite ou non par `formaterDate`.
   const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
     day: 'numeric',
     month: 'long',
     hour: '2-digit',
