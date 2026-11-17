@@ -140,7 +140,7 @@ function versFaceProgression(face: FaceProgress): FaceProgression {
  * Nom affiché d'une face : celui que le mod a envoyé, sinon le dernier segment du SID
  * (`Celeste/1-ForsakenCity` → `1-ForsakenCity`), plus lisible que le SID entier.
  */
-function nomDeFace(mapName: string | null, sid: string): string {
+export function nomDeFace(mapName: string | null, sid: string): string {
   if (mapName) return mapName;
   return sid.split('/').filter(Boolean).pop() ?? sid;
 }
