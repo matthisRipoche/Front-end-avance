@@ -18,7 +18,7 @@ Les règles de code sont dans le skill `conventions-analog`, celles de la couche
 ## Grille, par priorité
 
 ### Sécurité et données privées
-- Une page **prérendue** (liste `prerender.routes` de `vite.config.ts`) ou mise en cache ne contient **aucune donnée de compte** : elle serait servie à tout le monde.
+- Une page **prérendue** (liste `PAGES_PRERENDUES` de `scripts/pages-prerendues.mjs`) ou mise en cache ne contient **aucune donnée de compte** : elle serait servie à tout le monde.
 - Les routes Nitro qui appellent Spring relaient le cookie de session **de la requête en cours**, jamais un cookie gardé dans une variable de module (partagée entre utilisateurs).
 - Les écritures (POST, PUT, DELETE) portent `X-XSRF-TOKEN`.
 - Paramètres de requête validés avant d'atteindre Spring (type, présence, valeurs permises comme `side` ∈ A, B, C).

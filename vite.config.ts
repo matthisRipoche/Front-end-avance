@@ -3,6 +3,8 @@
 import { defineConfig, type Plugin } from 'vite';
 import analog from '@analogjs/platform';
 
+import { PAGES_PRERENDUES } from './scripts/pages-prerendues.mjs';
+
 /**
  * Construit le client puis le SSR l'un après l'autre, au lieu d'en parallèle.
  *
@@ -61,7 +63,7 @@ export default defineConfig(({ mode }) => ({
       // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
       // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
       prerender: {
-        routes: async () => ['/', '/faq', '/mod', '/confidentialite'],
+        routes: async () => PAGES_PRERENDUES,
       },
     }),
     buildsSequentiels(),
