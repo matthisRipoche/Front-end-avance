@@ -39,7 +39,12 @@ describe('Compte', () => {
   beforeEach(() => {
     // Jeton déjà posé : Compte n'a pas à le redemander à Spring avant d'écrire.
     document.cookie = 'XSRF-TOKEN=jeton-test; path=/';
+    document.cookie = 'tz=; Path=/; Max-Age=0';
+    vi.spyOn(Intl, 'DateTimeFormat').mockReturnValue({
+      resolvedOptions: () => ({ timeZone: 'Asia/Tokyo' }),
+    } as Intl.DateTimeFormat);
   });
+  afterEach(() => vi.restoreAllMocks());
 
   it('connecter remplit la session et renvoie l’utilisateur', async () => {
     const { compte, session, http } = preparer();
@@ -53,6 +58,31 @@ describe('Compte', () => {
 
     expect(await resultat).toEqual(JOUEUR);
     expect(session.etat()).toEqual({ statut: 'connecte', utilisateur: JOUEUR });
+    http.verify();
+  });
+
+  it('connecter mémorise le fuseau du navigateur après le succès', async () => {
+    const { compte, http } = preparer();
+
+    const resultat = compte.connecter({ email: JOUEUR.email!, password: 'secret' });
+    await attendre();
+    expect(document.cookie).not.toContain('tz=');
+    http.expectOne('/api/auth/login').flush(JOUEUR);
+    await resultat;
+
+    expect(document.cookie).toContain('tz=Asia%2FTokyo');
+  });
+
+  it('connecter n’écrit pas le fuseau quand la connexion échoue', async () => {
+    const { compte, session, http } = preparer();
+
+    const resultat = compte.connecter({ email: JOUEUR.email!, password: 'faux' });
+    await attendre();
+    http.expectOne('/api/auth/login').flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    await expect(resultat).rejects.toBeInstanceOf(HttpErrorResponse);
+    expect(document.cookie).not.toContain('tz=');
+    expect(session.etat()).toEqual({ statut: 'anonyme' });
     http.verify();
   });
 
