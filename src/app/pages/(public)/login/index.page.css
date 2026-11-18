@@ -19,6 +19,12 @@
 .login__toggle { min-height: 28px; padding: 0 8px; }
 .login__submit { width: 100%; }
 
+/* Séparateur « ou » entre le formulaire et Discord : deux filets de part et d'autre du mot. */
+.login__ou { display: flex; align-items: center; gap: var(--space-3); color: var(--ink-muted); }
+.login__ou::before, .login__ou::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.login__discord { width: 100%; }
+.login__discord svg { width: 20px; height: 20px; flex: none; }
+
 .cdt-alert { max-width: none; }
 .cdt-alert:focus { outline: none; }
 .cdt-alert a, .login__alt a { color: var(--accent); }

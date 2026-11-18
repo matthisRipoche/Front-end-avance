@@ -11,12 +11,15 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RouteMeta } from '@analogjs/router';
+import { map } from 'rxjs';
 
 import { Compte } from '../../../auth/compte';
-import { cheminDeRetour } from '../../../auth/retour';
+import { RETOUR_PAR_DEFAUT, cheminDeRetour } from '../../../auth/retour';
+import { type Fournisseurs, chargerFournisseurs } from './login.donnees';
 
 export const routeMeta = {
   title: 'Connexion · Celeste Death Tracker',
@@ -24,19 +27,32 @@ export const routeMeta = {
     { name: 'description', content: 'Connecte-toi pour retrouver tes faces et tes tentatives.' },
     { name: 'robots', content: 'noindex' },
   ],
+  // Page rendue à chaque requête (SSR), jamais prérendue : le bouton Discord dépend de la
+  // configuration de Spring, connue avant le rendu grâce au résolveur.
+  resolve: { fournisseurs: chargerFournisseurs },
 } satisfies RouteMeta;
 
 /** Message d'erreur affiché au-dessus du formulaire. */
 type Erreur = { titre: string; texte: string; lienInscription?: boolean };
 
 /**
- * Page de connexion par email et mot de passe (/login).
+ * Message du retour de Discord. `?discord=ok` arrive ici aussi en échec : un joueur bien connecté
+ * est renvoyé par le serveur vers sa page avant le rendu, donc s'il voit /login, la session s'est
+ * perdue en route.
+ */
+const ECHEC_DISCORD: Erreur = { titre: 'La connexion avec Discord n’a pas abouti', texte: 'Réessaie.' };
+
+/**
+ * Page de connexion par email et mot de passe (/login), et par Discord quand Spring le propose.
  *
  * Le formulaire part vers Spring par le relais /api (service Compte, qui gère le jeton CSRF) :
  * le cookie de session (JSESSIONID, HttpOnly) est posé par Spring sur l'origine du front, et
  * suit ensuite chaque requête.
  *
  * Après la connexion : retour à la page demandée (?redirect=…), contrôlée par cheminDeRetour.
+ *
+ * Le bouton Discord est un vrai lien vers la route serveur /api/connexion/discord, pas un
+ * routerLink : elle répond par une redirection vers Discord, que seul le navigateur peut suivre.
  */
 @Component({
   selector: 'app-login',
@@ -57,13 +73,23 @@ export default class LoginPage {
   /** La page demandée suit le joueur s'il passe à l'inscription. */
   protected readonly suite = this.redirect ? { redirect: this.redirect } : null;
 
+  private readonly fournisseurs = toSignal(
+    this.route.data.pipe(map((d) => d['fournisseurs'] as Fournisseurs)),
+    { requireSync: true },
+  );
+  protected readonly discord = computed(() => this.fournisseurs().discord);
+  /** Départ vers Discord ; la page demandée suit, déjà filtrée (le serveur la revérifie). */
+  protected readonly lienDiscord = this.adresseDiscord();
+
   protected readonly form = inject(FormBuilder).nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
 
   protected readonly envoi = signal(false);
-  protected readonly erreur = signal<Erreur | null>(null);
+  protected readonly erreur = signal<Erreur | null>(
+    ['ok', 'erreur'].includes(this.route.snapshot.queryParamMap.get('discord') ?? '') ? ECHEC_DISCORD : null,
+  );
   protected readonly motDePasseVisible = signal(false);
   /** Secondes avant de pouvoir réessayer après un 429. */
   protected readonly attente = signal(0);
@@ -74,6 +100,12 @@ export default class LoginPage {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => clearInterval(this.minuteur));
+  }
+
+  private adresseDiscord(): string {
+    const retour = cheminDeRetour(this.redirect);
+    const base = '/api/connexion/discord';
+    return retour === RETOUR_PAR_DEFAUT ? base : `${base}?redirect=${encodeURIComponent(retour)}`;
   }
 
   protected basculerMotDePasse(): void {
