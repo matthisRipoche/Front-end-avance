@@ -8,8 +8,9 @@ import {
   type H3Event,
 } from 'h3';
 
-import { adresseDeConnexion } from '../../app/auth/retour';
+import { adresseDeConnexion, cheminDeRetour, estPageConnexion } from '../../app/auth/retour';
 import { CLE_SESSION, estPageConnectee, type EtatSession, type Utilisateur } from '../../app/auth/session-contrat';
+import { effacerRetourConnexion, lireRetourConnexion } from './retour-connexion';
 import { springUrl } from './spring';
 
 // L'état lu est aussi rangé dans event.context, pour les routes Nitro qui suivent le middleware.
@@ -137,6 +138,20 @@ export async function gererSession(event: H3Event): Promise<unknown> {
   }
 
   const adresse = cheminDemande(event);
+
+  // Un joueur connecté n'a rien à faire sur la page de connexion. C'est surtout le retour de
+  // Discord : Spring renvoie toujours sur /login?discord=ok, et la page demandée au départ attend
+  // dans le cookie `retour-connexion` (route /api/connexion/discord). Après une connexion par
+  // formulaire suivie d'un rechargement, `?redirect=` sert de repli.
+  // Placé après le cache-control : la redirection dépend du cookie, elle ne se met pas en cache.
+  if (etat.statut === 'connecte' && estPageConnexion(adresse)) {
+    const redirect = new URL(adresse, 'http://x').searchParams.get('redirect');
+    const destination = cheminDeRetour(lireRetourConnexion(event) ?? redirect);
+    effacerRetourConnexion(event);
+    await sendRedirect(event, destination, 302);
+    return true;
+  }
+
   if (!estPageConnectee(adresse)) return undefined;
 
   // Après une réponse envoyée ici, on renvoie `true` et non le résultat de sendRedirect / send
