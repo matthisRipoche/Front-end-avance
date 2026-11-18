@@ -1,6 +1,7 @@
 import { createError, defineEventHandler, proxyRequest, setResponseStatus, type H3Event } from 'h3';
 
-import { cibleSpring } from '../../utils/relais';
+import { cibleSpring, enTetesOrigine, locationRelative } from '../../utils/relais';
+import { springUrl } from '../../utils/spring';
 
 /**
  * Relais générique : toute requête /api/… (toutes méthodes) part telle quelle vers l'API Spring.
@@ -17,6 +18,11 @@ import { cibleSpring } from '../../utils/relais';
  *
  * Erreurs : les 4xx de Spring passent tels quels (la page sait quoi faire d'un 401) ;
  * un 5xx devient 502 et un Spring injoignable 503, sans détail interne ni adresse de Spring.
+ *
+ * Redirections : jamais suivies (redirect: 'manual'). La 302 de Spring vers discord.com doit
+ * atteindre le navigateur avec son Set-Cookie : JSESSIONID y porte l'état OAuth2. Spring reçoit
+ * l'adresse publique du front (X-Forwarded-*, voir enTetesOrigine) pour construire la redirect_uri,
+ * et une Location absolue qui pointe sur Spring ou sur le front devient un chemin relatif.
  */
 
 export default defineEventHandler(async (event) => {
@@ -26,10 +32,28 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Not Found' });
   }
 
+  const origine = enTetesOrigine(event);
+  const originesConnues = [
+    springUrl('/'),
+    `${origine['x-forwarded-proto']}://${origine['x-forwarded-host']}`,
+  ];
+
   try {
     return await proxyRequest(event, cible.href, {
+      // Option `headers` : prioritaire sur les en-têtes du client, qui sont donc remplacés.
+      headers: { ...origine },
+      fetchOptions: { redirect: 'manual' },
       onResponse: (ev, response) => {
-        if (response.status >= 500) repondreErreurApi(ev, response);
+        if (response.status >= 500) {
+          repondreErreurApi(ev, response);
+          return;
+        }
+        // sendProxy a déjà recopié les en-têtes de Spring sur la réponse, mais rien n'est encore
+        // envoyé (le corps est copié après ce rappel) : setHeader remplace donc la Location.
+        const location = response.headers.get('location');
+        if (response.status >= 300 && response.status < 400 && location) {
+          ev.node.res.setHeader('location', locationRelative(location, originesConnues));
+        }
       },
     });
   } catch {
@@ -67,7 +91,8 @@ function repondreErreurApi(event: H3Event, response: Response): void {
 
 /**
  * Méthode, chemin et statut seulement : jamais de cookie, d'en-tête ni de query (un retour
- * OAuth y porte un code à usage unique).
+ * OAuth y porte un code à usage unique). Les 3xx ne passent pas ici : ce sont des réponses
+ * normales (flux OAuth2), déjà notées par le journal des requêtes.
  */
 function journaliser(event: H3Event, statut: number | 'injoignable' | 'réponse interrompue'): void {
   const chemin = event.path.split('?')[0];
