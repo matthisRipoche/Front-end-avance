@@ -34,7 +34,7 @@ Rôle du serveur Node (validé, pistes A + B + E) :
 Détails techniques :
 
 - Le navigateur ne voit qu'une origine : le cookie de session `JSESSIONID` et le CSRF (`XSRF-TOKEN` → en-tête `X-XSRF-TOKEN`) fonctionnent sans CORS. Les appels qui n'ont pas besoin d'être transformés sont relayés tels quels vers Spring.
-- En production, Spring est joint par son **adresse publique**, donnée par une variable d'environnement : son conteneur est sur le réseau privé de l'autre projet.
+- En production, Spring est joint par le **nginx de l'ancien projet** (`http://celeste-web-1`, réseau Docker `frontend`), adresse donnée par une variable d'environnement : son conteneur est sur le réseau privé de l'autre projet, et par l'adresse publique Traefik réécrirait `X-Forwarded-Host`, dont Spring tire l'adresse de retour Discord (décision D2 de #35, détail dans `deploy/README.md`).
 - Contrat de l'API et vocabulaire (face, tentative, SID) : `docs/api-spring.md`.
 - Spécification des pages : `docs/arborescence-pages.md` du dépôt d'origine. Modèles TypeScript à reprendre : `web/src/app/core/*.model.ts` du dépôt d'origine.
-- Connexion : **email et mot de passe d'abord**. Discord (OAuth2) plus tard : il faudra déclarer une seconde adresse de retour.
+- Connexion : email et mot de passe, et Discord (OAuth2, #35) par le flux de Spring relayé, sans le modifier (`docs/api-spring.md`, « Connexion Discord »).

@@ -123,8 +123,11 @@ jobs:
           DOMAIN: ${{ secrets.DOMAIN }}
           IMAGE: ${{ needs.image.outputs.image }}
           TAG: ${{ needs.image.outputs.tag }}
-          # Adresse publique de l'API Spring : variable GitHub API_URL, sinon celle du site actuel
-          API_URL: ${{ vars.API_URL || 'https://celeste.matthisripoche.com' }}
+          # Adresse de l'API Spring : par défaut le nginx de l'ancien projet, joint par le réseau
+          # Docker `frontend`. Pas l'adresse publique : Traefik y réécrirait X-Forwarded-Host, dont
+          # Spring tire la redirect_uri de Discord, et la connexion Discord renverrait sur l'ancien
+          # site. La variable GitHub API_URL ne sert plus qu'à surcharger cette valeur.
+          API_URL: ${{ vars.API_URL || 'http://celeste-web-1' }}
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

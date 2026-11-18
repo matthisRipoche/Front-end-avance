@@ -1,7 +1,7 @@
 # Production derrière le Traefik DÉJÀ présent sur le serveur (il possède les ports 80/443 et gère
 # les certificats de tous les sites).
 #
-#   Internet ─▶ Traefik ─▶ web (serveur Node d'Analog) ─▶ API Spring (adresse publique)
+#   Internet ─▶ Traefik ─▶ web (serveur Node d'Analog) ─▶ nginx de l'ancien projet ─▶ API Spring
 #
 # Un seul conteneur, sur le réseau de Traefik. Aucun port n'est publié sur l'hôte.
 #
@@ -14,8 +14,10 @@ services:
     image: ${IMAGE:?définir IMAGE dans .env}:${TAG:-latest}
     restart: unless-stopped
     environment:
-      # Adresse publique de l'API Spring, lue par le serveur Node au démarrage (relais et
-      # couche serveur). NITRO_API_URL est lue par src/server/utils/spring.ts.
+      # Adresse de l'API Spring, lue par le serveur Node au démarrage (relais et couche serveur) :
+      # http://celeste-web-1 (nginx de l'ancien projet, réseau frontend), écrite dans .env par la
+      # CI. Pas l'adresse publique, où Traefik réécrit X-Forwarded-Host (voir deploy/README.md).
+      # NITRO_API_URL est lue par src/server/utils/spring.ts.
       NITRO_API_URL: ${API_URL:?définir API_URL dans .env}
     networks:
       - traefik
