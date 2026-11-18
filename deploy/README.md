@@ -36,7 +36,7 @@ Vérifier : `getent hosts new-celeste.matthisripoche.com` (ou `nslookup`).
 
 ## 2. Rien à faire sur le serveur
 
-**GitHub est la seule source de vérité.** À chaque déploiement, la CI crée le dossier `~/celeste-next` dans le dossier personnel de l'utilisateur SSH (pas besoin de `sudo`), y copie `deploy/docker-compose.prod.yml` et **réécrit** le `.env` à partir des secrets (`DOMAIN`), des variables (`API_URL`) et de la version construite (`IMAGE`, `TAG`). Un `.env` modifié à la main sur le serveur est donc écrasé au déploiement suivant : pour changer une valeur, la changer dans GitHub.
+**GitHub est la seule source de vérité.** À chaque déploiement, la CI crée le dossier `~/celeste-next` dans le dossier personnel de l'utilisateur SSH (pas besoin de `sudo`), y copie `deploy/docker-compose.prod.yml` et **réécrit** le `.env` à partir des secrets (`DOMAIN`), des variables (`API_URL`, facultative) et de la version construite (`IMAGE`, `TAG`). Un `.env` modifié à la main sur le serveur est donc écrasé au déploiement suivant : pour changer une valeur, la changer dans GitHub.
 
 ## 3. Une seule fois : GitHub
 
@@ -60,9 +60,28 @@ Les secrets sont **propres à chaque dépôt** : ceux de CelesteDeathTracker ne 
    |---|---|
    | `DEPLOY_ENABLED` | `true` : **interrupteur du déploiement**. Sans elle, la fusion sur `main` construit l'image sans la déployer. |
    | `DEPLOY_PATH` | (facultatif) dossier sur le serveur ; par défaut `celeste-next`, relatif au dossier personnel de l'utilisateur SSH |
-   | `API_URL` | (facultatif) adresse publique de l'API Spring ; par défaut `https://celeste.matthisripoche.com`. Le conteneur de Spring est sur le réseau privé de l'autre projet : on le joint par son adresse publique. Le serveur Node la lit au démarrage (`NITRO_API_URL`) : la changer ne demande pas de reconstruire l'image, seulement de redéployer. |
+   | `API_URL` | (facultatif) surcharge de l'adresse de Spring. Sans la variable, le workflow prend `http://celeste-web-1`, le nginx de l'ancien projet, qui relaie `/api` vers Spring (voir « Adresse de Spring » ci-dessous) : c'est la bonne valeur, rien à poser. Une adresse publique (`https://celeste.matthisripoche.com`) casserait la connexion Discord, qui renverrait sur l'ancien site. Le serveur Node la lit au démarrage (`NITRO_API_URL`) : la changer ne demande pas de reconstruire l'image, seulement de redéployer. |
 
 4. *Settings → Actions → General → Workflow permissions* : « Read and write permissions » (pour publier l'image dans GHCR).
+
+### Adresse de Spring
+
+Le conteneur de Spring est sur le réseau privé de l'autre projet. Son nginx, `celeste-web-1`, est aussi sur le réseau `frontend`, que notre conteneur rejoint pour Traefik : on le joint par là, en http (décision D2 de #35, 2026-11-18).
+
+Pourquoi pas l'adresse publique : Spring construit la `redirect_uri` de Discord à partir de `X-Forwarded-Host`, que le relais lui envoie. Par Traefik, cet en-tête est réécrit en `celeste.matthisripoche.com` et Discord renverrait le joueur sur l'ancien site. Mesuré en production : par `http://celeste-web-1`, la `redirect_uri` est bien `https://new-celeste.matthisripoche.com/…` (détail : `docs/api-spring.md`, « Connexion Discord »).
+
+**Risque** : on dépend du nom de conteneur de l'autre projet. S'il est renommé, ou s'il quitte le réseau `frontend`, l'API devient injoignable (503 sur `/api`, pages connectées en 503). Vérifier : `docker exec celeste-next-web-1 wget -qO- http://celeste-web-1/api/auth/providers` doit répondre `{"discord":true}`.
+
+### Connexion Discord : adresses de retour
+
+Portail développeur Discord → application → *OAuth2 → Redirects*. Ajouter, **sans retirer** celle de l'ancien site :
+
+| Environnement | Adresse de retour |
+|---|---|
+| Production | `https://new-celeste.matthisripoche.com/api/auth/oauth2/callback/discord` |
+| Local (`npm run dev`) | `http://localhost:5173/api/auth/oauth2/callback/discord` |
+
+Une adresse absente de cette liste : Discord refuse la connexion avant même de demander l'autorisation.
 
 ## 4. Premier déploiement
 

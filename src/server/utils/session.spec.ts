@@ -166,7 +166,8 @@ describe('Corrections après relecture', () => {
 
   it('interdit le cache de toute page rendue pour un joueur connecté, pas seulement les pages connectées', async () => {
     fetchMock.mockResolvedValue(Response.json(UTILISATEUR, { status: 200 }));
-    const res = await call('/login', avecSession);
+    // Une page publique : /login, elle, renvoie désormais le joueur connecté ailleurs (#35).
+    const res = await call('/faq', avecSession);
     expect(res.status).toBe(200);
     expect(res.headers.get('cache-control')).toBe('private, no-store');
     expect(res.headers.get('vary')).toContain('Cookie');
@@ -215,5 +216,103 @@ describe('Corrections après relecture', () => {
     expect(await gererSession(evenement() as never)).toBe(true);
     fetchMock.mockResolvedValue(new Response(null, { status: 500 }));
     expect(await gererSession(evenement('JSESSIONID=x') as never)).toBe(true);
+  });
+});
+
+describe('Joueur connecté qui arrive sur la page de connexion', () => {
+  const connecte = () => fetchMock.mockResolvedValue(Response.json(UTILISATEUR, { status: 200 }));
+  const avecRetour = (chemin: string) => ({
+    headers: { cookie: `JSESSIONID=secret123; retour-connexion=${encodeURIComponent(chemin)}` },
+  });
+
+  it('au retour de Discord, renvoie vers la page retenue par le cookie et l’efface', async () => {
+    connecte();
+    const res = await call('/login?discord=ok', avecRetour('/maps?face=Celeste%2F1-ForsakenCity'));
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe('/maps?face=Celeste%2F1-ForsakenCity');
+    const cookie = res.headers.get('set-cookie') ?? '';
+    expect(cookie).toMatch(/^retour-connexion=;/);
+    expect(cookie).toContain('Max-Age=0');
+    expect(cookie).toContain('Path=/');
+  });
+
+  it('sans cookie, renvoie vers l’accueil', async () => {
+    connecte();
+    const res = await call('/login?discord=ok', avecSession);
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe('/');
+  });
+
+  it('sans cookie, suit ?redirect= de la page de connexion', async () => {
+    connecte();
+    const res = await call('/login?redirect=%2Fx', avecSession);
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe('/x');
+  });
+
+  it('préfère le cookie à ?redirect=', async () => {
+    connecte();
+    const res = await call('/login?redirect=%2Fx', avecRetour('/tableau-de-bord'));
+    expect(res.headers.get('location')).toBe('/tableau-de-bord');
+  });
+
+  it.each(['//evil.fr', 'https://evil.fr', '/\\evil.fr'])(
+    'n’envoie jamais vers une adresse externe (cookie %s)',
+    async (externe) => {
+      connecte();
+      const res = await call('/login?discord=ok', avecRetour(externe));
+      expect(res.status).toBe(302);
+      expect(res.headers.get('location')).toBe('/');
+    },
+  );
+
+  it('n’envoie pas vers une adresse externe donnée par ?redirect=', async () => {
+    connecte();
+    const res = await call('/login?redirect=%2F%2Fevil.fr', avecSession);
+    expect(res.headers.get('location')).toBe('/');
+  });
+
+  it('la redirection ne se met pas en cache', async () => {
+    connecte();
+    const res = await call('/login', avecSession);
+    expect(res.status).toBe(302);
+    expect(res.headers.get('cache-control')).toBe('private, no-store');
+    expect(res.headers.get('vary')).toContain('Cookie');
+  });
+
+  it('laisse un anonyme sur la page de connexion', async () => {
+    const res = await call('/login?discord=ok', { headers: { cookie: 'retour-connexion=%2Fx' } });
+    expect(res.status).toBe(200);
+    expect((await res.json()).etat).toEqual({ statut: 'anonyme' });
+  });
+
+  it('laisse la page de connexion s’afficher quand Spring est en panne', async () => {
+    fetchMock.mockRejectedValue(new TypeError('fetch failed'));
+    const res = await call('/login?discord=ok', avecRetour('/x'));
+    expect(res.status).toBe(200);
+    expect((await res.json()).etat).toEqual({ statut: 'inconnu' });
+    expect(res.headers.get('set-cookie')).toBeNull();
+  });
+
+  it('renvoie une valeur après le 302, pour que le dev d’Analog s’arrête là', async () => {
+    connecte();
+    const res = { statusCode: 200, headers: {} as Record<string, unknown>, headersSent: false, writableEnded: false };
+    const evenement = {
+      method: 'GET',
+      path: '/login?discord=ok',
+      node: {
+        req: { headers: { cookie: 'JSESSIONID=x' }, url: '/login?discord=ok' },
+        res: Object.assign(res, {
+          setHeader: (n: string, v: unknown) => (res.headers[n.toLowerCase()] = v),
+          getHeader: (n: string) => res.headers[n.toLowerCase()],
+          removeHeader: () => undefined,
+          end: () => { res.writableEnded = true; },
+        }),
+      },
+      context: {},
+      handled: false,
+    };
+    expect(await gererSession(evenement as never)).toBe(true);
+    expect(res.headers['location']).toBe('/');
   });
 });

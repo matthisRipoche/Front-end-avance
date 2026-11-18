@@ -83,7 +83,7 @@ Détail dans `docs/architecture.md`. L'essentiel :
 
 - Pages publiques en SSR ou SSG ; pages connectées refaites en SSR, connexion vérifiée côté serveur. Historique, direct, appareils : hors périmètre au départ.
 - Le serveur Node a de vraies responsabilités (pistes A + B + E validées) : couche serveur dédiée au front (BFF), session vérifiée pendant le rendu, `/health`, journaux, limitation de débit.
-- Le navigateur ne voit qu'une origine (relais `/api`) ; Spring est joint par son adresse publique (`NITRO_API_URL`). Contrat de l'API : `docs/api-spring.md`.
+- Le navigateur ne voit qu'une origine (relais `/api`) ; Spring est joint par `NITRO_API_URL` : en production, le nginx de l'ancien projet (`http://celeste-web-1`, réseau Docker `frontend`), pas l'adresse publique, que Traefik réécrit (connexion Discord, 2026-11-18) ; en local, l'API Spring locale. Contrat de l'API : `docs/api-spring.md`.
 
 ## Design
 

@@ -174,6 +174,102 @@ describe('Relais /api vers Spring', () => {
     expect(String(vi.mocked(console.error).mock.calls)).not.toContain('injoignable');
   });
 
+  it('ne suit pas les redirections de Spring', async () => {
+    fetchMock.mockResolvedValue(Response.json({}));
+
+    await call('/api/auth/me');
+
+    expect(appelSpring().init.redirect).toBe('manual');
+  });
+
+  it('laisse passer la redirection vers Discord telle quelle, cookie compris', async () => {
+    const discord = 'https://discord.com/oauth2/authorize?client_id=1&state=etat';
+    fetchMock.mockResolvedValue(
+      new Response(null, {
+        status: 302,
+        headers: { location: discord, 'set-cookie': 'JSESSIONID=oauth; Path=/; HttpOnly' },
+      }),
+    );
+
+    const res = await call('/api/auth/oauth2/discord');
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe(discord);
+    expect(res.headers.getSetCookie()).toEqual(['JSESSIONID=oauth; Path=/; HttpOnly']);
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('ramène sur le front une redirection absolue vers Spring, sans journaliser la query', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(null, {
+        status: 302,
+        headers: { location: 'http://spring.test:5000/login?discord=ok' },
+      }),
+    );
+
+    const res = await call('/api/auth/oauth2/callback/discord?code=code-oauth&state=etat');
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe('/login?discord=ok');
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('ramène sur le front une redirection absolue vers l’adresse publique transmise', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(null, {
+        status: 302,
+        headers: { location: 'https://new-celeste.matthisripoche.com/login?discord=erreur' },
+      }),
+    );
+
+    const res = await call('/api/auth/oauth2/callback/discord', {
+      headers: { 'x-forwarded-host': 'new-celeste.matthisripoche.com', 'x-forwarded-proto': 'https' },
+    });
+
+    expect(res.headers.get('location')).toBe('/login?discord=erreur');
+  });
+
+  it('transmet à Spring l’adresse publique posée par Traefik', async () => {
+    fetchMock.mockResolvedValue(Response.json({}));
+
+    await call('/api/auth/oauth2/discord', {
+      headers: {
+        'x-forwarded-host': 'new-celeste.matthisripoche.com',
+        'x-forwarded-proto': 'https',
+        'x-forwarded-port': '8443',
+      },
+    });
+
+    const { headers } = appelSpring();
+    expect(headers.get('x-forwarded-host')).toBe('new-celeste.matthisripoche.com');
+    expect(headers.get('x-forwarded-proto')).toBe('https');
+    // Recalculé, pas recopié : le port suit le protocole public.
+    expect(headers.get('x-forwarded-port')).toBe('443');
+  });
+
+  it('déduit l’adresse publique de Host sans proxy devant', async () => {
+    fetchMock.mockResolvedValue(Response.json({}));
+
+    await call('/api/auth/oauth2/discord', { headers: { host: 'localhost:5173' } });
+
+    const { headers } = appelSpring();
+    expect(headers.get('x-forwarded-host')).toBe('localhost:5173');
+    expect(headers.get('x-forwarded-proto')).toBe('http');
+    expect(headers.get('x-forwarded-port')).toBe('5173');
+  });
+
+  it('répercute le X-Forwarded-Host d’un client sans proxy devant', async () => {
+    // Accepté (voir enTetesOrigine) : seul ce client reçoit une redirect_uri que Discord refusera ;
+    // en production, Traefik écrase cet en-tête.
+    fetchMock.mockResolvedValue(Response.json({}));
+
+    await call('/api/auth/oauth2/discord', {
+      headers: { host: 'localhost:5173', 'x-forwarded-host': 'pirate.test' },
+    });
+
+    expect(appelSpring().headers.get('x-forwarded-host')).toBe('pirate.test');
+  });
+
   it.each(['/api/_analog/x', '/api/_analog', '/api/ingest/x', '/api/ingest', '/api/ingest?x=1'])(
     'refuse %s sans appeler Spring',
     async (url) => {

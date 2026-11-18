@@ -3,24 +3,34 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TransferState } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { vi } from 'vitest';
 
 import { CLE_ETAT_SESSION } from '../../../auth/session';
 import LoginPage from './index.page';
+import type { Fournisseurs } from './login.donnees';
 
-/** Monte la page avec une query (?redirect=…) ; les appels HTTP sont simulés. */
-async function monter(query = '') {
+/**
+ * Monte la page avec une query (?redirect=…) ; les appels HTTP sont simulés. Les fournisseurs sont
+ * posés comme `data` de la route, à la place du résolveur (testé dans login.donnees.spec.ts).
+ */
+async function monter(query = '', fournisseurs: Fournisseurs = { discord: false }) {
   TestBed.configureTestingModule({
-    imports: [LoginPage],
-    providers: [provideRouter([{ path: 'login', component: LoginPage }]), provideHttpClient(), provideHttpClientTesting()],
+    providers: [
+      provideRouter([{ path: 'login', component: LoginPage, data: { fournisseurs } }]),
+      provideHttpClient(),
+      provideHttpClientTesting(),
+    ],
   });
   // Visiteur anonyme, comme l'aurait dit le serveur : la session n'appelle pas /api/auth/me.
   TestBed.inject(TransferState).set(CLE_ETAT_SESSION, { statut: 'anonyme' });
   const router = TestBed.inject(Router);
-  await router.navigateByUrl(`/login${query}`);
-  const fixture = TestBed.createComponent(LoginPage);
+  // Le harnais rend la page dans un vrai router-outlet : elle reçoit l'ActivatedRoute de /login.
+  const harnais = await RouterTestingHarness.create();
+  await harnais.navigateByUrl(`/login${query}`, LoginPage);
+  const fixture = harnais.fixture;
   fixture.detectChanges();
-  const page = fixture.nativeElement as HTMLElement;
+  const page = harnais.routeNativeElement as HTMLElement;
   const http = TestBed.inject(HttpTestingController);
   const navigation = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
 
@@ -210,5 +220,77 @@ describe('Page de connexion', () => {
     fixture.detectChanges();
     expect(page.querySelector('#password')?.getAttribute('type')).toBe('text');
     expect(bouton.getAttribute('aria-label')).toBe('Masquer le mot de passe');
+  });
+});
+
+describe('Page de connexion : Discord', () => {
+  const lienDiscord = (page: HTMLElement) => page.querySelector<HTMLAnchorElement>('a[href^="/api/connexion/discord"]');
+
+  it('propose « Continuer avec Discord » quand Spring l’a configuré', async () => {
+    const { page } = await monter('', { discord: true });
+    const lien = lienDiscord(page);
+    expect(lien?.textContent).toContain('Continuer avec Discord');
+    // Séparateur placé entre le formulaire et le lien.
+    const separateur = page.querySelector('form + .login__ou');
+    expect(separateur?.textContent?.trim()).toBe('ou');
+    expect(separateur?.nextElementSibling).toBe(lien);
+  });
+
+  it('ne propose pas Discord quand Spring ne l’a pas configuré', async () => {
+    const { page } = await monter('', { discord: false });
+    expect(lienDiscord(page)).toBeNull();
+    expect(page.textContent).not.toContain('Continuer avec Discord');
+  });
+
+  it('part vers Discord sans redirect quand aucune page n’a été demandée', async () => {
+    const { page } = await monter('', { discord: true });
+    expect(lienDiscord(page)?.getAttribute('href')).toBe('/api/connexion/discord');
+  });
+
+  it('transmet la page demandée, encodée, pour y revenir après Discord', async () => {
+    const { page } = await monter('?redirect=' + encodeURIComponent('/mes-maps?face=1&side=A'), { discord: true });
+    expect(lienDiscord(page)?.getAttribute('href')).toBe(
+      '/api/connexion/discord?redirect=%2Fmes-maps%3Fface%3D1%26side%3DA',
+    );
+  });
+
+  it('ne transmet pas une page de retour vers un autre site', async () => {
+    const { page } = await monter('?redirect=//faux-site.fr', { discord: true });
+    expect(lienDiscord(page)?.getAttribute('href')).toBe('/api/connexion/discord');
+  });
+
+  it('cache le logo Discord aux lecteurs d’écran, le texte du lien suffit', async () => {
+    const { page } = await monter('', { discord: true });
+    const logo = lienDiscord(page)?.querySelector('svg');
+    expect(logo?.getAttribute('aria-hidden')).toBe('true');
+    expect(logo?.getAttribute('fill')).toBe('currentColor');
+  });
+
+  it('explique l’échec au retour de Discord (?discord=erreur)', async () => {
+    const { page } = await monter('?discord=erreur', { discord: true });
+    const alerte = page.querySelector('[role="alert"]');
+    expect(alerte?.textContent).toContain('La connexion avec Discord n’a pas abouti');
+    expect(alerte?.textContent).toContain('Réessaie.');
+  });
+
+  it('explique aussi l’échec sur ?discord=ok : la session s’est perdue en route', async () => {
+    const { page } = await monter('?discord=ok', { discord: true });
+    expect(page.querySelector('[role="alert"]')?.textContent).toContain('La connexion avec Discord n’a pas abouti');
+  });
+
+  it('n’affiche aucune alerte pour une autre valeur de ?discord', async () => {
+    const { page } = await monter('?discord=bidule', { discord: true });
+    expect(page.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('retire l’alerte Discord quand le joueur envoie le formulaire', async () => {
+    const { page, http, saisir, envoyer, avancer } = await monter('?discord=erreur', { discord: true });
+    saisir('email', 'lucie@exemple.fr');
+    saisir('password', 'motdepasse');
+    envoyer();
+    await avancer();
+    expect(page.querySelector('[role="alert"]')).toBeNull();
+    http.expectOne('/api/auth/login').flush(null);
+    await avancer();
   });
 });

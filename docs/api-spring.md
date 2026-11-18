@@ -2,7 +2,7 @@
 
 Production : `https://celeste.matthisripoche.com`. En local, l'API tourne sur le port 5000.
 
-Le serveur Node ne l'écrit nulle part en dur : il lit la variable `NITRO_API_URL` au démarrage (`http://localhost:5000` par défaut) et construit les adresses avec `springUrl()` (`src/server/utils/spring.ts`).
+Le serveur Node ne l'écrit nulle part en dur : il lit la variable `NITRO_API_URL` au démarrage (`http://localhost:5000` par défaut ; en production `http://celeste-web-1`, voir « Connexion Discord ») et construit les adresses avec `springUrl()` (`src/server/utils/spring.ts`).
 Code source : `~/projects/CelesteDeathTracker/api/`. Ce projet **ne modifie pas** l'API.
 
 ## Authentification du navigateur
@@ -51,6 +51,7 @@ Ce que le relais ajoute :
 | `POST /api/auth/logout` | Déconnexion : 204 ; exige une session (401 sinon) et le CSRF |
 | `GET /api/auth/me` | Compte connecté (401 sinon) |
 | `GET /api/auth/providers` | Fournisseurs disponibles : `{discord: bool}` |
+| `GET /api/auth/oauth2/discord` · `GET /api/auth/oauth2/callback/discord` | Départ et retour de la connexion Discord (voir « Connexion Discord ») |
 | `GET /api/summary?tz=Europe/Paris` | Tableau de bord : `{resume, today, recent, activity}` (voir plus bas) |
 | `GET /api/faces` | Une ligne par face jouée |
 | `GET /api/faces/detail?sid=&side=` | Rooms dans l'ordre avec les arrêts, évolution, dernières tentatives |
@@ -146,6 +147,22 @@ Forme `MesMaps` (détail : `src/app/modeles/mes-maps.ts`). Champs en français, 
 - `mod` : premier segment du SID (`Celeste/1-ForsakenCity` → `Celeste`), sinon le SID entier.
 - **Limite** : `/api/faces` ne donne aucune progression (rooms atteintes, rooms vues). La page n'affiche donc pas de meilleure progression ; elle viendra avec le détail d'une face (#27).
 
+### `GET /api/connexion/discord`
+
+> Issue #35. Route : `src/server/routes/api/connexion/discord.get.ts`, cookie : `src/server/utils/retour-connexion.ts`.
+
+Départ de la connexion par Discord. Spring renvoie toujours sur `/login?discord=ok`, sans savoir quelle page le joueur voulait : la route la retient dans un cookie, puis passe la main au flux de Spring. Elle n'appelle pas Spring.
+
+- `?redirect=` : page où revenir, filtrée par `cheminDeRetour` (`src/app/auth/retour.ts`). Une adresse externe (`//evil.fr`, `https://…`, `/\evil.fr`), un `redirect` répété ou absent, ou `/` : **aucun cookie**.
+- Cookie `retour-connexion` : le chemin, `HttpOnly`, `SameSite=Lax` (le retour de Discord est une navigation venue d'un autre site), `Path=/`, `Max-Age=600`, `Secure` en https.
+- Au retour, le middleware de session relit le cookie, le revalide par `cheminDeRetour`, l'efface et renvoie le joueur connecté vers cette page.
+
+Codes :
+
+| Cas | Réponse |
+|---|---|
+| Toujours | **302** vers `/api/auth/oauth2/discord`, `cache-control: no-store` ; cookie `retour-connexion` si une page interne est demandée |
+
 ## Vocabulaire
 
 - **Face** : une map (SID, par exemple `Celeste/1-ForsakenCity`) + un côté A, B ou C. Le SID contient des `/` : il passe **toujours en paramètre de requête**, jamais dans le chemin.
@@ -154,6 +171,32 @@ Forme `MesMaps` (détail : `src/app/modeles/mes-maps.ts`). Champs en français, 
 
 Modèles TypeScript existants : `web/src/app/core/{face,summary,attempt,live}.model.ts` du dépôt d'origine.
 
-## Connexion Discord (plus tard)
+## Connexion Discord
 
-L'adresse de retour OAuth2 est déclarée chez Discord pour le site actuel. Via le relais, il faudra en déclarer une seconde et vérifier comment Spring construit la sienne. Le relais suit aujourd'hui les redirections : il faudra le passer en `redirect: 'manual'` pour que celle de Discord atteigne le navigateur. On commence par email et mot de passe.
+> Issue #35. Flux OAuth2 de Spring réutilisé tel quel, sans le modifier. Relais : `src/server/routes/api/[...path].ts`, utilitaires `enTetesOrigine` et `locationRelative` (`src/server/utils/relais.ts`).
+
+Parcours du navigateur :
+
+1. `/login` affiche « Continuer avec Discord » si `GET /api/auth/providers` répond `{discord: true}`. Le lien mène à `GET /api/connexion/discord?redirect=…` (route du front, voir plus bas).
+2. `GET /api/auth/oauth2/discord`, par le relais : Spring pose `JSESSIONID` (il porte l'état OAuth2) et répond par une **302 vers discord.com**, avec la `redirect_uri`.
+3. Discord renvoie le navigateur sur `GET /api/auth/oauth2/callback/discord?code=…&state=…`, par le relais.
+4. Spring ouvre la session et répond par une 302 vers `/login?discord=ok`, ou `/login?discord=erreur` en cas d'échec.
+5. Sur `/login`, le middleware de session renvoie le joueur connecté vers la page retenue (cookie `retour-connexion`), sinon vers `/`. Un `?discord=ok` reçu par un anonyme, ou un `?discord=erreur`, affiche une alerte.
+
+`redirect_uri` : Spring la construit à partir des en-têtes `X-Forwarded-Host`, `-Proto` et `-Port` qu'il reçoit. Elle doit être l'adresse du front, et être déclarée dans le portail Discord (adresses : `deploy/README.md`).
+
+Ce que le relais fait pour ce flux :
+
+- **`redirect: 'manual'`** : il ne suit aucune redirection. La 302 vers discord.com atteint le navigateur avec son `Set-Cookie`.
+- **En-têtes d'origine calculés** (`enTetesOrigine`), sur toutes les requêtes relayées : `X-Forwarded-Host` et `-Proto` relus sur la requête reçue (posés par Traefik en production, déduits de `Host` en local), `X-Forwarded-Port` recalculé (port de l'hôte, sinon celui du protocole). Ils remplacent ceux du client.
+- **`Location` absolue réécrite en relatif** (`locationRelative`) : une redirection qui pointe sur l'origine de Spring ou sur l'origine publique du front devient un chemin (`/login?discord=ok`), pour que le navigateur reste sur le front. Toute autre adresse (discord.com) passe intacte.
+- Les 3xx ne sont pas journalisés comme des erreurs ; aucune query n'est écrite au journal (le retour porte un `code` à usage unique).
+
+Mesures en production avant le développement (2026-11-18), depuis le conteneur `celeste-next-web-1`, avec `X-Forwarded-Host: new-celeste.matthisripoche.com` :
+
+| Spring joint par | `redirect_uri` construite |
+|---|---|
+| `https://celeste.matthisripoche.com` (Traefik) | `https://celeste.matthisripoche.com/…` : l'**ancien site**, car Traefik réécrit `X-Forwarded-Host` |
+| `http://celeste-web-1` (nginx de l'ancien projet, réseau Docker `frontend`) | `https://new-celeste.matthisripoche.com/api/auth/oauth2/callback/discord` : **correcte** |
+
+D'où `API_URL=http://celeste-web-1` en production, valeur par défaut du workflow de déploiement (`deploy/README.md`). `GET /api/auth/providers` répond `{"discord":true}` en production.
