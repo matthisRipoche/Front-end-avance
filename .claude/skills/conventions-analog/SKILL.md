@@ -80,7 +80,7 @@ Référence : `docs/design-system.md`, vitrine : `/design-system`.
 - Composants visuels : classes `.cdt-*` de `components.css` ; styles de texte : `.t-*`. Avant d'en créer une, vérifie qu'elle n'existe pas. Une nouvelle classe partagée va dans `components.css` et dans la vitrine.
 - Sombre d'abord, **accent cyan pour l'action**, **un seul élément doré par écran** (le deathless).
 - Polices : Unbounded, Geist, Geist Mono (`@fontsource-variable`). Pas de Tailwind.
-- Icônes : SVG dessinés pour le site.
+- Icônes : SVG dessinés pour le site. **Seule exception** (validée par l'utilisateur le 2026-11-18) : le logo Discord, en SVG inline monochrome (`fill="currentColor"`, `aria-hidden`), sur le bouton « Continuer avec Discord » de `/login` seulement.
 - **Interdit** : sprites, assets, décor et police (Renogare) de Celeste. Seule exception : les captures recadrées de l'interface du mod (menu Mod Options, bandeau du code).
 
 ## Langue et style
