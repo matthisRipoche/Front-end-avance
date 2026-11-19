@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import analog from '@analogjs/platform';
 
 import { PAGES_PRERENDUES } from './scripts/pages-prerendues.mjs';
@@ -40,39 +40,57 @@ function buildsSequentiels(): Plugin {
   };
 }
 
+/**
+ * Recopie NITRO_API_URL du fichier .env dans process.env, pour le serveur de dev.
+ *
+ * Vite ne lit .env que pour import.meta.env, côté client ; src/server/utils/spring.ts lit
+ * process.env. Une variable déjà posée dans le shell garde la priorité. Ni le build (rien n'y
+ * appelle Spring) ni les tests (qui posent leur propre adresse) ne sont concernés ; `npm run
+ * preview` lit le même fichier avec --env-file-if-exists.
+ */
+function chargerEnvLocal(command: string, mode: string): void {
+  if (command !== 'serve' || mode === 'test') return;
+  const { NITRO_API_URL } = loadEnv(mode, process.cwd(), 'NITRO_');
+  if (NITRO_API_URL) process.env['NITRO_API_URL'] ??= NITRO_API_URL;
+}
+
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  build: {
-    target: ['es2020'],
-  },
-  resolve: {
-    mainFields: ['module'],
-  },
-  plugins: [
-    analog({
-      // Pages Markdown (FAQ, confidentialité, mod). Le surligneur de code n'est pas utilisé,
-      // mais c'est cette option qui active le traitement des fichiers .md.
-      // Attention : tout .md de src/content/ ou de src/app/pages/ devient une route.
-      content: { highlighter: 'prism' },
-      // Nitro charge tout fichier de src/server/ (routes, middleware, plugins) : sans cette règle,
-      // health.spec.ts devenait une route /health.spec qui plantait en production.
-      nitro: {
-        ignore: ['**/*.spec.ts'],
-        // Adresse de l'API Spring : variable NITRO_API_URL, lue au démarrage (src/server/utils/spring.ts).
-      },
-      // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
-      // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
-      prerender: {
-        routes: async () => PAGES_PRERENDUES,
-      },
-    }),
-    buildsSequentiels(),
-  ],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['src/test-setup.ts'],
-    include: ['**/*.spec.ts'],
-    reporters: ['default'],
-  },
-}));
+export default defineConfig(({ command, mode }) => {
+  chargerEnvLocal(command, mode);
+  return {
+    build: {
+      target: ['es2020'],
+    },
+    resolve: {
+      mainFields: ['module'],
+    },
+    plugins: [
+      analog({
+        // Pages Markdown (FAQ, confidentialité, mod). Le surligneur de code n'est pas utilisé,
+        // mais c'est cette option qui active le traitement des fichiers .md.
+        // Attention : tout .md de src/content/ ou de src/app/pages/ devient une route.
+        content: { highlighter: 'prism' },
+        // Nitro charge tout fichier de src/server/ (routes, middleware, plugins) : sans cette règle,
+        // health.spec.ts devenait une route /health.spec qui plantait en production.
+        nitro: {
+          ignore: ['**/*.spec.ts'],
+          // Adresse de l'API Spring : variable NITRO_API_URL (fichier .env en local, voir
+          // chargerEnvLocal), lue à chaque appel par src/server/utils/spring.ts.
+        },
+        // Pages générées au build (SSG). Écrire cette liste remplace la valeur par défaut,
+        // qui ne contenait que '/' : l'accueil doit donc y figurer aussi.
+        prerender: {
+          routes: async () => PAGES_PRERENDUES,
+        },
+      }),
+      buildsSequentiels(),
+    ],
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: ['src/test-setup.ts'],
+      include: ['**/*.spec.ts'],
+      reporters: ['default'],
+    },
+  };
+});

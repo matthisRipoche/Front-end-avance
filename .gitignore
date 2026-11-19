@@ -43,8 +43,9 @@ testem.log
 .DS_Store
 Thumbs.db
 
-# Environment files
+# Environment files (le modèle .env.example, lui, est versionné)
 .env*
+!.env.example
 
 # Vitest output
 .vitest/
