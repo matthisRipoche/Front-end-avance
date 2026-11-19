@@ -48,6 +48,9 @@ function repondre(res, statut, corps) {
   res.end(corps === undefined ? '' : JSON.stringify(corps));
 }
 
+/** Interrupteur du faux Spring pour /api/auth/providers : le script et le faux Spring partagent le processus. */
+let providersEnPanne = false;
+
 const springFactice = createServer((req, res) => {
   const chemin = new URL(req.url, 'http://spring').pathname;
   const cookie = req.headers.cookie ?? '';
@@ -59,6 +62,10 @@ const springFactice = createServer((req, res) => {
       return repondre(res, 200, { id: 1, username: 'test', displayName: 'Test' });
     }
     return repondre(res, 401, { error: 'non connecté' });
+  }
+  if (chemin === '/api/auth/providers') {
+    if (providersEnPanne) return repondre(res, 500, { error: 'panne' });
+    return repondre(res, 200, { discord: true, extra: 'x' });
   }
   if (chemin === '/api/summary') return repondre(res, 200, SUMMARY);
   if (chemin === '/api/live') return repondre(res, 200, LIVE);
@@ -108,6 +115,73 @@ async function lancerEssais(base) {
     `reçu ${res.status} ${JSON.stringify(corps)}`,
   );
 
+  let avant;
+
+  // Route publique et mise en cache : /api/connexion/fournisseurs. Le cache vit dans le processus
+  // serveur : la panne sans cache chaud passe donc avant le premier succès.
+  const appelsProviders = (r) => recuesApres(r).filter((x) => x.path === '/api/auth/providers');
+  avant = recues.length;
+  providersEnPanne = true;
+  res = await get('/api/connexion/fournisseurs');
+  corps = await res.json().catch(() => null);
+  verifier(
+    'GET /api/connexion/fournisseurs, Spring en panne sans cache chaud → 502, no-store, pas de cache',
+    res.status === 502 &&
+      corps?.message === "Erreur de l'API" &&
+      res.headers.get('cache-control') === 'no-store' &&
+      appelsProviders(avant).length === 1,
+    `reçu ${res.status} ${JSON.stringify(corps)}, cache-control: ${res.headers.get('cache-control')}`,
+  );
+  providersEnPanne = false;
+
+  avant = recues.length;
+  res = await get('/api/connexion/fournisseurs');
+  corps = await res.json().catch(() => null);
+  verifier(
+    'GET /api/connexion/fournisseurs, Spring revenu → 200 { discord: true } sans champ en trop, MISS',
+    res.status === 200 &&
+      JSON.stringify(corps) === '{"discord":true}' &&
+      res.headers.get('cache-control') === 'public, max-age=60' &&
+      res.headers.get('x-cache') === 'MISS' &&
+      res.headers.get('set-cookie') === null &&
+      appelsProviders(avant).length === 1,
+    `reçu ${res.status} ${JSON.stringify(corps)}, cache-control: ${res.headers.get('cache-control')}, x-cache: ${res.headers.get('x-cache')}`,
+  );
+
+  // Spring retombe en panne : la valeur gardée doit suffire, sans le rappeler.
+  providersEnPanne = true;
+  avant = recues.length;
+  res = await get('/api/connexion/fournisseurs', { cookie: 'JSESSIONID=x; XSRF-TOKEN=y' });
+  providersEnPanne = false;
+  corps = await res.json().catch(() => null);
+  verifier(
+    'GET /api/connexion/fournisseurs avec cookies, Spring en panne → même réponse, HIT, aucun Set-Cookie, Spring non rappelé',
+    res.status === 200 &&
+      JSON.stringify(corps) === '{"discord":true}' &&
+      res.headers.get('cache-control') === 'public, max-age=60' &&
+      res.headers.get('x-cache') === 'HIT' &&
+      res.headers.get('set-cookie') === null &&
+      appelsProviders(avant).length === 0,
+    `reçu ${res.status} ${JSON.stringify(corps)}, x-cache: ${res.headers.get('x-cache')}, set-cookie: ${res.headers.get('set-cookie')}, appels : ${JSON.stringify(appelsProviders(avant))}`,
+  );
+
+  // Le cookie n'a jamais atteint Spring sur ce chemin : la valeur ne dépend d'aucun joueur.
+  verifier(
+    'Spring n\'a reçu aucun cookie sur /api/auth/providers',
+    recues.filter((r) => r.path === '/api/auth/providers').every((r) => r.cookie === ''),
+    `appels : ${JSON.stringify(recues.filter((r) => r.path === '/api/auth/providers'))}`,
+  );
+
+  // Le relais, lui, reste ouvert sur ce chemin : seule la route du front est filtrée et mise en cache.
+  avant = recues.length;
+  res = await get('/api/auth/providers');
+  corps = await res.json().catch(() => null);
+  verifier(
+    'GET /api/auth/providers → relayé à Spring (réponse brute)',
+    res.status === 200 && corps?.extra === 'x' && appelsProviders(avant).length === 1,
+    `reçu ${res.status} ${JSON.stringify(corps)}, ${appelsProviders(avant).length} appel(s) chez Spring`,
+  );
+
   // Chemins réservés : 404 sans appeler Spring.
   for (const chemin of ['/api/_analog/x', '/api/ingest/x']) {
     const avant = recues.length;
@@ -129,7 +203,7 @@ async function lancerEssais(base) {
   );
 
   // Route dédiée /api/face : passe avant le relais, valide avant d'appeler Spring.
-  let avant = recues.length;
+  avant = recues.length;
   res = await get('/api/face');
   verifier(
     'GET /api/face sans sid → 400, Spring n\'est pas appelé',

@@ -27,6 +27,11 @@ export interface OptionsSpring {
   body?: unknown;
   query?: Record<string, string | number | boolean | undefined>;
   timeoutMs?: number;
+  /**
+   * `false` : ni `cookie` ni `x-xsrf-token` ne partent. Pour une donnée publique, qui ne doit pas
+   * dépendre du joueur (et dont la réponse peut donc être mise en cache). Défaut : `true`.
+   */
+  transmettreCookie?: boolean;
 }
 
 /**
@@ -44,10 +49,12 @@ export async function callSpring<T>(event: H3Event, path: string, init: OptionsS
   const method = (init.method ?? 'GET').toUpperCase();
   const headers = new Headers({ accept: 'application/json' });
   // Seulement s'ils existent : un en-tête vide ferait croire à Spring qu'on a tenté quelque chose.
-  const cookie = getRequestHeader(event, 'cookie');
-  if (cookie) headers.set('cookie', cookie);
-  const xsrf = getRequestHeader(event, 'x-xsrf-token');
-  if (xsrf) headers.set('x-xsrf-token', xsrf);
+  if (init.transmettreCookie !== false) {
+    const cookie = getRequestHeader(event, 'cookie');
+    if (cookie) headers.set('cookie', cookie);
+    const xsrf = getRequestHeader(event, 'x-xsrf-token');
+    if (xsrf) headers.set('x-xsrf-token', xsrf);
+  }
 
   let body: string | undefined;
   if (init.body !== undefined) {
