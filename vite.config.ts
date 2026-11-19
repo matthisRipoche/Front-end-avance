@@ -91,6 +91,13 @@ export default defineConfig(({ command, mode }) => {
       setupFiles: ['src/test-setup.ts'],
       include: ['**/*.spec.ts'],
       reporters: ['default'],
+      // Mesure indicative : pas de seuil bloquant. `npm run test:couverture`.
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'lcov'],
+        include: ['src/**/*.ts'],
+        exclude: ['src/**/*.spec.ts', 'src/**/*.d.ts', 'src/main*.ts', 'src/test-setup.ts', 'src/**/*.config.ts'],
+      },
     },
   };
 });
