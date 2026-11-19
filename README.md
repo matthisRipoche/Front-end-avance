@@ -20,7 +20,7 @@ Node 24 est requis.
 | Build : client, rendu serveur, prérendu, serveur Nitro (`dist/analog/`) | `npm run build` |
 | Lancer le build | `npm run preview` |
 
-Le serveur Node joint l'API Spring à `http://localhost:5000` par défaut. Pour en viser une autre, définir `NITRO_API_URL` (par exemple `NITRO_API_URL=https://celeste.matthisripoche.com npm run dev`).
+Le serveur Node joint l'API Spring à l'adresse `NITRO_API_URL`, `http://localhost:5000` par défaut. Pour en viser une autre, copier `.env.example` en `.env` (ignoré par Git) et y choisir l'adresse : `npm run dev` et `npm run preview` le lisent, et une variable posée dans le shell garde la priorité. Avec l'API de production (`https://celeste.matthisripoche.com`), les données sont réelles et la connexion Discord renvoie sur l'ancien site.
 
 ## Organisation du dépôt
 
