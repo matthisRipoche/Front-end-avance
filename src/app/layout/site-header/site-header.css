@@ -11,6 +11,11 @@
 }
 /* Zone toujours présente, pour que les lecteurs d'écran annoncent le message quand il apparaît. */
 .header__erreur { margin: 0; text-align: right; font: 400 14px/20px var(--font-sans); color: var(--danger); }
+/* Joueur connecté sur mobile ou tablette : la barre du bas porte la navigation et le compte,
+   l'en-tête ne garde que le nom du site. */
+@media (max-width: 959.98px) {
+  .header--connecte .header__actions { display: none; }
+}
 @media (max-width: 560px) {
   .cdt-nav { flex-wrap: wrap; padding-block: var(--space-3); }
   .header__compte { display: none; }
