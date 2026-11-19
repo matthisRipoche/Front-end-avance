@@ -10,6 +10,7 @@ import { memoriserFuseau } from '../../../auth/fuseau';
 import type { FaceProgression } from '../../../modeles/tableau-de-bord';
 import { ActiviteJoursGraphique } from '../../../ui/activite-jours/activite-jours';
 import { formaterChrono, formaterDate, formaterPourcentage, villeDuFuseau } from '../../../format/format';
+import { injecterEnJeuDirect } from './en-jeu-direct';
 import { type ResultatTableau, chargerTableau } from './tableau-de-bord.donnees';
 
 export const routeMeta = {
@@ -83,10 +84,15 @@ export default class TableauDeBordPage {
     return d ? villeDuFuseau(d.fuseau) : null;
   });
 
+  /** Dernier état reçu du flux ; `undefined` tant que rien n'est arrivé (le serveur fait foi). */
+  private readonly enJeuDirect = injecterEnJeuDirect();
+
   protected readonly enJeu = computed(() => {
     const d = this.donnees();
-    if (!d?.enJeu) return null;
-    const { nom, side, room, debut } = d.enJeu;
+    const direct = this.enJeuDirect();
+    const courant = direct === undefined ? d?.enJeu : direct;
+    if (!d || !courant) return null;
+    const { nom, side, room, debut } = courant;
     // La room peut manquer quand Spring ne l'a pas encore reçue.
     const face = `${nom} · ${side}`;
     return { libelle: room ? `${face}, room` : face, room, debut: formaterDate(debut, d.fuseau) };

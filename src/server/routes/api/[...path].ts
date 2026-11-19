@@ -38,15 +38,39 @@ export default defineEventHandler(async (event) => {
     `${origine['x-forwarded-proto']}://${origine['x-forwarded-host']}`,
   ];
 
+  // proxyRequest ne regarde pas le navigateur : si l'onglet se ferme, le fetch vers Spring continue
+  // et la copie du corps (res.write sur un socket détruit ne lève pas) aussi. Spring ne voit jamais
+  // la coupure (flux SSE fantôme, compté dans la limite par compte). On l'annule donc nous-mêmes.
+  const res = event.node.res;
+  const abandon = new AbortController();
+  let clientParti = false;
+  // `writableEnded` ne convient pas : Node le met à vrai à la destruction du socket.
+  let copieTerminee = false;
+  res.on('close', () => {
+    if (!copieTerminee) {
+      clientParti = true;
+      abandon.abort();
+    }
+  });
+
   try {
     return await proxyRequest(event, cible.href, {
       // Option `headers` : prioritaire sur les en-têtes du client, qui sont donc remplacés.
       headers: { ...origine },
-      fetchOptions: { redirect: 'manual' },
+      fetchOptions: { redirect: 'manual', signal: abandon.signal },
       onResponse: (ev, response) => {
         if (response.status >= 500) {
           repondreErreurApi(ev, response);
           return;
+        }
+        // Un flux SSE doit atteindre le navigateur dès son ouverture, pas avec le premier événement.
+        // Différé : une réponse aux en-têtes déjà partis compte comme « traitée » (event.handled),
+        // et sendProxy ne copierait plus le corps.
+        if (response.headers.get('content-type')?.includes('text/event-stream')) {
+          const res = ev.node.res;
+          setImmediate(() => {
+            if (!res.headersSent && !res.destroyed) res.flushHeaders();
+          });
         }
         // sendProxy a déjà recopié les en-têtes de Spring sur la réponse, mais rien n'est encore
         // envoyé (le corps est copié après ce rappel) : setHeader remplace donc la Location.
@@ -57,6 +81,8 @@ export default defineEventHandler(async (event) => {
       },
     });
   } catch {
+    // Le navigateur est parti (onglet fermé) : ce n'est ni une panne ni une coupure de Spring.
+    if (clientParti) return;
     // Spring a coupé pendant la copie du corps : statut et en-têtes sont déjà partis, la réponse
     // ne peut plus devenir un 503. On coupe aussi la connexion du navigateur : sinon il attend
     // sans fin, et un end() lui ferait prendre un corps tronqué pour une réponse complète.
@@ -70,6 +96,8 @@ export default defineEventHandler(async (event) => {
     journaliser(event, 'injoignable');
     setResponseStatus(event, 503, 'Service Unavailable');
     return { message: 'API indisponible' };
+  } finally {
+    copieTerminee = true;
   }
 });
 

@@ -40,6 +40,7 @@ Ce que le relais ajoute :
 - Une adresse qui sortirait de `/api/` une fois `..` ou `%2e%2e` résolus, ou dont l'encodage est invalide : **404**, sans appeler Spring. Le filtre juge l'adresse que Spring recevrait, décodée.
 - `POST /api/auth/login` au-delà de **10 essais par minute** pour une même adresse IP : **429** `{ message: "Trop de tentatives de connexion. Réessaie dans N s." }` et en-tête `Retry-After`, sans appeler Spring (`src/server/middleware/limite-connexion.ts`). Limite du front seulement : Spring reste joignable directement à son adresse publique.
 - Erreur 5xx de Spring : **502** `{ message: "Erreur de l'API" }`, sans en-têtes ni cookies de Spring. Spring injoignable : **503** `{ message: "API indisponible" }`. Les 4xx passent tels quels.
+- La requête vers Spring est abandonnée quand le navigateur part (onglet fermé), flux longs compris : sans cela, Spring garderait un flux SSE fantôme ouvert.
 - Les autres en-têtes de Spring (`strict-transport-security`, `x-frame-options: DENY`, `server: nginx`) sont transmis tels quels.
 
 ## Routes
@@ -58,7 +59,7 @@ Ce que le relais ajoute :
 | `GET /api/faces/room?sid=&side=&room=` | Détail d'une room |
 | `GET /api/attempts?sid=&side=&result=&period=7d\|30d\|all&page=&size=` | Tentatives paginées |
 | `GET /api/attempts/{id}` | Une tentative |
-| `GET /api/live` · `GET /api/live/stream` | Partie en cours ; flux SSE (événements `snapshot`, `ping` toutes les 15 s) |
+| `GET /api/live` · `GET /api/live/stream` | Partie en cours ; flux SSE : Spring écrit `event:snapshot` (sans espace après les deux-points) avec l'état complet à chaque changement et chaque minute, et le commentaire `:ping` toutes les 15 s (un commentaire SSE, que `EventSource` ne transmet pas, pas un événement) |
 | `GET/POST/DELETE /api/tokens` | Appareils (tokens du mod) |
 
 ### `GET /api/summary`
@@ -211,6 +212,31 @@ Codes :
 | Succès (cache ou Spring) | **200** `{ discord: boolean }` |
 | Spring répond une erreur, sans valeur en cache | **502** `{ message: "Erreur de l'API" }`, `cache-control: no-store` |
 | Spring injoignable ou plus lent que 2 s, sans valeur en cache | **503** `{ message: "API indisponible" }`, `cache-control: no-store` |
+
+### `GET /api/direct`
+
+> Issue #34. Route : `src/server/routes/api/direct.get.ts`, logique dans `src/server/utils/flux-direct.ts`.
+
+Flux Server-Sent Events de la partie en cours du joueur connecté. Nitro ouvre `GET /api/live/stream` de Spring avec le cookie du joueur, n'en garde que la partie en cours (`EnJeu`, même forme que `enJeu` du tableau de bord) et la renvoie quand elle change.
+
+- Sans cookie `JSESSIONID` : **401**, sans appeler Spring. Un 401 ou 403 de Spring passe tel quel.
+- En-têtes : `content-type: text/event-stream`, `cache-control: private, no-store, no-transform`, `x-accel-buffering: no`, `Vary: Cookie`. Aucun en-tête ni `Set-Cookie` de Spring n'est recopié.
+- Le flux commence par `retry: 5000` (reconnexion du navigateur après 5 s).
+- Événements `en-jeu` : `data` est un JSON `EnJeu | null` (`null` : plus de partie en cours). Un événement n'est réémis que si la valeur a changé : l'état complet que Spring renvoie chaque minute ne produit rien.
+- Chaque commentaire `:ping` de Spring est renvoyé sous la forme `: ping`.
+- Spring muet (ni événement ni `:ping`) pendant **45 s** : Nitro coupe la connexion du navigateur, qui se reconnecte seul.
+- Quand le navigateur part, la connexion à Spring est fermée.
+
+Codes (avant l'envoi des en-têtes, le corps d'erreur est `{ message }`) :
+
+| Cas | Réponse |
+|---|---|
+| Succès | **200** `text/event-stream` |
+| Pas de cookie `JSESSIONID` | **401** `{ message: "Connexion requise" }`, sans appeler Spring |
+| Spring répond 401 ou 403 | **401** ou **403** |
+| Spring répond une erreur 5xx, ou 200 qui n'est pas un flux | **502** `{ message: "Erreur de l'API" }` |
+| Spring injoignable, ou en-têtes plus lents que 5 s | **503** `{ message: "API indisponible" }` |
+| Spring coupe ou se tait après l'envoi des en-têtes | connexion détruite (le statut 200 est parti) |
 
 ## Vocabulaire
 

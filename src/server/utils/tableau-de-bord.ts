@@ -1,8 +1,8 @@
 import { createError, getQuery, parseCookies, type H3Event } from 'h3';
 
-import type { LiveSnapshot } from '../../app/modeles/live';
+import type { CurrentAttempt, LiveSnapshot } from '../../app/modeles/live';
 import type { FaceProgress, Summary } from '../../app/modeles/summary';
-import type { FaceProgression, TableauDeBord } from '../../app/modeles/tableau-de-bord';
+import type { EnJeu, FaceProgression, TableauDeBord } from '../../app/modeles/tableau-de-bord';
 import { callSpring } from './spring';
 
 /** Fuseau retenu quand ni la requête ni le cookie n'en donnent un valide : le public du site. */
@@ -108,17 +108,24 @@ export function versTableauDeBord(summary: Summary, live: LiveSnapshot | null, f
     },
     recentes: summary.recent.map(versFaceProgression),
     activite: { jours, max },
-    enJeu: enCours
-      ? {
-          sid: enCours.sid,
-          side: enCours.side,
-          nom: nomDeFace(enCours.mapName, enCours.sid),
-          room: enCours.room,
-          debut: enCours.startedAt,
-        }
-      : null,
+    enJeu: versEnJeu(enCours),
     // Nouveau joueur : rien à reprendre et aucune tentative sur les 14 jours.
     vide: reprendre === null && max === 0,
+  };
+}
+
+/**
+ * La partie en cours telle que la page l'affiche (liste blanche), ou null hors partie. Partagée
+ * avec le relais du flux direct (`/api/direct`), qui envoie la même forme.
+ */
+export function versEnJeu(current: CurrentAttempt | null): EnJeu | null {
+  if (!current) return null;
+  return {
+    sid: current.sid,
+    side: current.side,
+    nom: nomDeFace(current.mapName, current.sid),
+    room: current.room,
+    debut: current.startedAt,
   };
 }
 

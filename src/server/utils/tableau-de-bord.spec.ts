@@ -4,7 +4,7 @@ import { createApp, defineEventHandler, toWebHandler } from 'h3';
 import type { LiveSnapshot } from '../../app/modeles/live';
 import type { Summary } from '../../app/modeles/summary';
 import { repondreErreur } from './spring';
-import { fuseauDe, versTableauDeBord } from './tableau-de-bord';
+import { fuseauDe, versEnJeu, versTableauDeBord } from './tableau-de-bord';
 
 /** Fuseau retenu pour une requête : `{ fuseau }`, ou le statut et le message de l'erreur. */
 const fuseauPour = async (url: string, cookie?: string) => {
@@ -179,6 +179,18 @@ describe('Mise en forme du tableau de bord', () => {
   it('donne enJeu null sans direct ou hors partie', () => {
     expect(versTableauDeBord(SUMMARY, null, 'UTC').enJeu).toBeNull();
     expect(versTableauDeBord(SUMMARY, { ...LIVE, current: null }, 'UTC').enJeu).toBeNull();
+  });
+
+  it('versEnJeu recopie les champs de la page et rien d’autre', () => {
+    const current = { ...LIVE.current!, deaths: 9, roomsVisited: 4 };
+    expect(versEnJeu(current)).toEqual({
+      sid: 'Celeste/1-ForsakenCity',
+      side: 'A',
+      nom: '1-ForsakenCity',
+      room: 'a-03',
+      debut: 1_700_000_100_000,
+    });
+    expect(versEnJeu(null)).toBeNull();
   });
 
   it('garde une room inconnue à null', () => {

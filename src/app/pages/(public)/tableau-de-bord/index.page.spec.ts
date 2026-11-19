@@ -1,9 +1,10 @@
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { connexionRequise } from '../../../auth/connexion-requise';
 import type { FaceProgression, TableauDeBord } from '../../../modeles/tableau-de-bord';
+import { FABRIQUE_EVENT_SOURCE } from './en-jeu-direct';
 import TableauDeBordPage, { routeMeta } from './index.page';
 import { type ResultatTableau, chargerTableau } from './tableau-de-bord.donnees';
 
@@ -67,13 +68,47 @@ const VIDE: TableauDeBord = {
 
 const ok = (donnees: TableauDeBord): ResultatTableau => ({ etat: 'ok', donnees });
 
+/** Faux flux : garde les écouteurs pour que le test envoie ses événements. */
+class FauxFlux {
+  fermee = false;
+  readonly ecouteurs = new Map<string, (e: MessageEvent<string>) => void>();
+  constructor(readonly adresse: string) {}
+  addEventListener(type: string, ecouteur: (e: MessageEvent<string>) => void) {
+    this.ecouteurs.set(type, ecouteur);
+  }
+  close() {
+    this.fermee = true;
+  }
+  envoyer(type: string, data: string) {
+    this.ecouteurs.get(type)?.({ data } as MessageEvent<string>);
+  }
+}
+
 describe('Tableau de bord', () => {
+  let flux: FauxFlux[];
+  let fixture: ComponentFixture<TableauDeBordPage>;
+
+  beforeEach(() => {
+    flux = [];
+  });
+
   const render = (tableau: ResultatTableau) => {
     TestBed.configureTestingModule({
       imports: [TableauDeBordPage],
-      providers: [provideRouter([]), { provide: ActivatedRoute, useValue: { data: of({ tableau }) } }],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { data: of({ tableau }) } },
+        {
+          provide: FABRIQUE_EVENT_SOURCE,
+          useValue: (adresse: string) => {
+            const f = new FauxFlux(adresse);
+            flux.push(f);
+            return f as unknown as EventSource;
+          },
+        },
+      ],
     });
-    const fixture = TestBed.createComponent(TableauDeBordPage);
+    fixture = TestBed.createComponent(TableauDeBordPage);
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   };
@@ -241,6 +276,60 @@ describe('Tableau de bord', () => {
       const page = render({ etat: 'erreur', statut: 401 });
       expect(page.querySelector('[role="alert"]')).toBeNull();
       expect(page.querySelector('h1')?.textContent).toContain('Tableau de bord');
+    });
+  });
+
+  describe('flux en direct', () => {
+    const jeu = { ...TABLEAU.enJeu!, nom: 'Old Site', side: 'A' as const, room: 'a-02' };
+
+    it('ouvre le flux après le rendu, sur l’adresse du serveur', () => {
+      render(ok(TABLEAU));
+      expect(flux.map((f) => f.adresse)).toEqual(['/api/direct']);
+    });
+
+    it('garde le bandeau du serveur tant que rien n’arrive', () => {
+      const page = render(ok(TABLEAU));
+      expect(texte(page.querySelector('.tableau__en-jeu'))).toContain('Forsaken City · B');
+    });
+
+    it('un événement en-jeu remplace la valeur du serveur', () => {
+      const page = render(ok(TABLEAU));
+      flux[0].envoyer('en-jeu', JSON.stringify(jeu));
+      fixture.detectChanges();
+      expect(texte(page.querySelector('.tableau__en-jeu'))).toContain('Old Site · A, room a-02');
+    });
+
+    it('un événement null fait disparaître le bandeau', () => {
+      const page = render(ok(TABLEAU));
+      flux[0].envoyer('en-jeu', 'null');
+      fixture.detectChanges();
+      expect(page.querySelector('.tableau__en-jeu')).toBeNull();
+    });
+
+    it('fait apparaître le bandeau quand le serveur n’en avait pas', () => {
+      const page = render(ok({ ...TABLEAU, enJeu: null }));
+      flux[0].envoyer('en-jeu', JSON.stringify(jeu));
+      fixture.detectChanges();
+      expect(texte(page.querySelector('.tableau__en-jeu'))).toContain('Old Site');
+    });
+
+    it('ignore un JSON invalide', () => {
+      const page = render(ok(TABLEAU));
+      flux[0].envoyer('en-jeu', '{pas du json');
+      fixture.detectChanges();
+      expect(texte(page.querySelector('.tableau__en-jeu'))).toContain('Forsaken City · B');
+    });
+
+    it('annonce le bandeau par un conteneur aria-live toujours présent', () => {
+      const page = render(ok({ ...TABLEAU, enJeu: null }));
+      expect(page.querySelector('[aria-live="polite"]')).not.toBeNull();
+    });
+
+    it('ferme le flux à la destruction de la page', () => {
+      render(ok(TABLEAU));
+      expect(flux[0].fermee).toBe(false);
+      fixture.destroy();
+      expect(flux[0].fermee).toBe(true);
     });
   });
 
