@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { once } from 'node:events';
-import { createServer, get } from 'node:http';
+import { createServer, get, request as requeteHttp, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
 import { createApp, createRouter, toNodeListener, toWebHandler } from 'h3';
@@ -10,6 +10,8 @@ import relais from './[...path]';
 
 vi.stubEnv('NITRO_API_URL', 'http://spring.test:5000');
 
+// Le vrai fetch, gardé avant que beforeEach ne le remplace (test du flux coupé).
+const vraiFetch = globalThis.fetch;
 const fetchMock = vi.fn();
 
 const call = (url: string, init?: RequestInit) => {
@@ -161,17 +163,69 @@ describe('Relais /api vers Spring', () => {
     await once(serveur, 'listening');
     const { port } = serveur.address() as AddressInfo;
     // Le navigateur doit voir une connexion coupée (pas un 503, pas une attente sans fin).
-    const issue = await new Promise<string>((resolve) => {
-      get(`http://127.0.0.1:${port}/api/summary`, (res) => {
-        res.on('error', () => resolve('coupée')).resume();
-        res.on('end', () => resolve(`terminée ${res.statusCode}`));
-      }).on('error', () => resolve('coupée'));
-    });
-    serveur.close();
+    let issue: string;
+    try {
+      issue = await new Promise<string>((resolve) => {
+        get(`http://127.0.0.1:${port}/api/summary`, (res) => {
+          res.on('error', () => resolve('coupée')).resume();
+          res.on('end', () => resolve(`terminée ${res.statusCode}`));
+        }).on('error', () => resolve('coupée'));
+      });
+    } finally {
+      serveur.closeAllConnections();
+      serveur.close();
+    }
 
     expect(issue).toBe('coupée');
     expect(String(vi.mocked(console.error).mock.calls)).toContain('réponse interrompue');
     expect(String(vi.mocked(console.error).mock.calls)).not.toContain('injoignable');
+  });
+
+  describe('client parti pendant un flux', () => {
+    it('annule la requête vers Spring en moins d’une seconde, sans « réponse interrompue »', async () => {
+      // Faux Spring : un flux SSE sans fin, qui note la fermeture de la requête reçue.
+      let fermee = false;
+      const spring = createServer((req, res) => {
+        res.on('close', () => (fermee = true));
+        res.writeHead(200, { 'content-type': 'text/event-stream' });
+        res.write(': ouvert\n\n');
+      }).listen(0);
+      await once(spring, 'listening');
+      const portSpring = (spring.address() as AddressInfo).port;
+      // Le vrai fetch, pointé sur ce faux Spring.
+      fetchMock.mockImplementation((url: string, init: RequestInit) =>
+        vraiFetch(url.replace('spring.test:5000', `127.0.0.1:${portSpring}`), init),
+      );
+      vi.stubGlobal('fetch', fetchMock);
+
+      const app = createApp().use(createRouter().use('/api/**', relais));
+      let front: Server | undefined;
+      try {
+        front = createServer(toNodeListener(app)).listen(0);
+        await once(front, 'listening');
+        const portFront = (front.address() as AddressInfo).port;
+
+        // Le client lit le premier morceau, puis coupe.
+        const req = requeteHttp(`http://127.0.0.1:${portFront}/api/live/stream`);
+        const reponse = await new Promise<import('node:http').IncomingMessage>((resolve, reject) => {
+          req.on('response', resolve).on('error', reject).end();
+        });
+        await once(reponse, 'data');
+        reponse.destroy();
+        req.socket?.destroy();
+
+        const debut = Date.now();
+        while (!fermee && Date.now() - debut < 1000) await new Promise((r) => setTimeout(r, 20));
+      } finally {
+        front?.closeAllConnections();
+        front?.close();
+        spring.closeAllConnections();
+        spring.close();
+      }
+
+      expect(fermee).toBe(true);
+      expect(String(vi.mocked(console.error).mock.calls)).not.toContain('réponse interrompue');
+    });
   });
 
   it('ne suit pas les redirections de Spring', async () => {
