@@ -101,4 +101,4 @@ Détail dans `docs/architecture.md`. L'essentiel :
 
 - Docker Desktop ne démarre pas depuis le bac à sable de l'agent : demander à l'utilisateur de le lancer.
 - Ports locaux déjà pris : 8080, 8081, 8090 (site Angular actuel), 5000 (API Spring locale).
-- `npm audit` signale des vulnérabilités dans les dépendances générées par `create-analog` (à examiner, ne pas lancer `npm audit fix --force`).
+- `npm audit` : la production est propre (`--omit=dev` → 0, contrôlé en CI par le job `audit`). Restent des avis de build et de dev acceptés (esbuild low, chaîne archiver/minimatch moderate), justifiés dans `deploy/README.md` §7. Ne jamais lancer `npm audit fix --force` : il rétrograderait Analog en 2.3.1.
