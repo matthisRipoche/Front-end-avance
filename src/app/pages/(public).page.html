@@ -1,8 +1,8 @@
-<a class="skip-link" href="#contenu">Aller au contenu</a>
+<a class="skip-link" href="#contenu" (click)="aller($event)">Aller au contenu</a>
 
 <app-site-header />
 
-<main id="contenu" tabindex="-1">
+<main #contenu id="contenu" tabindex="-1">
   <router-outlet />
 </main>
 

@@ -9,10 +9,10 @@
         de Celeste. Il envoie chaque tentative au site, qui te montre jusqu'où tu vas sur chaque face.
       </p>
       <div class="cdt-row">
-        <a class="cdt-btn cdt-btn--primary" href="#installer">Installer le mod</a>
+        <a class="cdt-btn cdt-btn--primary" href="/mod#installer">Installer le mod</a>
         <a class="cdt-btn cdt-btn--secondary" href="https://github.com/matthisRipoche/CelesteDeathTracker">Voir le code sur GitHub</a>
       </div>
-      <div class="cdt-alert" role="status">
+      <div class="cdt-alert">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="8" /><path d="M10 9v5M10 6.2v.1" /></svg>
         <div>
           <p class="cdt-alert__title">Pas encore publié</p>
@@ -81,7 +81,7 @@
           <div class="install__body">
             <h3 class="t-title">Récupère le code</h3>
             <p class="muted">Clone le dépôt <a href="https://github.com/matthisRipoche/CelesteDeathTracker">CelesteDeathTracker</a>, ou télécharge-le en ZIP.</p>
-            <pre class="code"><code>git clone https://github.com/matthisRipoche/CelesteDeathTracker.git
+            <pre class="code" tabindex="0"><code>git clone https://github.com/matthisRipoche/CelesteDeathTracker.git
 cd CelesteDeathTracker</code></pre>
           </div>
         </div>
@@ -99,7 +99,7 @@ cd CelesteDeathTracker</code></pre>
           <div class="install__body">
             <h3 class="t-title">Compile le mod</h3>
             <p class="muted">Indique le dossier de Celeste, celui qui contient <code>Celeste.dll</code>.</p>
-            <pre class="code"><code>dotnet build CelesteDeathTracker -c Release -p:CELESTE_PATH="C:\chemin\vers\Celeste"</code></pre>
+            <pre class="code" tabindex="0"><code>dotnet build CelesteDeathTracker -c Release -p:CELESTE_PATH="C:\chemin\vers\Celeste"</code></pre>
           </div>
         </div>
         <figure class="cdt-slot install__image">

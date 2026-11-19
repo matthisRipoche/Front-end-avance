@@ -151,13 +151,17 @@
             <cdt-result-tag kind="abandon">Abandon</cdt-result-tag>
           </div>
           <div class="cdt-row">
-            <span class="cdt-side" aria-label="Face A">A</span>
-            <span class="cdt-side" aria-label="Face B">B</span>
-            <span class="cdt-side" aria-label="Face C">C</span>
-            <span class="cdt-side cdt-side--lg" aria-label="Face B">B</span>
+            <span class="cdt-side" role="img" aria-label="Face A">A</span>
+            <span class="cdt-side" role="img" aria-label="Face B">B</span>
+            <span class="cdt-side" role="img" aria-label="Face C">C</span>
+            <span class="cdt-side cdt-side--lg" role="img" aria-label="Face B">B</span>
           </div>
+          <p class="t-body-sm">
+            Texte réservé au lecteur d'écran, masqué à l'écran (<code class="t-data">cdt-sr-only</code>) :
+            <span class="cdt-sr-only">Cette phrase n'est lue qu'à voix haute.</span>
+          </p>
           <a class="cdt-face" href="/design-system#composants">
-            <span class="cdt-side" aria-label="Face A">A</span>
+            <span class="cdt-side" role="img" aria-label="Face A">A</span>
             <span class="cdt-face__main">
               <span class="cdt-face__name">Golden Ridge</span>
               <span class="cdt-face__meta">48 tentatives · il y a 3 jours</span>
@@ -180,10 +184,10 @@
               </span>
             </div>
           </div>
-          <div class="cdt-tabs" role="tablist" aria-label="Période">
-            <button class="cdt-tabs__tab" role="tab" type="button" aria-selected="true">7 jours</button>
-            <button class="cdt-tabs__tab" role="tab" type="button" aria-selected="false">30 jours</button>
-            <button class="cdt-tabs__tab" role="tab" type="button" aria-selected="false">Tout</button>
+          <div class="cdt-tabs" role="group" aria-label="Période">
+            <button class="cdt-tabs__tab" type="button" aria-pressed="true">7 jours</button>
+            <button class="cdt-tabs__tab" type="button" aria-pressed="false">30 jours</button>
+            <button class="cdt-tabs__tab" type="button" aria-pressed="false">Tout</button>
           </div>
         </div>
 

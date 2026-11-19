@@ -46,6 +46,7 @@ export const COLOR_GROUPS: { title: string; tokens: TokenDoc[] }[] = [
       { name: 'gold', usage: 'Deathless réussi, un seul élément doré par écran.' },
       { name: 'on-gold', usage: 'Texte posé sur un aplat gold.' },
       { name: 'gold-text', usage: 'Texte doré sur bg ou surface.' },
+      { name: 'gold-edge', usage: 'Liseré d’un aplat doré : invisible en sombre, foncé en clair.' },
     ],
   },
 ];

@@ -36,8 +36,12 @@
       </div>
     </section>
   } @else if (donnees()) {
-    <!-- Conteneur toujours présent : un lecteur d'écran annonce l'apparition ou la fin du bandeau. -->
-    <div aria-live="polite">
+    <!-- Zone d'annonce toujours présente (une région ajoutée à la volée n'est pas lue de façon fiable).
+         Son texte ne dépend que de la présence d'une partie, pas de la room : un changement de room
+         ne déclenche aucune annonce. Texte identique au rendu serveur et au premier rendu navigateur.
+         Le libellé du bandeau finit par « , room » quand la room est connue : on le retire ici. -->
+    <p class="cdt-sr-only" role="status">{{ enJeu() ? 'En jeu sur ' + enJeu()!.face : '' }}</p>
+    <div>
       @if (enJeu(); as jeu) {
         <!-- &ngsp; : Angular retire les blancs entre deux balises ; sans lui, le texte lu (lecteur
              d'écran, copier-coller) collerait les morceaux. Invisible dans un conteneur flex. -->
