@@ -27,6 +27,14 @@ a {
   text-underline-offset: 3px;
 }
 
+/* La barre mobile fixe (src/app/layout/barre-mobile/barre-mobile.css : 57 px de hauteur + zone sûre)
+   ne doit pas cacher l'élément focalisé (WCAG 2.4.11). À garder synchronisé avec cette hauteur. */
+@media (max-width: 959.98px) {
+  html:has(.cdt-tabbar) {
+    scroll-padding-bottom: calc(57px + env(safe-area-inset-bottom, 0px) + var(--space-2));
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
