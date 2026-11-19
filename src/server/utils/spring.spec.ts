@@ -93,6 +93,25 @@ describe('callSpring', () => {
     expect(appelSpring().headers.get('x-xsrf-token')).toBe('t');
   });
 
+  it('n’envoie ni cookie ni jeton CSRF avec transmettreCookie: false', async () => {
+    fetchMock.mockResolvedValue(Response.json({}));
+
+    await call('/essai', { headers: { cookie: 'JSESSIONID=abc', 'x-xsrf-token': 't' } }, '/api/auth/providers', {
+      transmettreCookie: false,
+    });
+
+    expect(appelSpring().headers.has('cookie')).toBe(false);
+    expect(appelSpring().headers.has('x-xsrf-token')).toBe(false);
+  });
+
+  it('transmet encore le cookie avec transmettreCookie: true', async () => {
+    fetchMock.mockResolvedValue(Response.json({}));
+
+    await call('/essai', { headers: { cookie: 'JSESSIONID=abc' } }, '/api/summary', { transmettreCookie: true });
+
+    expect(appelSpring().headers.get('cookie')).toBe('JSESSIONID=abc');
+  });
+
   it('n’invente aucun cookie ni jeton s’ils sont absents', async () => {
     fetchMock.mockResolvedValue(Response.json({}));
 
