@@ -36,19 +36,22 @@
       </div>
     </section>
   } @else if (donnees()) {
-    @if (enJeu(); as jeu) {
-      <!-- &ngsp; : Angular retire les blancs entre deux balises ; sans lui, le texte lu (lecteur
-           d'écran, copier-coller) collerait les morceaux. Invisible dans un conteneur flex. -->
-      <p class="tableau__en-jeu">
-        <span class="tableau__en-jeu-point" aria-hidden="true"></span>
-        <span class="tableau__en-jeu-titre">En jeu</span>&ngsp;
-        <span class="tableau__muted">{{ jeu.libelle }}</span>&ngsp;
-        @if (jeu.room) {
-          <span class="t-data">{{ jeu.room }}</span>&ngsp;
-        }
-        <span class="tableau__muted tableau__en-jeu-debut">depuis le <span class="t-data">{{ jeu.debut }}</span></span>
-      </p>
-    }
+    <!-- Conteneur toujours présent : un lecteur d'écran annonce l'apparition ou la fin du bandeau. -->
+    <div aria-live="polite">
+      @if (enJeu(); as jeu) {
+        <!-- &ngsp; : Angular retire les blancs entre deux balises ; sans lui, le texte lu (lecteur
+             d'écran, copier-coller) collerait les morceaux. Invisible dans un conteneur flex. -->
+        <p class="tableau__en-jeu">
+          <span class="tableau__en-jeu-point" aria-hidden="true"></span>
+          <span class="tableau__en-jeu-titre">En jeu</span>&ngsp;
+          <span class="tableau__muted">{{ jeu.libelle }}</span>&ngsp;
+          @if (jeu.room) {
+            <span class="t-data">{{ jeu.room }}</span>&ngsp;
+          }
+          <span class="tableau__muted tableau__en-jeu-debut">depuis le <span class="t-data">{{ jeu.debut }}</span></span>
+        </p>
+      }
+    </div>
 
     <div class="tableau__grille">
       @if (reprendre(); as face) {
