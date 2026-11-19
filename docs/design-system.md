@@ -64,6 +64,7 @@ Remplace le design system « Topo » du site actuel. Références : Strava et Li
 | Graphique d'évolution | `cdt-chart` | Le temps tenu à chaque tentative, une colonne par tentative ; chute, abandon et deathless se lisent par la couleur, la forme et la légende |
 | Alerte | `cdt-alert` (`--error`) | Information ou erreur dans la page |
 | Navigation | `cdt-nav` | Nom du site en Unbounded, liens en pilule |
+| Barre d'onglets mobile | `cdt-tabbar` (`__item`, `__icon`, `__label`) | Trois entrées égales, icône au-dessus du libellé, page courante par `aria-current="page"` (fond `surface-raised`, ni accent ni doré) ; la position fixe et le seuil de largeur sont ceux du composant |
 | Pastille | `cdt-chip`, `cdt-chips` | Prérequis, raccourcis vers une section |
 | Emplacement d'image | `cdt-slot` (`--hero` 16:10, défaut 16:9, `--photo` 4:3, `--wide` 21:9) | Réserve la place d'une capture, avec sa légende et son format ; on le remplit en y mettant un `<img>` |
 | Question dépliable | `cdt-disclosure` | `<details>` + `<summary>`, utilisable dans le Markdown (FAQ) |

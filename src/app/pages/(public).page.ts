@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
+import { BarreMobile } from '../layout/barre-mobile/barre-mobile';
 import { SiteFooter } from '../layout/site-footer/site-footer';
 import { SiteHeader } from '../layout/site-header/site-header';
 
@@ -9,7 +10,7 @@ import { SiteHeader } from '../layout/site-header/site-header';
 @Component({
   selector: 'app-public-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SiteHeader, SiteFooter],
+  imports: [RouterOutlet, SiteHeader, SiteFooter, BarreMobile],
   templateUrl: './(public).page.html',
   styleUrl: './(public).page.css',
 })

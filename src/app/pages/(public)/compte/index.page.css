@@ -1,0 +1,21 @@
+:host { display: block; }
+
+.compte {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--space-8) max(16px, 4vw) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.compte__title { margin: 0; }
+.compte__muted { color: var(--ink-muted); }
+.compte__nom { overflow-wrap: anywhere; }
+
+.compte__infos { margin: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.compte__infos dd { margin: 0; color: var(--ink); }
+
+.compte__actions { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+/* Zone toujours présente, pour que les lecteurs d’écran annoncent le message quand il apparaît. */
+.compte__erreur { margin: 0; font: 400 14px/20px var(--font-sans); color: var(--danger); }

@@ -103,6 +103,16 @@ describe('Navigation des pages publiques', () => {
     expect(nav.textContent).not.toContain('Mes maps');
   });
 
+  it('marque l’en-tête du joueur connecté pour que la barre du bas prenne le relais', async () => {
+    const { nav } = await monter('/faq', CONNECTE);
+    expect(nav.querySelector('header')?.classList.contains('header--connecte')).toBe(true);
+  });
+
+  it('ne marque pas l’en-tête d’un anonyme, qui garde « Se connecter »', async () => {
+    const { nav } = await monter('/faq');
+    expect(nav.querySelector('header')?.classList.contains('header--connecte')).toBe(false);
+  });
+
   it('montre le pseudo Discord d’un compte sans email', async () => {
     const etat: EtatSession = {
       statut: 'connecte',

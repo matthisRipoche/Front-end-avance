@@ -40,7 +40,11 @@ export const CLE_SESSION = Symbol.for('celeste-tracker.session');
  * Cette liste et la garde de route `connexionRequise` vont ensemble : une page connectée ajoutée
  * ici doit aussi porter la garde, et inversement.
  */
-export const PAGES_CONNECTEES = ['/tableau-de-bord', '/maps'];
+export const PAGES_CONNECTEES = [
+  '/tableau-de-bord',
+  '/maps',
+  '/compte',
+];
 
 /**
  * Le chemin demandé mène-t-il à une page connectée ?

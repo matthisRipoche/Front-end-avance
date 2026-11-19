@@ -1,0 +1,30 @@
+/* Caché au-dessus du seuil mobile. Le seuil est en CSS seulement (pas de matchMedia) : le rendu
+   serveur et celui du navigateur restent identiques. */
+:host {
+  display: none;
+}
+
+@media (max-width: 959.98px) {
+  :host {
+    display: block;
+  }
+
+  /* Espaceur dans le flux : la barre est fixe, il évite qu'elle couvre le pied de page. Il n'existe
+     que si la barre est rendue (joueur connecté).
+     57px = hauteur de `.cdt-tabbar__item` (8 + 22 + 2 + 16 + 8) + bordure haute de 1px. */
+  .barre-mobile__espaceur {
+    height: calc(57px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Un libellé qui passerait à la ligne ferait dépasser la barre de l'espaceur. */
+  .cdt-tabbar__label {
+    white-space: nowrap;
+  }
+
+  /* z-index sous 10 : le lien d'évitement (`(public).page.css`) doit rester au-dessus. */
+  .cdt-tabbar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 5;
+  }
+}
