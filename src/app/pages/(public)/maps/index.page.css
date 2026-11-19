@@ -45,8 +45,7 @@
 
 /* Liste */
 .maps__liste { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); }
-/* Pas un lien (D5) : le survol de cdt-face ne doit pas promettre un clic. */
-.maps__face:hover { background: var(--surface); }
+/* Chaque face est un lien : survol de cdt-face (components.css) et focus global (styles.css). */
 .maps__tentatives { color: var(--ink); }
 /* Pas d'or ici (D8) : le deathless est écrit, sans pastille dorée. */
 .maps__deathless { color: var(--ink); font-weight: 600; }

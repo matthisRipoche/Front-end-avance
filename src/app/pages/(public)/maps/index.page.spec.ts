@@ -102,8 +102,29 @@ describe('Mes maps', () => {
       expect(texte(lignes[1])).toContain('17 novembre 2025 à 21:04');
     });
 
-    it('n’est pas un lien tant que le détail d’une face n’existe pas', () => {
-      expect(render(ok(MES_MAPS)).page.querySelector('li a')).toBeNull();
+    it('mène chaque face à son détail, par des paramètres dans l’ordre sid puis side', () => {
+      const liens = Array.from(render(ok(MES_MAPS)).page.querySelectorAll('li a.cdt-face'));
+      expect(liens.map((a) => a.getAttribute('href'))).toEqual([
+        '/maps/face?sid=Celeste%2F1-ForsakenCity&side=B',
+        '/maps/face?sid=StrawberryJam2021%2F1-Beginner%2Feclat&side=A',
+        '/maps/face?sid=Celeste%2F2-OldSite&side=A',
+      ]);
+    });
+
+    it('garde un href correct pour un SID avec espace, plus, esperluette et accent', () => {
+      const sid = 'Mod/a b+c&d/é';
+      const { page } = render(ok({ ...MES_MAPS, faces: [face({ sid, side: 'C', nom: 'Bizarre' })] }));
+      const href = page.querySelector('li a')?.getAttribute('href') ?? '';
+      expect(href).toBe('/maps/face?sid=Mod%2Fa%20b%2Bc%26d%2F%C3%A9&side=C');
+      const params = new URL(href, 'http://x').searchParams;
+      expect(params.get('sid')).toBe(sid);
+      expect(params.get('side')).toBe('C');
+    });
+
+    it('donne au lien un nom accessible qui dit la face', () => {
+      const lien = render(ok(MES_MAPS)).page.querySelector('li a');
+      expect(texte(lien)).toContain('Forsaken City Face B');
+      expect(lien?.hasAttribute('aria-label')).toBe(false);
     });
 
     it('propose les mods joués, avec leur nombre de faces', () => {

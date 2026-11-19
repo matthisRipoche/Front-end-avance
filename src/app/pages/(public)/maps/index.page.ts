@@ -103,6 +103,7 @@ export default class MesMapsPage {
     const reference = this.anneeDeReference();
     return appliquer(d.faces, this.filtres()).map((f) => ({
       cle: `${f.sid}|${f.side}`,
+      sid: f.sid,
       nom: f.nom,
       side: f.side,
       mod: f.mod,

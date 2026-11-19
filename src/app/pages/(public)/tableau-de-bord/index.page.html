@@ -54,10 +54,12 @@
       @if (reprendre(); as face) {
         <section class="cdt-panel tableau__reprendre" aria-labelledby="tdb-reprendre">
           <h2 id="tdb-reprendre" class="cdt-panel__title">Reprendre</h2>
-          <div class="cdt-row">
+          <!-- Le SID contient des « / » : il reste en paramètre de requête, et `sid` passe avant `side`
+               pour que l'adresse soit la même côté serveur et côté navigateur. -->
+          <a class="cdt-row tableau__lien" routerLink="/maps/face" [queryParams]="{ sid: face.sid, side: face.side }">
             <span class="t-stat tableau__face-nom">{{ face.nom }}</span>&ngsp;
             <span class="t-label tableau__side">face {{ face.side }}</span>
-          </div>
+          </a>
           <div class="tableau__progression">
             <div class="t-body-sm tableau__progression-ligne">
               <span>Plus loin atteint</span>&ngsp;
@@ -143,7 +145,8 @@
         <h2 id="tdb-recentes" class="cdt-panel__title">Faces récentes</h2>
         <ul class="tableau__recentes">
           @for (face of recentes(); track face.cle) {
-            <li class="tableau__recente">
+            <li>
+              <a class="tableau__recente" routerLink="/maps/face" [queryParams]="{ sid: face.sid, side: face.side }">
               <span class="tableau__recente-nom">
                 <span class="t-heading tableau__ellipse">{{ face.nom }}</span>&ngsp;
                 <span class="t-label tableau__side">{{ face.side }}</span>
@@ -156,6 +159,7 @@
               </span>&ngsp;
               <span class="t-data tableau__muted tableau__recente-tentatives">{{ face.tentatives }} tent.</span>&ngsp;
               <span class="t-body-sm tableau__muted tableau__recente-date">{{ face.derniere }}</span>
+              </a>
             </li>
           }
         </ul>

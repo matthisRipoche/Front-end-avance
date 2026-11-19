@@ -25,6 +25,7 @@ export const routeMeta = {
 /** Une face mise en forme pour l'affichage : chiffres et date déjà écrits. */
 type FaceAffichee = {
   cle: string;
+  sid: string;
   nom: string;
   side: string;
   tentatives: number;
@@ -132,6 +133,7 @@ export default class TableauDeBordPage {
     const connue = f.progression !== null;
     return {
       cle: `${f.sid}|${f.side}`,
+      sid: f.sid,
       nom: f.nom,
       side: f.side,
       tentatives: f.tentatives,
