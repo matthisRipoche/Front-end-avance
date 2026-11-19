@@ -43,7 +43,7 @@ describe('Page d’accueil', () => {
 
 - `provideRouter([])` dès que le composant utilise `RouterLink`.
 - Composant à entrées (`input()`) : `fixture.componentRef.setInput('kind', 'deathless')` puis `fixture.detectChanges()`.
-- Cherche par rôle ou par sens (`h1`, `[role="status"]`, `a[href="/"]`) plutôt que par classe de mise en forme, sauf pour une règle de design vérifiée exprès (le seul élément doré : `.cdt-result--deathless`).
+- Cherche par rôle ou par sens (`h1`, `[role="status"]`, `a[href="/"]`) plutôt que par classe de mise en forme, sauf pour une règle de design vérifiée exprès (le doré réservé au deathless : `.cdt-result--deathless`).
 
 ### Statut HTTP posé pendant le SSR
 

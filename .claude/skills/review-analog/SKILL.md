@@ -45,7 +45,7 @@ Les règles de code sont dans le skill `conventions-analog`, celles de la couche
 - `.md` ajouté sous `src/app/pages/` ou `src/content/` sans être voulu comme page.
 
 ### Conventions (voir `conventions-analog`)
-- `template:` ou `styles:` en ligne, couleur en dur, classe hors `.cdt-*` / `.t-*` qui existe déjà, deux éléments dorés, information portée par la couleur seule, asset de Celeste, texte non français.
+- `template:` ou `styles:` en ligne, couleur en dur, classe hors `.cdt-*` / `.t-*` qui existe déjà, doré utilisé pour autre chose qu'un deathless, information portée par la couleur seule, asset de Celeste, texte non français.
 
 ### Tests (voir `tests-analog`)
 - Comportement nouveau sans test ; test qui passerait même si le code était faux (assertion vide, `toBeTruthy` sur un objet toujours présent) ; route serveur sans test des cas d'erreur.
