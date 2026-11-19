@@ -51,6 +51,33 @@ function repondre(res, statut, corps) {
 /** Interrupteur du faux Spring pour /api/auth/providers : le script et le faux Spring partagent le processus. */
 let providersEnPanne = false;
 
+/** Flux SSE du faux Spring : connexions ouvertes et fermées, pour vérifier qu'une coupure remonte. */
+const flux = { ouverts: 0, fermes: 0 };
+const CURRENT = {
+  id: 7,
+  sid: 'Celeste/1-ForsakenCity',
+  side: 'A',
+  mapName: 'Forsaken City',
+  room: 'a-03',
+  startedAt: 1_700_000_100_000,
+  lastEventAt: 1_700_000_200_000,
+  deaths: 3,
+  roomsVisited: 4,
+};
+
+function fluxFactice(req, res, cookie) {
+  if (!cookie.includes('JSESSIONID=')) return repondre(res, 401, { error: 'non connecté' });
+  res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' });
+  // Écrit sans espace après les deux-points, comme Spring.
+  res.write(`event:snapshot\ndata:${JSON.stringify({ current: CURRENT, serverTime: 1_700_000_300_000 })}\n\n`);
+  flux.ouverts++;
+  const ping = setInterval(() => res.write(':ping\n\n'), 200);
+  res.on('close', () => {
+    clearInterval(ping);
+    flux.fermes++;
+  });
+}
+
 const springFactice = createServer((req, res) => {
   const chemin = new URL(req.url, 'http://spring').pathname;
   const cookie = req.headers.cookie ?? '';
@@ -69,6 +96,7 @@ const springFactice = createServer((req, res) => {
   }
   if (chemin === '/api/summary') return repondre(res, 200, SUMMARY);
   if (chemin === '/api/live') return repondre(res, 200, LIVE);
+  if (chemin === '/api/live/stream') return fluxFactice(req, res, cookie);
   if (chemin === '/api/panne') return repondre(res, 500, { error: 'panne' });
   if (chemin === '/api/auth/login') return repondre(res, 200, { id: 1 });
   return repondre(res, 404, { error: 'inconnu' });
@@ -101,6 +129,36 @@ function verifier(libelle, condition, detail) {
 
 /** Requêtes reçues par Spring depuis `depuis` (indice dans `recues`). */
 const recuesApres = (depuis) => recues.slice(depuis);
+
+const pause = (ms) => new Promise((ok) => setTimeout(ok, ms));
+
+/**
+ * Lit un flux jusqu'à ce que `fini(texte)` soit vrai, ou jusqu'au délai (jamais d'attente sans borne).
+ * Renvoie le texte lu, le temps écoulé et le lecteur (à fermer par l'appelant via `abandon`).
+ */
+async function lireFlux(lecteur, fini, delaiMs) {
+  const decodeur = new TextDecoder();
+  const debut = Date.now();
+  let texte = '';
+  while (!fini(texte)) {
+    const restant = delaiMs - (Date.now() - debut);
+    if (restant <= 0) break;
+    const lu = await Promise.race([lecteur.read(), pause(restant).then(() => 'delai')]);
+    if (lu === 'delai' || lu.done) break;
+    texte += decodeur.decode(lu.value, { stream: true });
+  }
+  return { texte, duree: Date.now() - debut };
+}
+
+/** Attend (au plus `delaiMs`) que `condition()` soit vraie ; renvoie le temps mis, ou null. */
+async function attendre(condition, delaiMs) {
+  const debut = Date.now();
+  while (Date.now() - debut < delaiMs) {
+    if (condition()) return Date.now() - debut;
+    await pause(25);
+  }
+  return condition() ? Date.now() - debut : null;
+}
 
 async function lancerEssais(base) {
   const get = (chemin, entetes = {}, options = {}) =>
@@ -254,6 +312,90 @@ async function lancerEssais(base) {
     recuesApres(avant).some((r) => r.path === '/api/relais.spec'),
     `appels reçus : ${JSON.stringify(recuesApres(avant))}`,
   );
+
+  // Flux direct : /api/direct (route dédiée) et /api/live/stream (relais brut).
+  avant = recues.length;
+  res = await get('/api/direct', {}, { signal: AbortSignal.timeout(5000) });
+  corps = await res.json().catch(() => null);
+  verifier(
+    'GET /api/direct sans cookie → 401 { message: "Connexion requise" }, Spring n\'est pas appelé',
+    res.status === 401 && corps?.message === 'Connexion requise' && recuesApres(avant).length === 0,
+    `reçu ${res.status} ${JSON.stringify(corps)}, ${recuesApres(avant).length} appel(s) chez Spring`,
+  );
+
+  {
+    const fermesAvant = flux.fermes;
+    const abandon = new AbortController();
+    const debut = Date.now();
+    res = await get('/api/direct', { cookie: 'JSESSIONID=ok' }, { signal: AbortSignal.any([abandon.signal, AbortSignal.timeout(5000)]) });
+    const h = (nom) => res.headers.get(nom);
+    verifier(
+      'GET /api/direct connecté → text/event-stream, no-store, no-transform, x-accel-buffering: no, Vary: Cookie, sans Set-Cookie ni Content-Length',
+      res.status === 200 &&
+        h('content-type')?.startsWith('text/event-stream') &&
+        h('cache-control') === 'private, no-store, no-transform' &&
+        h('x-accel-buffering') === 'no' &&
+        h('vary')?.toLowerCase().includes('cookie') &&
+        h('set-cookie') === null &&
+        h('content-length') === null,
+      `reçu ${res.status}, en-têtes : ${JSON.stringify(Object.fromEntries(res.headers))}`,
+    );
+    const lecteur = res.body.getReader();
+    const debutFlux = await lireFlux(lecteur, (t) => t.includes('retry: 5000\n\n') && t.includes('event: en-jeu\n') && t.includes('\n\n', t.indexOf('event: en-jeu')), 1000);
+    verifier(
+      '/api/direct : « retry: 5000 » puis le premier « event: en-jeu » en moins de 1 s, Spring gardant le flux ouvert',
+      debutFlux.texte.startsWith('retry: 5000\n\n') &&
+        debutFlux.texte.includes('event: en-jeu\ndata: ') &&
+        debutFlux.texte.includes('"room":"a-03"') &&
+        !debutFlux.texte.includes('deaths') &&
+        flux.fermes === fermesAvant,
+      `reçu en ${debutFlux.duree} ms : ${JSON.stringify(debutFlux.texte)}`,
+    );
+    const pings = await lireFlux(lecteur, (t) => (t.match(/: ping\n\n/g) ?? []).length >= 2, 1500);
+    verifier(
+      '/api/direct : des « : ping » arrivent au fil de l\'eau',
+      (pings.texte.match(/: ping\n\n/g) ?? []).length >= 2,
+      `reçu en ${pings.duree} ms : ${JSON.stringify(pings.texte)}`,
+    );
+    abandon.abort();
+    lecteur.cancel().catch(() => undefined);
+    const delaiCoupure = await attendre(() => flux.fermes > fermesAvant, 1000);
+    verifier(
+      '/api/direct : le client coupe, le faux Spring voit la fermeture en moins de 1 s',
+      delaiCoupure !== null,
+      `aucune fermeture vue chez Spring en 1 s (${Date.now() - debut} ms depuis l'ouverture)`,
+    );
+  }
+
+  avant = recues.length;
+  res = await get('/api/live/stream', {}, { signal: AbortSignal.timeout(5000) });
+  corps = await res.json().catch(() => null);
+  verifier(
+    'GET /api/live/stream sans cookie → 401 (relais)',
+    res.status === 401 && recuesApres(avant).some((r) => r.path === '/api/live/stream'),
+    `reçu ${res.status} ${JSON.stringify(corps)}`,
+  );
+
+  {
+    const fermesAvant = flux.fermes;
+    const abandon = new AbortController();
+    res = await get('/api/live/stream', { cookie: 'JSESSIONID=ok' }, { signal: AbortSignal.any([abandon.signal, AbortSignal.timeout(5000)]) });
+    const lecteur = res.body.getReader();
+    const lu = await lireFlux(lecteur, (t) => t.includes('event:snapshot') && t.includes(':ping'), 1500);
+    verifier(
+      'GET /api/live/stream connecté → flux brut de Spring relayé (snapshot puis ping)',
+      res.status === 200 && lu.texte.includes('event:snapshot') && lu.texte.includes(':ping'),
+      `reçu ${res.status} en ${lu.duree} ms : ${JSON.stringify(lu.texte)}`,
+    );
+    abandon.abort();
+    lecteur.cancel().catch(() => undefined);
+    const delaiCoupure = await attendre(() => flux.fermes > fermesAvant, 1000);
+    verifier(
+      '/api/live/stream (relais) : le client coupe, le faux Spring voit la fermeture en moins de 1 s',
+      delaiCoupure !== null,
+      'la connexion vers Spring est restée ouverte plus de 1 s après le départ du client',
+    );
+  }
 
   // En dernier : épuise le quota du login pour cette adresse.
   const statuts = [];
