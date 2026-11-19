@@ -119,6 +119,18 @@ fetchMock.mockRejectedValue(new TypeError('fetch failed')); // Spring injoignabl
 
 À couvrir pour chaque route qui appelle Spring : la réponse nominale, **401** (session absente ou expirée), **404** si la ressource peut manquer, **5xx** et Spring injoignable (→ 502 ou 503 traduit, sans détail interne).
 
+## Serveur construit
+
+`scripts/tester-serveur.mjs` lance `dist/analog/server` contre un faux Spring et envoie de vraies requêtes. Il couvre ce que les tests unitaires ne voient pas : les routes issues des **noms de fichiers** (`face.get.ts` devient bien `GET /api/face`, et non un appel relayé à Spring), l'exclusion des `.spec.ts` (pas de route `/health.spec`), l'**ordre des middlewares**, et la route dédiée qui passe **avant** le relais `/api/**`.
+
+```
+npm run build && npm run test:serveur
+```
+
+Il tourne dans le job `test` de la CI, après le build. Règle : **un nouveau préfixe refusé, une nouvelle route dédiée ou un nouveau middleware → un cas dans le script**.
+
+Couverture du code testé : `npm run test:couverture` (Vitest avec `@vitest/coverage-v8`, rapport texte et `coverage/lcov.info`, sans seuil bloquant). Elle ne mesure que les tests Vitest, pas le script ci-dessus.
+
 ## Configuration du serveur
 
 L'adresse de Spring vient de la variable `NITRO_API_URL` (`springUrl`, `src/server/utils/spring.ts`) : on la pose avec `vi.stubEnv` (modèle : `src/server/utils/spring.spec.ts`) :
@@ -131,7 +143,7 @@ vi.stubEnv('NITRO_API_URL', 'http://spring.test:5000');
 
 ## Ce que Vitest ne couvre pas
 
-Le prérendu, le vrai rendu SSR de bout en bout et les redirections réelles se vérifient sur le **serveur construit** (agent `verifier` : `npm run build`, puis `curl`). Dans le compte rendu, dis lesquels de ces points restent à vérifier.
+Les routes réelles du serveur construit, l'ordre des middlewares et le relais se vérifient avec `npm run test:serveur` (section « Serveur construit »). Le prérendu, le vrai rendu SSR de bout en bout et les redirections réelles se vérifient sur le **serveur construit** (agent `verifier` : `npm run build`, puis `curl`). Dans le compte rendu, dis lesquels de ces points restent à vérifier.
 
 ### Piège : build SSR non compilé (Analog 2.9.1)
 
