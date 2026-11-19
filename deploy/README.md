@@ -116,3 +116,34 @@ Docker Desktop doit être lancé à la main (il ne démarre pas depuis le bac à
 docker build -t celeste-next .
 docker run --rm -p 3000:3000 celeste-next     # puis http://localhost:3000 et /health
 ```
+
+## 7. Dépendances et audit
+
+Point fait le 2026-11-19 (#28).
+
+**Ce que contient l'image.** Seulement `dist/analog` (étape 2 du `Dockerfile`) : pas le `node_modules` du projet, donc aucune `devDependency`. Le `server/node_modules` de l'image compte 8 paquets (esprima, front-matter, github-slugger, js-yaml, marked, marked-gfm-heading-id, marked-mangle, rxjs), tous des `dependencies`.
+
+**Ce que `npm audit --omit=dev` ne voit pas.** Nitro embarque dans ses chunks du code venu de `devDependencies` : h3, ofetch, unstorage et le runtime Nitro, tirés par nitropack sous `@analogjs/platform`. Ce code part en production sans figurer dans `node_modules`, donc l'audit de production le rate. C'est pourquoi la CI audite aussi tout l'arbre.
+
+**Contrôle en CI.** Le job `audit` de `.github/workflows/ci-cd.yml`, séparé du déploiement :
+
+| Contrôle | Effet |
+|---|---|
+| `npm audit --omit=dev`, seuil `high` | bloquant |
+| `npm audit` sur tout l'arbre | non bloquant (avertissement) |
+
+**Vulnérabilité acceptée : esbuild 0.27 (low).** Le serveur de dev peut lire des fichiers, sous Windows et via l'API `serve`.
+- Absente de la production : esbuild n'est pas dans l'image.
+- Aucun correctif dans la plage `^0.27.3` de `@analogjs/vite-plugin-nitro` ; même `@analogjs/platform` 2.9.7 garde cette plage.
+- Poste de développement sous Linux, CI sous Ubuntu : le cas Windows ne s'applique pas.
+- Pas d'`overrides` : on forcerait `buildSync` hors de sa plage.
+
+**Vulnérabilité acceptée : minimatch 10 (moderate, DoS par amplification de globparts).** Un seul défaut, signalé sur quatre paquets de la même chaîne : nitropack → archiver → readdir-glob → minimatch.
+- Absente de la production : c'est le code de Nitro qui crée des archives (presets que nous n'utilisons pas), au build seulement.
+- Aucun correctif dans les plages : `archiver` 8.0.0, la dernière version publiée, dépend de `readdir-glob@^3.0.0`, qui dépend de `minimatch@^10`. `npm audit fix` ne change rien ; seule une montée vers `readdir-glob` 4 (`minimatch@^11`) la corrigerait, et elle exige un `overrides`.
+- Pas d'`overrides`, pour la même raison qu'esbuild : forcer une dépendance hors de la plage déclarée par Nitro.
+- Conséquence : `npm audit` en liste 7 (3 low, 4 moderate) tant qu'archiver n'est pas à jour. C'est attendu : le job `audit` ne regarde que le seuil `high`, donc ces avis ne déclenchent rien ; l'avertissement jaune n'apparaît que si un avis `high` tombe sur l'arbre de build.
+
+**Règle : jamais `npm audit fix --force`.** Il rétrograderait `@analogjs/platform` en 2.3.1.
+
+**Quand réexaminer.** À chaque montée d'Analog, avec la recopie du skill `analogjs`.
