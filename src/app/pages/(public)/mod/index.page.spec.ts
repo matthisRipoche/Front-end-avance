@@ -11,13 +11,21 @@ describe('Page du mod', () => {
     return fixture.nativeElement as HTMLElement;
   };
 
-  it('dit que le mod n’est pas encore publié', () => {
-    expect(render().querySelector('[role="status"]')?.textContent).toContain('Pas encore publié');
+  it('dit que le mod n’est pas encore publié, sans rôle status inutile', () => {
+    const alerte = render().querySelector('.cdt-alert');
+    expect(alerte?.textContent).toContain('Pas encore publié');
+    expect(alerte?.hasAttribute('role')).toBe(false);
+  });
+
+  it('rend les blocs de code atteignables au clavier', () => {
+    const blocs = render().querySelectorAll('pre.code');
+    expect(blocs.length).toBe(2);
+    blocs.forEach((b) => expect(b.getAttribute('tabindex')).toBe('0'));
   });
 
   it('mène du bouton principal aux étapes d’installation', () => {
     const page = render();
-    expect(page.querySelector('.cdt-btn--primary')?.getAttribute('href')).toBe('#installer');
+    expect(page.querySelector('.cdt-btn--primary')?.getAttribute('href')).toBe('/mod#installer');
     expect(page.querySelector('#installer')).not.toBeNull();
     expect(page.querySelectorAll('.install__step').length).toBe(4);
   });

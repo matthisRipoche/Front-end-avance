@@ -1,5 +1,5 @@
 ---
-title: Confidentialité
+title: Confidentialité · Celeste Death Tracker
 meta:
   - name: description
     content: Ce que Celeste Death Tracker enregistre, pourquoi, où, et comment le faire supprimer.

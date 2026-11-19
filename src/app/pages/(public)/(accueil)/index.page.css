@@ -5,7 +5,7 @@ h2, h3, p, dl, dd { margin: 0; }
 
 .hero { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-12); padding-block: var(--space-16); }
 .hero__text { flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: var(--space-6); }
-.hero__title { margin: 0; font-size: clamp(40px, 5.6vw, 64px); line-height: 1.02; text-wrap: balance; }
+.hero__title { margin: 0; overflow-wrap: break-word; hyphens: auto; font-size: clamp(40px, 5.6vw, 64px); line-height: 1.02; text-wrap: balance; }
 .hero__lead { max-width: 32em; font-size: 19px; line-height: 28px; color: var(--ink-muted); }
 
 .sample { flex: 1 1 500px; gap: var(--space-6); }
