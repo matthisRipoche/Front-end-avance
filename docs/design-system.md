@@ -41,7 +41,7 @@ Remplace le design system « Topo » du site actuel. Références : Strava et Li
 
 1. `accent` est l'action, jamais un résultat.
 2. Un résultat se lit par la couleur, une forme et un mot : coche et « passée », croix et « chute », fraise et « deathless ».
-3. **Un seul élément doré par écran**, réservé au deathless réussi.
+3. **Un seul genre d'élément doré par écran**, réservé au deathless réussi : plusieurs deathless peuvent être dorés (colonnes du graphique, trajectoire, étiquette), mais jamais d'autre usage du doré.
 4. Grouper par la surface (`surface` sur `bg`), pas par des bordures. Jamais de carte dans une carte.
 5. Unbounded seulement pour les titres et les chiffres clés ; Geist Mono seulement pour les données.
 6. Texte à au moins 4,5:1 dans les deux thèmes, focus toujours visible, cibles de 44 px.
@@ -53,14 +53,15 @@ Remplace le design system « Topo » du site actuel. Références : Strava et Li
 |---|---|---|
 | Bouton | `cdt-btn` (`--primary`, `--secondary`, `--ghost`, `--danger`, `--sm`) | Une action principale par écran |
 | Champ | `cdt-field` (`--error`) | Libellé visible, aide, erreur qui dit comment corriger |
-| Étiquette de résultat | `cdt-result` (`--success`, `--fall`, `--deathless`) | Couleur, forme et mot |
+| Étiquette de résultat | `cdt-result` (`--success`, `--fall`, `--deathless`, `--abandon`) | Couleur, forme et mot ; `--abandon` : gris neutre, drapeau, « abandon » |
 | Pastille de face | `cdt-side` (`--lg`) | A, B ou C, à gauche du nom de la map |
 | Chiffre clé | `cdt-stat` | Libellé, valeur, tendance en mots |
 | Panneau | `cdt-panel` | Groupe posé sur le fond |
 | Répartition par room | `cdt-rooms` | Où les tentatives s'arrêtent, la pire en `danger` |
 | Trajectoire | `cdt-reach` (`--deathless`) | Jusqu'où une tentative est allée, une case par room |
 | Ligne de face | `cdt-face` | Lien vers le détail d'une face |
-| Onglets segmentés | `cdt-tabs` | Période ou vue |
+| Onglets segmentés | `cdt-tabs` | Période ou vue ; posés dans un panneau, fond `bg` |
+| Graphique d'évolution | `cdt-chart` | Le temps tenu à chaque tentative, une colonne par tentative ; chute, abandon et deathless se lisent par la couleur, la forme et la légende |
 | Alerte | `cdt-alert` (`--error`) | Information ou erreur dans la page |
 | Navigation | `cdt-nav` | Nom du site en Unbounded, liens en pilule |
 | Pastille | `cdt-chip`, `cdt-chips` | Prérequis, raccourcis vers une section |
