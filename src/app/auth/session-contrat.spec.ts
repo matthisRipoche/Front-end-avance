@@ -13,6 +13,8 @@ describe('estPageConnectee', () => {
     '/maps',
     '/maps/',
     '/maps?tri=alpha',
+    '/compte',
+    '/compte/',
   ])('reconnaît une page connectée, même écrite autrement : %j', (chemin) => {
     expect(estPageConnectee(chemin)).toBe(true);
   });
@@ -21,7 +23,7 @@ describe('estPageConnectee', () => {
     expect(estPageConnectee('/%zz')).toBe(true);
   });
 
-  it.each(['/', '/faq', '/tableau-de-bord-x', '/mapsx', '/login'])(
+  it.each(['/', '/faq', '/tableau-de-bord-x', '/mapsx', '/comptes', '/login'])(
     'laisse passer une page publique : %j',
     (chemin) => {
       expect(estPageConnectee(chemin)).toBe(false);

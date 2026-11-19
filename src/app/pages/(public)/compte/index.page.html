@@ -1,0 +1,30 @@
+<div class="compte">
+  <h1 class="t-display compte__title">Compte</h1>
+  @if (utilisateur(); as u) {
+    <dl class="compte__infos">
+      <div>
+        <dt class="t-body-sm compte__muted">Connecté en tant que</dt>
+        <dd class="compte__nom">{{ nom() }}</dd>
+      </div>
+      @if (u.discordUsername) {
+        <div>
+          <dt class="t-body-sm compte__muted">Pseudo Discord</dt>
+          <dd>{{ u.discordUsername }}</dd>
+        </div>
+      }
+    </dl>
+    <div class="compte__actions">
+      <button
+        class="cdt-btn cdt-btn--secondary"
+        type="button"
+        [attr.aria-busy]="deconnexionEnCours()"
+        (click)="deconnecter()"
+      >Se déconnecter</button>
+      <p class="compte__erreur" role="status">
+        @if (erreurDeconnexion()) {
+          Déconnexion impossible pour l’instant. Réessaie.
+        }
+      </p>
+    </div>
+  }
+</div>
