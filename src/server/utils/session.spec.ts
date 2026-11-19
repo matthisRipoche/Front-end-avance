@@ -89,6 +89,18 @@ describe('Session vérifiée auprès de Spring avant le rendu', () => {
     expect(ecrit).not.toContain('code=abc');
   });
 
+  it.each([
+    ['un corps qui n’est pas du JSON', () => new Response('<html>oups</html>', { status: 200 })],
+    ['un JSON sans id numérique', () => Response.json({ id: '7' }, { status: 200 })],
+    ['un JSON null', () => Response.json(null, { status: 200 })],
+  ])('conclut inconnu quand Spring répond 200 avec %s, sans journaliser le cookie', async (_cas, reponse) => {
+    fetchMock.mockResolvedValue(reponse());
+    expect(await (await call('/', avecSession)).json()).toEqual({ etat: { statut: 'inconnu' } });
+    const ecrit = journal.mock.calls.flat().join(' ');
+    expect(ecrit).toContain('réponse illisible');
+    expect(ecrit).not.toContain('secret123');
+  });
+
   it('pendant le prérendu, conclut inconnu sans appeler Spring', async () => {
     const res = await call('/', { headers: { ...avecSession.headers, 'x-nitro-prerender': '/' } });
     expect(fetchMock).not.toHaveBeenCalled();
@@ -128,6 +140,13 @@ describe('Pages connectées protégées côté serveur', () => {
     expect(res.status).toBe(503);
     expect(res.headers.get('content-type')).toBe('text/plain; charset=utf-8');
     expect(await res.text()).toBe('Service momentanément indisponible. Réessaie dans un moment.');
+  });
+
+  it('répond 503 et non 302 quand Spring répond 200 avec une réponse illisible', async () => {
+    fetchMock.mockResolvedValue(Response.json({ id: '7' }, { status: 200 }));
+    const res = await call('/tableau-de-bord', avecSession);
+    expect(res.status).toBe(503);
+    expect(res.headers.get('location')).toBeNull();
   });
 
   it('laisse passer un joueur connecté, sans cache partagé', async () => {
