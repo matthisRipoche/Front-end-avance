@@ -1,0 +1,166 @@
+<div class="face">
+  <header class="face__entete">
+    <a class="cdt-btn cdt-btn--ghost cdt-btn--sm face__retour" routerLink="/maps">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 10H4M9 5l-5 5 5 5" />
+      </svg>
+      Mes maps
+    </a>
+    @if (donnees(); as d) {
+      <div class="face__titre-ligne">
+        <span class="cdt-side cdt-side--lg" role="img" [attr.aria-label]="'Face ' + d.side">{{ d.side }}</span>&ngsp;
+        <div class="face__titres">
+          <h1 class="face__titre">{{ d.nom }}</h1>
+          <p class="face__sous-titre">{{ sousTitre() }}</p>
+        </div>
+      </div>
+    } @else {
+      <h1 class="face__titre">Détail d’une face</h1>
+    }
+  </header>
+
+  @if (etat() === 'erreur') {
+    <div class="cdt-alert cdt-alert--error face__erreur" role="alert">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.25" />
+        <path d="M10 6.5v4.5M10 13.5h.01" />
+      </svg>
+      <div class="cdt-stack face__erreur-corps">
+        <p class="cdt-alert__title">Impossible de charger cette face</p>
+        <p class="cdt-alert__text">Le serveur ne répond pas pour l’instant. Tes tentatives ne sont pas perdues.</p>
+        <!-- Lien simple, sans JavaScript : recharger la page relance le rendu serveur. -->
+        <a class="cdt-btn cdt-btn--secondary cdt-btn--sm" href="">Réessayer</a>
+      </div>
+    </div>
+  } @else if (etat() === 'invalide') {
+    <section class="cdt-panel face__invalide">
+      <p class="face__texte">Cette adresse ne désigne aucune face.</p>
+      <div class="cdt-row">
+        <a class="cdt-btn cdt-btn--secondary cdt-btn--sm" routerLink="/maps">Voir mes maps</a>
+      </div>
+    </section>
+  } @else if (etat() === 'vide') {
+    <section class="cdt-panel" aria-labelledby="face-evolution">
+      <h2 id="face-evolution" class="cdt-panel__title">Ton évolution</h2>
+      <div class="cdt-empty">
+        <h3 class="cdt-empty__title">Pas encore de tentative sur cette face</h3>
+        <p class="cdt-empty__text">Lance une tentative avec le mod : elle apparaît ici dès qu’elle se termine.</p>
+        <a class="cdt-btn cdt-btn--secondary cdt-btn--sm" routerLink="/mod">Voir comment installer le mod</a>
+      </div>
+    </section>
+  } @else if (donnees(); as d) {
+    @if (chiffres(); as c) {
+      <section class="cdt-panel face__chiffres" aria-label="Chiffres clés">
+        <div class="cdt-stat">
+          <span class="cdt-stat__label">Tentatives</span>
+          <span class="cdt-stat__value">{{ c.tentatives }}</span>
+          <span class="cdt-stat__note">dont {{ c.semaine }} ces 7 derniers jours</span>
+        </div>
+        <div class="cdt-stat">
+          <span class="cdt-stat__label">Deathless réussis</span>
+          <span class="cdt-stat__value">{{ c.deathless }}</span>
+          <span class="cdt-stat__note">{{ c.taux }} des tentatives</span>
+        </div>
+        <div class="cdt-stat">
+          <span class="cdt-stat__label">Meilleur deathless</span>
+          <span class="cdt-stat__value">{{ c.meilleur }}</span>
+          <span class="cdt-stat__note">{{ d.meilleurDeathlessMs === null ? 'pas encore' : 'temps le plus court' }}</span>
+        </div>
+        <div class="cdt-stat">
+          <span class="cdt-stat__label">Tenue la plus longue</span>
+          <span class="cdt-stat__value">{{ c.tenue }}</span>
+          @if (c.tenueRoom) {
+            <span class="cdt-stat__note">jusqu’à {{ c.tenueRoom }}</span>
+          }
+        </div>
+      </section>
+    }
+
+    <section class="cdt-panel" aria-labelledby="face-evolution">
+      <div class="face__panneau-tete">
+        <h2 id="face-evolution" class="cdt-panel__title">Ton évolution</h2>
+        @if (onglets().length > 0) {
+          <div class="cdt-tabs" role="group" aria-label="Nombre de dernières tentatives affichées">
+            @for (o of onglets(); track o.id) {
+              <button class="cdt-tabs__tab" type="button" [attr.aria-pressed]="ongletActif() === o.id" (click)="choisir(o.id)">
+                @if (o.nombre !== null) {
+                  {{ o.nombre }}<span class="face__long"> dernières</span>
+                } @else {
+                  Toutes
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <p
+        class="cdt-stat__note"
+        [class.cdt-stat__note--up]="tendance().sens === 'hausse'"
+        [class.cdt-stat__note--down]="tendance().sens === 'baisse'"
+      >
+        @if (tendance().sens === 'hausse') {
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+            <path d="M10 16V4M5 9l5-5 5 5" />
+          </svg>
+        } @else if (tendance().sens === 'baisse') {
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+            <path d="M10 4v12M5 11l5 5 5-5" />
+          </svg>
+        }
+        {{ tendance().phrase }}
+      </p>
+
+      <cdt-evolution-chart [points]="points()" />
+
+      @if (reperes(); as r) {
+        <div class="face__reperes">
+          <span>n° {{ r.premier }}</span>
+          <span>n° {{ r.dernier }}@if (r.aujourdhui) { · aujourd’hui }</span>
+        </div>
+      }
+    </section>
+
+    <div class="face__colonnes">
+      <section class="cdt-panel" aria-labelledby="face-rooms">
+        <h2 id="face-rooms" class="cdt-panel__title">Où tes tentatives s’arrêtent</h2>
+        @if (pires(); as pire) {
+          @if (pire.rooms.length === 1) {
+            <p class="face__texte">La room qui casse le plus : <strong class="face__room">{{ pire.rooms[0] }}</strong>, {{ pire.arrets }} {{ pire.arrets > 1 ? 'arrêts' : 'arrêt' }}.</p>
+          } @else {
+            <p class="face__texte">Les rooms qui cassent le plus : @for (room of pire.rooms; track room; let i = $index) {{{ separateur(i, pire.rooms.length) }}<strong class="face__room">{{ room }}</strong>}, {{ pire.arrets }} {{ pire.arrets > 1 ? 'arrêts' : 'arrêt' }} chacune.</p>
+          }
+        } @else {
+          <p class="face__texte">Aucun arrêt pour l’instant.</p>
+        }
+        <cdt-room-breakdown [rooms]="roomsPourGraphique()" />
+      </section>
+
+      <section class="cdt-panel" aria-labelledby="face-recentes">
+        <h2 id="face-recentes" class="cdt-panel__title">Dernières tentatives</h2>
+        <ul class="face__recentes">
+          @for (t of recentes(); track t.id) {
+            <li class="face__tentative">
+              <div class="face__tentative-ligne">
+                <span class="face__date">
+                  @if (t.date.court === t.date.long) {
+                    {{ t.date.long }}
+                  } @else {
+                    <span class="face__court">{{ t.date.court }}</span><span class="face__long">{{ t.date.long }}</span>
+                  }
+                </span>&ngsp;
+                <cdt-result-tag [kind]="t.kind">{{ t.mot }}</cdt-result-tag>&ngsp;
+                <span class="face__duree">{{ t.duree }}</span>
+              </div>
+              <div class="face__trajectoire">
+                <span class="face__repere">{{ t.premiere }}</span>
+                <cdt-reach-track [rooms]="t.rooms" [fallAt]="t.chuteA" [fallRoom]="t.roomFin" />
+                <span class="face__repere">{{ t.derniere }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+</div>

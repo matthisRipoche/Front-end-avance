@@ -1,0 +1,69 @@
+:host { display: block; }
+
+/* Même largeur que les autres pages connectées : la page vit dans la coque publique. */
+.face {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-8) max(16px, 4vw) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* En-tête */
+.face__entete { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+.face__titre-ligne { display: flex; align-items: center; gap: var(--space-4); min-width: 0; }
+.face__titres { min-width: 0; }
+.face__titre {
+  margin: 0;
+  font: 600 28px/32px var(--font-display);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.face__sous-titre { margin: var(--space-1) 0 0; font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+
+/* Le libellé du lien ne doit pas passer à la ligne (« Mes / maps »). La flèche n'a pas de taille
+   propre (viewBox seul) : sans largeur fixe, elle s'écrase à zéro dès que le texte ne se replie plus. */
+.face__retour { white-space: nowrap; }
+.face__retour svg { flex: none; width: 20px; height: 20px; }
+
+/* États */
+.face__erreur { max-width: 720px; }
+.face__erreur-corps { gap: var(--space-3); align-items: flex-start; }
+.face__invalide { max-width: 720px; }
+.face__texte { margin: 0; font: 400 16px/24px var(--font-sans); color: var(--ink); }
+
+/* Chiffres clés : 2 colonnes en mobile, 4 en bureau. */
+.face__chiffres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); }
+
+/* Panneau d'évolution */
+.face__panneau-tete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.face__reperes { display: flex; justify-content: space-between; font: 400 12px/16px var(--font-mono); color: var(--ink-muted); }
+
+/* Rooms et dernières tentatives */
+.face__colonnes { display: grid; grid-template-columns: 1fr; gap: var(--space-6); align-items: start; }
+.face__room { font-family: var(--font-mono); font-weight: 600; }
+
+.face__recentes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.face__tentative { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) 0; border-top: 1px solid var(--border); }
+.face__tentative:first-child { border-top: 0; padding-top: 0; }
+.face__tentative-ligne { display: flex; align-items: center; gap: var(--space-3); }
+.face__date { font: 400 14px/20px var(--font-sans); color: var(--ink); flex: 1; min-width: 0; }
+.face__duree { font: 400 14px/20px var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); margin-left: auto; }
+.face__trajectoire { display: flex; align-items: center; gap: var(--space-2); }
+.face__trajectoire cdt-reach-track { flex: 1; min-width: 0; }
+.face__repere { font: 400 12px/16px var(--font-mono); color: var(--ink-muted); }
+
+/* Libellés longs en bureau, courts en mobile. */
+.face__long { display: none; }
+.face__court { display: inline; }
+
+@media (min-width: 721px) {
+  .face__titre { font-size: 40px; line-height: 44px; }
+  .face__long { display: inline; }
+  .face__court { display: none; }
+}
+@media (min-width: 961px) {
+  .face__chiffres { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .face__colonnes { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+}
