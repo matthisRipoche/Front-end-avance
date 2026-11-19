@@ -19,7 +19,7 @@ const resoudre = (http?: object) => {
   ) as Promise<Fournisseurs>;
 };
 
-const requete = () => TestBed.inject(HttpTestingController).expectOne('/api/auth/providers');
+const requete = () => TestBed.inject(HttpTestingController).expectOne('/api/connexion/fournisseurs');
 
 describe('Résolveur chargerFournisseurs', () => {
   it('propose Discord quand Spring l’a configuré', async () => {

@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import type { ResolveFn } from '@angular/router';
 import { firstValueFrom, timeout } from 'rxjs';
 
-/** Moyens de connexion proposés en plus de l'email (contrat de Spring : `GET /api/auth/providers`). */
+/** Moyens de connexion proposés en plus de l'email (route du front `GET /api/connexion/fournisseurs`, mise en cache par le serveur Nitro). */
 export type Fournisseurs = { discord: boolean };
 
 /** Ce qu'on affiche quand Spring ne dit rien : le formulaire email seul, qui marche toujours. */
@@ -31,7 +31,7 @@ export const chargerFournisseurs: ResolveFn<Fournisseurs> = async () => {
   const http = inject(HttpClient);
   try {
     const reponse = await firstValueFrom(
-      http.get<Partial<Fournisseurs> | null>('/api/auth/providers').pipe(timeout(DELAI_FOURNISSEURS_MS)),
+      http.get<Partial<Fournisseurs> | null>('/api/connexion/fournisseurs').pipe(timeout(DELAI_FOURNISSEURS_MS)),
     );
     // Liste blanche : seul un `true` explicite affiche le bouton.
     return { discord: reponse?.discord === true };
