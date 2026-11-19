@@ -8,6 +8,7 @@ Remplace le design system « Topo » du site actuel. Références : Strava et Li
 |---|---|
 | Source : jetons, règles d'usage, aperçus des composants | Claude Design, artifact « Celeste Death Tracker — design system » (privé : demander le lien au propriétaire) |
 | Maquette de l'accueil construite dessus | Claude Design, canvas « Celeste Death Tracker — accueil » |
+| Maquettes des pages connectées (#22) : détail d'une face, barre de navigation mobile, états vide et erreur, en sombre et en clair | Claude Design, canvas « Maquettes des pages connectées » (privé : [lien](https://claude.ai/artifact/HeGAAxoPiDkQtUidtCVq5z)). Tableau de bord et Mes maps n'y figurent pas : ils étaient déjà codés. |
 | Jetons en CSS | `src/styles/tokens.css` |
 | Composants en CSS (classes `.cdt-*`) | `src/styles/components.css` |
 | Polices, base de page | `src/styles.css` |
