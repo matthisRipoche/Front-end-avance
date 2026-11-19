@@ -95,7 +95,7 @@ export default class TableauDeBordPage {
     const { nom, side, room, debut } = courant;
     // La room peut manquer quand Spring ne l'a pas encore reçue.
     const face = `${nom} · ${side}`;
-    return { libelle: room ? `${face}, room` : face, room, debut: formaterDate(debut, d.fuseau) };
+    return { face, libelle: room ? `${face}, room` : face, room, debut: formaterDate(debut, d.fuseau) };
   });
 
   protected readonly reprendre = computed(() => {

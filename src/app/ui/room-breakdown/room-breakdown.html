@@ -1,7 +1,10 @@
 @for (room of rooms(); track room.id) {
-  <div class="cdt-rooms__row" [class.cdt-rooms__row--worst]="room.stops === max()">
+  <div class="cdt-rooms__row" role="listitem" [class.cdt-rooms__row--worst]="room.stops === max()">
     <span class="cdt-rooms__id">{{ room.id }}</span>
-    <span class="cdt-rooms__track"><span class="cdt-rooms__bar" [style.width.%]="(room.stops / max()) * 100"></span></span>
-    <span class="cdt-rooms__count">{{ room.stops }}</span>
+    <span class="cdt-rooms__track" aria-hidden="true"><span class="cdt-rooms__bar" [style.width.%]="(room.stops / max()) * 100"></span></span>
+    <span class="cdt-rooms__count">{{ room.stops }}<span class="cdt-sr-only"> {{ room.stops === 1 ? 'arrêt' : 'arrêts' }}</span></span>
+    @if (room.stops === max()) {
+      <span class="cdt-sr-only">, la plus fréquente</span>
+    }
   </div>
 }

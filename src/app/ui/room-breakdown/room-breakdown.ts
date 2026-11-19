@@ -9,7 +9,7 @@ export interface RoomStops {
 @Component({
   selector: 'cdt-room-breakdown',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'cdt-rooms' },
+  host: { class: 'cdt-rooms', role: 'list' },
   templateUrl: './room-breakdown.html',
 })
 export class RoomBreakdown {

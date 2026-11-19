@@ -320,9 +320,33 @@ describe('Tableau de bord', () => {
       expect(texte(page.querySelector('.tableau__en-jeu'))).toContain('Forsaken City · B');
     });
 
-    it('annonce le bandeau par un conteneur aria-live toujours présent', () => {
-      const page = render(ok({ ...TABLEAU, enJeu: null }));
-      expect(page.querySelector('[aria-live="polite"]')).not.toBeNull();
+    it('annonce la partie par une zone role="status" toujours présente', () => {
+      const avec = render(ok(TABLEAU));
+      expect(texte(avec.querySelector('[role="status"]'))).toBe('En jeu sur Forsaken City · B');
+      TestBed.resetTestingModule();
+      const sans = render(ok({ ...TABLEAU, enJeu: null }));
+      expect(texte(sans.querySelector('[role="status"]'))).toBe('');
+    });
+
+    it('ne change pas l’annonce quand seule la room change', () => {
+      const page = render(ok(TABLEAU));
+      const avant = texte(page.querySelector('[role="status"]'));
+      flux[0].envoyer('en-jeu', JSON.stringify({ ...TABLEAU.enJeu, room: 'b-07' }));
+      fixture.detectChanges();
+      expect(texte(page.querySelector('.tableau__en-jeu'))).toContain('b-07');
+      expect(texte(page.querySelector('[role="status"]'))).toBe(avant);
+    });
+
+    it('n’annonce plus la partie quand le flux dit « plus en jeu »', () => {
+      const page = render(ok(TABLEAU));
+      flux[0].envoyer('en-jeu', 'null');
+      fixture.detectChanges();
+      expect(texte(page.querySelector('[role="status"]'))).toBe('');
+    });
+
+    it('n’annonce rien depuis le bandeau visible (plus d’aria-live)', () => {
+      const page = render(ok(TABLEAU));
+      expect(page.querySelector('[aria-live]')).toBeNull();
     });
 
     it('ferme le flux à la destruction de la page', () => {
