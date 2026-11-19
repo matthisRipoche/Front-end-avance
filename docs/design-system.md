@@ -21,13 +21,16 @@ Remplace le design system « Topo » du site actuel. Références : Strava et Li
 - Sombre par défaut. Le clair suit `prefers-color-scheme: light`.
 - `data-theme="dark"` ou `data-theme="light"` sur `<html>` force l'un ou l'autre.
 - Les deux thèmes ne redéfinissent que les jetons de couleur : aucun composant n'a de couleur en dur.
+- Le clair est écrit deux fois dans `tokens.css` (`prefers-color-scheme` et `data-theme="light"`) : les deux blocs doivent rester identiques, ce que `src/styles/contrastes.spec.ts` vérifie, avec les ratios de contraste de chaque thème.
+- `theme-color` (barre du navigateur) suit `prefers-color-scheme` : deux balises `<meta>` avec `media`, dans `src/index.html`.
+- Valeurs du thème clair modifiées pour le contraste (#29) : `accent` `#036b97`, `success` `#17733e`, `danger` `#b93127`. **La source est Claude Design : il faut y reporter ces trois valeurs**, sinon le prochain export du `tokens.json` les écrasera.
 
 ## Jetons
 
 - **Couleurs** :
   - fonds et texte : `bg`, `surface`, `surface-raised`, `border`, `border-strong`, `ink`, `ink-muted` ;
   - marque et action : `accent`, `on-accent`, `accent-soft` ;
-  - résultats : `success`, `danger`, `gold`, avec leurs variantes `-soft` et `on-gold`, ainsi que `gold-text` ;
+  - résultats : `success`, `danger`, `gold`, avec leurs variantes `-soft` et `on-gold`, ainsi que `gold-text` et `gold-edge` (liseré d'un aplat doré : `transparent` en sombre, `gold-text` en clair, en `box-shadow: inset 0 0 0 1px`, pour que l’aplat atteigne 3:1 sur `surface` ; posé sur tous les aplats dorés : étiquette `.cdt-result--deathless`, cellules, barres, marqueur et pastille de légende) ;
   - focus : `focus-ring`.
 - **Typographie** (classes `.t-*`) :
   - Unbounded : `display-xl`, `display`, `stat` ;
@@ -44,7 +47,7 @@ Remplace le design system « Topo » du site actuel. Références : Strava et Li
 3. **Un seul genre d'élément doré par écran**, réservé au deathless réussi : plusieurs deathless peuvent être dorés (colonnes du graphique, trajectoire, étiquette), mais jamais d'autre usage du doré.
 4. Grouper par la surface (`surface` sur `bg`), pas par des bordures. Jamais de carte dans une carte.
 5. Unbounded seulement pour les titres et les chiffres clés ; Geist Mono seulement pour les données.
-6. Texte à au moins 4,5:1 dans les deux thèmes, focus toujours visible, cibles de 44 px.
+6. Texte à au moins 4,5:1 et composants à au moins 3:1 dans les deux thèmes, focus toujours visible. Cibles : viser le niveau AA, soit **24 px minimum**, et **44 px** pour les actions principales et la barre mobile (`--sm` 36 px, nav 40 px et bouton « Afficher » 28 px restent des actions secondaires, au-dessus du minimum).
 7. Données d'exemple toujours signalées comme fictives. Jamais de total de morts.
 
 ## Composants
@@ -60,14 +63,15 @@ Remplace le design system « Topo » du site actuel. Références : Strava et Li
 | Répartition par room | `cdt-rooms` | Où les tentatives s'arrêtent, la pire en `danger` |
 | Trajectoire | `cdt-reach` (`--deathless`) | Jusqu'où une tentative est allée, une case par room |
 | Ligne de face | `cdt-face` | Lien vers le détail d'une face |
-| Onglets segmentés | `cdt-tabs` | Période ou vue ; posés dans un panneau, fond `bg` |
+| Onglets segmentés | `cdt-tabs` | Période ou vue ; posés dans un panneau, fond `bg`. Un `role="group"` de boutons à `aria-pressed` ; l'onglet courant a un fond et un contour `border-strong` de 1,5 px |
 | Graphique d'évolution | `cdt-chart` | Le temps tenu à chaque tentative, une colonne par tentative ; chute, abandon et deathless se lisent par la couleur, la forme et la légende |
 | Alerte | `cdt-alert` (`--error`) | Information ou erreur dans la page |
 | Navigation | `cdt-nav` | Nom du site en Unbounded, liens en pilule |
-| Barre d'onglets mobile | `cdt-tabbar` (`__item`, `__icon`, `__label`) | Trois entrées égales, icône au-dessus du libellé, page courante par `aria-current="page"` (fond `surface-raised`, ni accent ni doré) ; la position fixe et le seuil de largeur sont ceux du composant |
+| Barre d'onglets mobile | `cdt-tabbar` (`__item`, `__icon`, `__label`) | Trois entrées égales, icône au-dessus du libellé, page courante par `aria-current="page"` (fond `surface-raised`, contour `border-strong` et barre de 2 px en `ink` en haut, ni accent ni doré) ; la position fixe et le seuil de largeur sont ceux du composant |
 | Pastille | `cdt-chip`, `cdt-chips` | Prérequis, raccourcis vers une section |
 | Emplacement d'image | `cdt-slot` (`--hero` 16:10, défaut 16:9, `--photo` 4:3, `--wide` 21:9) | Réserve la place d'une capture, avec sa légende et son format ; on le remplit en y mettant un `<img>` |
 | Question dépliable | `cdt-disclosure` | `<details>` + `<summary>`, utilisable dans le Markdown (FAQ) |
+| Texte pour lecteur d'écran | `cdt-sr-only` | Masqué à l'écran, lu par le lecteur d'écran (position absolue, 1 px, `clip`) ; pour un libellé que la mise en page n'affiche pas |
 | État vide | `cdt-empty` | Ce qui apparaîtra ici et comment y arriver |
 
 ## Interdits
