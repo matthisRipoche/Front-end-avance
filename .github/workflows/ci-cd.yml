@@ -40,6 +40,30 @@ jobs:
       - name: Serveur construit
         run: npm run test:serveur
 
+  # Ce job ne figure dans le `needs` d'aucun autre : une nouvelle publication d'avis de sécurité
+  # ne doit pas bloquer une mise en production. Il échoue (et se voit sur la PR), sans gater `image`.
+  audit:
+    name: Audit des dépendances
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      # `npm audit` lit package-lock.json : pas besoin de `npm ci`.
+      # Ce qui part en production : l'image ne contient pas les devDependencies.
+      - name: Audit de la production (bloquant)
+        run: npm audit --omit=dev --audit-level=high
+      # Nitro embarque dans le serveur du code venu de @analogjs/platform (h3, ofetch, runtime),
+      # rangé en devDependencies : `--omit=dev` ne le voit pas. D'où ce contrôle sur tout l'arbre,
+      # non bloquant (les avis des outils de build ne justifient pas d'arrêter la CI). Sans
+      # `continue-on-error`, qui ferait passer l'étape pour réussie sans rien annoncer : un avis
+      # `high` sur h3 ou Nitro laisse une annotation jaune sur la PR. Seuil `high` : les avis
+      # `moderate` acceptés (deploy/README.md, section 7) ne déclenchent rien.
+      - name: Audit de tout l'arbre (avertissement)
+        run: npm audit --audit-level=high || echo "::warning::Avis de sécurité high dans l'arbre de build (h3, Nitro, outils), voir le journal de cette étape et deploy/README.md section 7"
+
   image:
     name: Construction de l'image (publiée sur main)
     needs: test
