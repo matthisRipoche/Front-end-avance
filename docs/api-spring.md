@@ -194,6 +194,24 @@ Codes :
 |---|---|
 | Toujours | **302** vers `/api/auth/oauth2/discord`, `cache-control: no-store` ; cookie `retour-connexion` si une page interne est demandée |
 
+### `GET /api/connexion/fournisseurs`
+
+> Issue #33. Route : `src/server/routes/api/connexion/fournisseurs.get.ts`.
+
+Dit à la page `/login` quels fournisseurs de connexion sont actifs : `{ "discord": boolean }`. Donnée publique, la même pour tous : le serveur la garde en cache et la page n'attend plus Spring à chaque visite. Elle vient de `GET /api/auth/providers` de Spring, qui reste joignable par le relais.
+
+- Cache Nitro (`defineCachedFunction`, pas `defineCachedEventHandler`, qui copierait un `Set-Cookie` dans le cache) : clé fixe `fournisseurs`, 300 s, stale-while-revalidate. Si Spring est en erreur, la valeur périmée est servie ; une erreur n'est jamais enregistrée.
+- L'appel à Spring ne transmet ni `cookie` ni `x-xsrf-token`, et la route ne pose aucun `Set-Cookie`.
+- En-têtes de succès : `cache-control: public, max-age=60` et `x-cache: HIT`, `MISS` ou `STALE` (valeur périmée servie). L'étiquette est indicative : des requêtes simultanées peuvent la fausser, jamais la valeur.
+
+Codes :
+
+| Cas | Réponse |
+|---|---|
+| Succès (cache ou Spring) | **200** `{ discord: boolean }` |
+| Spring répond une erreur, sans valeur en cache | **502** `{ message: "Erreur de l'API" }`, `cache-control: no-store` |
+| Spring injoignable ou plus lent que 2 s, sans valeur en cache | **503** `{ message: "API indisponible" }`, `cache-control: no-store` |
+
 ## Vocabulaire
 
 - **Face** : une map (SID, par exemple `Celeste/1-ForsakenCity`) + un côté A, B ou C. Le SID contient des `/` : il passe **toujours en paramètre de requête**, jamais dans le chemin.

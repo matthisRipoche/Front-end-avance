@@ -12,7 +12,7 @@ navigateur ──▶ Nitro (src/server/) ──▶ API Spring (springUrl)
 
 Contrat de l'API et vocabulaire (face, SID, tentative) : `docs/api-spring.md`. Ce projet **ne modifie jamais** l'API Spring.
 
-> **État** : `/health`, `springUrl()` et le relais générique `/api/**` (#15), le journal des requêtes (plugin) et la limitation de débit du login (`src/server/middleware/limite-connexion.ts`, limiteur `src/server/utils/limite-debit.ts`, adresse IP `adresseClient`) et la session vérifiée côté serveur (#19, #20) existent. `callSpring`, `springError` et `repondreErreur` sont dans `src/server/utils/spring.ts`. Première route dédiée : `src/server/routes/api/tableau-de-bord.get.ts` (#24), logique dans `src/server/utils/tableau-de-bord.ts` ; première page connectée qui la lit pendant le SSR : `/tableau-de-bord` (#25). Connexion Discord (#35) : relais en `redirect: 'manual'`, route `src/server/routes/api/connexion/discord.get.ts`. Modèles partagés entre Nitro et Angular : `src/app/modeles/`. Les recettes ci-dessous fixent la façon de faire. Ce qui n'a pas encore été éprouvé dans le projet est marqué **à vérifier** : vérifie-le au premier usage, puis mets ce skill à jour.
+> **État** : `/health`, `springUrl()` et le relais générique `/api/**` (#15), le journal des requêtes (plugin) et la limitation de débit du login (`src/server/middleware/limite-connexion.ts`, limiteur `src/server/utils/limite-debit.ts`, adresse IP `adresseClient`) et la session vérifiée côté serveur (#19, #20) existent. `callSpring`, `springError` et `repondreErreur` sont dans `src/server/utils/spring.ts`. Première route dédiée : `src/server/routes/api/tableau-de-bord.get.ts` (#24), logique dans `src/server/utils/tableau-de-bord.ts` ; première page connectée qui la lit pendant le SSR : `/tableau-de-bord` (#25). Connexion Discord (#35) : relais en `redirect: 'manual'`, route `src/server/routes/api/connexion/discord.get.ts`. Cache serveur des données publiques (#33, piste C) : `GET /api/connexion/fournisseurs`, `defineCachedFunction`. Modèles partagés entre Nitro et Angular : `src/app/modeles/`. Les recettes ci-dessous fixent la façon de faire. Ce qui n'a pas encore été éprouvé dans le projet est marqué **à vérifier** : vérifie-le au premier usage, puis mets ce skill à jour.
 
 ## Choisir le bon outil
 
@@ -22,6 +22,7 @@ Contrat de l'API et vocabulaire (face, SID, tentative) : `docs/api-spring.md`. C
 | Transformer, valider, combiner pour une page | route dédiée | `src/server/routes/api/<nom>.<méthode>.ts` (une route précise passe avant le relais générique) |
 | Données d'une page connectée rendue en SSR | résolveur de route (`resolve` du `routeMeta`) qui appelle une route du front `/api/…` par `HttpClient` | `pages/…/<page>.donnees.ts` (modèle : `tableau-de-bord/tableau-de-bord.donnees.ts`) |
 | Données publiques d'une page SSR | `load` dans un `.server.ts` voisin de la page (servi sans cookie) | `pages/…/<page>.server.ts`, lu par `injectLoad` |
+| Donnée publique mise en cache | `defineCachedFunction` (clé fixe, 300 s, stale-while-revalidate), appelée sans cookie : modèle `src/server/routes/api/connexion/fournisseurs.get.ts`. Ne jamais mettre en cache une erreur ni un repli. **`defineCachedEventHandler` interdit** : il copie `Set-Cookie` dans le cache | `src/server/routes/api/…` |
 | Code partagé par les routes et les `load` | utilitaire | `src/server/utils/` |
 | Transversal (journaux, limitation de débit) | plugin Nitro (hook `request`, passe avant les fichiers statiques) ou middleware Nitro | `src/server/plugins/`, `src/server/middleware/` |
 
@@ -144,4 +145,4 @@ Façon de faire retenue (#19, #20), vérifiée dans `node_modules` puis au `curl
 
 ## Hors périmètre pour l'instant
 
-Cache serveur des données publiques (piste C) et relais du flux SSE `/api/live/stream` (piste D) : décisions à prendre avec l'utilisateur avant de les écrire.
+Relais du flux SSE `/api/live/stream` (piste D) : décision à prendre avec l'utilisateur avant de les écrire.
