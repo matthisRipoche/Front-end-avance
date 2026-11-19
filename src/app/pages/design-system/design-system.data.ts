@@ -2,6 +2,8 @@
 // Les valeurs ne sont pas recopiées ici : la page les lit dans les variables CSS
 // de src/styles/tokens.css, la seule source.
 
+import type { PointGraphique } from '../../ui/evolution-chart/evolution-chart';
+
 export interface TokenDoc {
   name: string;
   usage: string;
@@ -79,3 +81,11 @@ export const SAMPLE_ROOMS: { id: string; stops: number }[] = [
   { id: 'b-05', stops: 31 },
   { id: 'b-06', stops: 12 },
 ];
+
+// Exemple de graphique d'évolution : 20 tentatives (données fictives).
+export const SAMPLE_ATTEMPTS: PointGraphique[] = [
+  [48, 'chute'], [75, 'chute'], [32, 'chute'], [110, 'chute'], [64, 'abandon'],
+  [95, 'chute'], [140, 'chute'], [88, 'chute'], [172, 'chute'], [120, 'chute'],
+  [205, 'abandon'], [150, 'chute'], [230, 'chute'], [180, 'chute'], [262, 'chute'],
+  [198, 'chute'], [245, 'chute'], [210, 'chute'], [190, 'chute'], [284, 'deathless'],
+].map(([secondes, issue], i) => ({ id: i + 1, dureeMs: (secondes as number) * 1000, issue: issue as PointGraphique['issue'] }));

@@ -73,10 +73,10 @@
     </div>
 
     @if (faces().length > 0) {
-      <!-- Des lignes, pas des liens tant que la page d'une face n'existe pas (#27). -->
       <ul class="maps__liste">
         @for (face of faces(); track face.cle) {
-          <li class="cdt-face maps__face">
+          <li>
+            <a class="cdt-face maps__face" routerLink="/maps/face" [queryParams]="{ sid: face.sid, side: face.side }">
             <span class="cdt-side" aria-hidden="true">{{ face.side }}</span>&ngsp;
             <span class="cdt-face__main">
               <span class="cdt-face__name">{{ face.nom }}</span>&ngsp;
@@ -91,6 +91,7 @@
               }
               <span class="t-body-sm maps__muted">{{ face.derniere }}</span>
             </span>
+            </a>
           </li>
         }
       </ul>

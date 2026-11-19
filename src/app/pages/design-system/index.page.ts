@@ -1,9 +1,12 @@
 import { afterNextRender, Component, DOCUMENT, inject, signal } from '@angular/core';
 import { RouteMeta } from '@analogjs/router';
 
+import { EvolutionChart } from '../../ui/evolution-chart/evolution-chart';
+import { ResultTag } from '../../ui/result-tag/result-tag';
 import {
   COLOR_GROUPS,
   RADII,
+  SAMPLE_ATTEMPTS,
   SAMPLE_ROOMS,
   SPACING,
   TYPE_STYLES,
@@ -23,6 +26,7 @@ type Theme = 'system' | 'dark' | 'light';
 
 @Component({
   selector: 'app-design-system',
+  imports: [EvolutionChart, ResultTag],
   templateUrl: './index.page.html',
   styleUrl: './index.page.css',
 })
@@ -34,6 +38,7 @@ export default class DesignSystemPage {
   protected readonly spacing = SPACING;
   protected readonly radii = RADII;
   protected readonly rooms = SAMPLE_ROOMS;
+  protected readonly attempts = SAMPLE_ATTEMPTS;
   protected readonly maxStops = Math.max(...SAMPLE_ROOMS.map((room) => room.stops));
   protected readonly reach = Array.from({ length: 12 }, (_, i) => (i < 5 ? 'done' : i === 5 ? 'fall' : 'todo'));
   protected readonly themes: { id: Theme; label: string }[] = [

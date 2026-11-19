@@ -146,6 +146,36 @@ describe('Tableau de bord', () => {
     });
   });
 
+  describe('liens vers le détail d’une face', () => {
+    const liens = (page: HTMLElement) => Array.from(page.querySelectorAll('a[href^="/maps/face"]'));
+
+    it('mène du « Reprendre » et de chaque face récente vers /maps/face, SID en paramètre de requête', () => {
+      const page = render(ok(TABLEAU));
+      const reprendre = section(page, 'Reprendre')?.querySelector('a');
+      const recente = section(page, 'Faces récentes')?.querySelector('li a');
+      expect(reprendre?.getAttribute('href')).toBe('/maps/face?sid=Celeste%2F1-ForsakenCity&side=B');
+      expect(recente?.getAttribute('href')).toBe('/maps/face?sid=Celeste%2F2-OldSite&side=A');
+      expect(liens(page)).toHaveLength(2);
+    });
+
+    it('garde un href correct pour un SID avec espace et accent', () => {
+      const sid = 'Mod/Épreuve du feu';
+      const face = { ...FORSAKEN, sid };
+      const page = render(ok({ ...TABLEAU, reprendre: face, recentes: [face] }));
+      const href = section(page, 'Reprendre')?.querySelector('a')?.getAttribute('href') ?? '';
+      expect(href).toBe('/maps/face?sid=Mod%2F%C3%89preuve%20du%20feu&side=B');
+      expect(new URL(href, 'http://x').searchParams.get('sid')).toBe(sid);
+    });
+
+    it('n’imbrique jamais un lien dans un lien', () => {
+      expect(render(ok(TABLEAU)).querySelectorAll('a a')).toHaveLength(0);
+    });
+
+    it('n’affiche aucun lien de face pour un nouveau joueur', () => {
+      expect(liens(render(ok(VIDE)))).toHaveLength(0);
+    });
+  });
+
   describe('cas particuliers', () => {
     it('n’affiche pas de bandeau hors jeu', () => {
       const page = render(ok({ ...TABLEAU, enJeu: null }));

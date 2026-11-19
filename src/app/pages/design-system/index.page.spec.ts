@@ -17,6 +17,17 @@ describe('Page /design-system', () => {
     expect(titles).toEqual(['Couleurs', 'Typographie', 'Espacement et formes', 'Composants']);
   });
 
+  it('présente le graphique d’évolution et l’étiquette d’abandon', () => {
+    const fixture = TestBed.createComponent(DesignSystemPage);
+    fixture.detectChanges();
+    const page = fixture.nativeElement as HTMLElement;
+    expect(page.querySelectorAll('.cdt-chart__col').length).toBe(20);
+    expect(page.querySelectorAll('.cdt-chart__col--deathless').length).toBe(1);
+    expect(page.querySelectorAll('.cdt-chart__col--abandon').length).toBe(2);
+    expect(page.querySelector('.cdt-result--abandon')?.textContent).toContain('Abandon');
+    expect(page.querySelector('.cdt-panel .cdt-tabs')).not.toBeNull();
+  });
+
   it('force le thème sur <html>, puis revient au thème du système', () => {
     const fixture = TestBed.createComponent(DesignSystemPage);
     fixture.detectChanges();

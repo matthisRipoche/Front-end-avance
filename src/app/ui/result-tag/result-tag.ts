@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-export type ResultKind = 'success' | 'fall' | 'deathless';
+export type ResultKind = 'success' | 'fall' | 'deathless' | 'abandon';
 
 // Étiquette de résultat : couleur, forme et mot, jamais la couleur seule.
 // Le mot est fourni par le parent (contenu projeté).

@@ -1,0 +1,29 @@
+<div class="cdt-chart__body">
+  <div class="cdt-chart__axis" aria-hidden="true">
+    @for (repere of reperes(); track repere.libelle) {
+      <div class="cdt-chart__tick" [style.bottom.%]="repere.bas"><span>{{ repere.libelle }}</span></div>
+    }
+  </div>
+  <div class="cdt-chart__plot">
+    <div class="cdt-chart__track">
+    @for (repere of reperes(); track repere.libelle) {
+      <div class="cdt-chart__grid" aria-hidden="true" [style.bottom.%]="repere.bas"></div>
+    }
+    @for (col of colonnes(); track col.id) {
+      <div class="cdt-chart__col" [class]="'cdt-chart__col cdt-chart__col--' + col.issue" [attr.title]="col.titre" aria-hidden="true">
+        <div class="cdt-chart__bar" [style.height.%]="col.hauteur"></div>
+        @if (col.issue === 'deathless') {
+          <span class="cdt-chart__marker">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 15c-3-1.4-5.5-4.3-5.5-7.3C2.5 5.6 4 4.5 5.6 4.5c.9 0 1.7.3 2.4.9.7-.6 1.5-.9 2.4-.9 1.6 0 3.1 1.1 3.1 3.2 0 3-2.5 5.9-5.5 7.3z" /><path fill="currentColor" d="M5.2 3.2L8 4.4l2.8-1.2L8 1.2z" /></svg>
+          </span>
+        }
+      </div>
+    }
+    </div>
+  </div>
+</div>
+<ul class="cdt-chart__legend" aria-hidden="true">
+  <li><span class="cdt-chart__swatch cdt-chart__swatch--chute"></span>Chute</li>
+  <li><span class="cdt-chart__swatch cdt-chart__swatch--abandon"></span>Abandon</li>
+  <li><span class="cdt-chart__swatch cdt-chart__swatch--deathless"></span>Deathless</li>
+</ul>
