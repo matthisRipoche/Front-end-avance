@@ -30,7 +30,7 @@ Rôle du serveur Node (validé, pistes A + B + E) :
 - **B. Connexion vérifiée côté serveur** : pendant le rendu SSR, Node transmet le cookie de session à Spring et sait si l'utilisateur est connecté avant d'envoyer la page. La redirection vers le login se fait côté serveur, sans clignotement.
 - **E. Transversal** : route `/health` (contrôle de santé Docker), journaux des requêtes, limitation de débit sur le login.
 - **C. Cache serveur de données publiques** (fait, #33) : porte sur `providers`, le seul appel public de Spring (`GET /api/connexion/fournisseurs`, `defineCachedFunction`, 300 s, stale-while-revalidate).
-- S'il reste du temps : **D.** relais du flux SSE `/api/live/stream`. Pas de base de données propre, sauf si la consigne l'exige.
+- **D. Relais du flux SSE** (fait, #34) : `GET /api/direct` relaie `/api/live/stream` et alimente le bandeau « En jeu » en direct. Reste hors périmètre : la page `/direct` complète. Pas de base de données propre, sauf si la consigne l'exige.
 
 Détails techniques :
 

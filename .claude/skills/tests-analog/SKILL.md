@@ -100,6 +100,8 @@ it('transmet le cookie de session à Spring', async () => {
 
 `toWebHandler` renvoie une `Response` standard : `res.status`, `await res.json()`, `res.headers.get('set-cookie')`.
 
+Un **flux SSE** se teste sur un vrai serveur HTTP Node (`createServer` + `toNodeListener`) face à un faux Spring `node:http`, parce que le `toWebHandler` de h3 n'émet pas `close` : on ne verrait jamais le départ du client (modèle : `src/server/routes/api/direct.spec.ts`).
+
 ## Simuler Spring
 
 La couche serveur appelle Spring avec le `fetch` natif (skill `bff-spring`). On le remplace dans le test :
@@ -126,6 +128,8 @@ fetchMock.mockRejectedValue(new TypeError('fetch failed')); // Spring injoignabl
 ```
 npm run build && npm run test:serveur
 ```
+
+`/api/direct` et la coupure du relais (flux abandonné quand le client part) y ont des cas.
 
 Il tourne dans le job `test` de la CI, après le build. Règle : **un nouveau préfixe refusé, une nouvelle route dédiée ou un nouveau middleware → un cas dans le script**.
 
