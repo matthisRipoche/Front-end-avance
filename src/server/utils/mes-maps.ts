@@ -50,7 +50,7 @@ export function versMesMaps(faces: FaceSummary[], fuseau: string): MesMaps {
  * Mod d'une map : le premier segment de son SID (`Celeste/1-ForsakenCity` → `Celeste`). Un SID
  * sans `/` est rangé sous son propre nom plutôt que dans un mod inventé.
  */
-function modDe(sid: string): string {
+export function modDe(sid: string): string {
   return sid.split('/').find(Boolean) ?? sid;
 }
 

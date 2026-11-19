@@ -147,6 +147,37 @@ Forme `MesMaps` (détail : `src/app/modeles/mes-maps.ts`). Champs en français, 
 - `mod` : premier segment du SID (`Celeste/1-ForsakenCity` → `Celeste`), sinon le SID entier.
 - **Limite** : `/api/faces` ne donne aucune progression (rooms atteintes, rooms vues). La page n'affiche donc pas de meilleure progression ; elle viendra avec le détail d'une face (#27).
 
+### `GET /api/face`
+
+> Issue #27. Route : `src/server/routes/api/face.get.ts`, logique : `src/server/utils/detail-face.ts`.
+
+Appelle `GET /api/faces/detail?sid=&side=` avec le cookie de la requête et renvoie le détail d'une face dans la forme dont la page `/maps/face` a besoin.
+
+Ordre des contrôles (les trois premiers sans appeler Spring) :
+
+1. `sid` : obligatoire, une seule fois, 255 caractères au plus, sans caractère de contrôle, sans espace en début ni en fin, sinon **400**. Aucune liste blanche de caractères : les SID d'Everest sont des chemins de fichiers (espaces, accents, apostrophes). Le SID ne part chez Spring qu'en paramètre de requête encodé, jamais dans un chemin ;
+2. `side` : `A`, `B` ou `C`, majuscules strictes comme Spring, sinon **400** ;
+3. cookie `JSESSIONID`, sinon **401** ;
+4. fuseau : cookie `tz` s'il est valide, sinon `Europe/Paris`. Pas de `?tz=` : la page appelle toujours la même URL (même clé de TransferState).
+
+Codes :
+
+| Cas | Réponse |
+|---|---|
+| Succès | **200** `DetailFace` |
+| `sid` absent ou vide | **400** `{ message: "Le paramètre sid est obligatoire." }`, sans appeler Spring |
+| `sid` invalide | **400** `{ message: "Le paramètre sid doit être un identifiant de map de 1 à 255 caractères." }`, sans appeler Spring |
+| `side` absent ou hors `A`, `B`, `C` | **400** `{ message: "Le paramètre side doit valoir A, B ou C." }`, sans appeler Spring |
+| Pas de cookie de session | **401** `{ message: "Connexion requise" }`, sans appeler Spring |
+| Spring répond 401 | **401** `{ message: "Connexion requise" }` |
+| Spring répond 404 (face sans tentative) | **404** `{ message: "Aucune tentative sur cette face" }` |
+| Spring répond 5xx | **502** `{ message: "Erreur de l'API" }` |
+| Spring injoignable ou plus lent que 5 s | **503** `{ message: "API indisponible" }` |
+
+- En succès : `cache-control: private, no-store` et `Vary: Cookie`.
+- Forme `DetailFace` (détail : `src/app/modeles/detail-face.ts`), en français et en liste blanche. Calculés par le serveur : `aujourdhui` (jour du rendu en `AAAA-MM-JJ` dans le fuseau), `tentativesSemaine` (points de `evolution` des 7 derniers jours : sous-estimé au-delà de 200 tentatives), `dernierePartie` (début de `recent[0]`, `null` sans tentative), `nom` et `mod` (comme `/api/maps`).
+- Issues : `success` → `deathless`, `death` → `chute`, `abandoned` → `abandon`, `ongoing` → `en-cours`.
+
 ### `GET /api/connexion/discord`
 
 > Issue #35. Route : `src/server/routes/api/connexion/discord.get.ts`, cookie : `src/server/utils/retour-connexion.ts`.
